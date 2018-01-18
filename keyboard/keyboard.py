@@ -658,7 +658,7 @@ width=self.w_canvas/2,anchor='w')
 		talk_fid = open(self.talk_file,'w')
 		talk_fid.write(".. " + talk_string + " ?")
 		talk_fid.close()
-		os.spawnv(os.P_NOWAIT,'/usr/bin/festival',['festival','--tts',self.talk_file])
+		os.spawnv(os.P_NOWAIT,'C:/festival',['festival','--tts',self.talk_file]) #"/usr/bin/festival"
 
     def make_choice(self, index):
 	is_undo = False
