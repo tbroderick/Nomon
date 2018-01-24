@@ -22,4 +22,5 @@ If you get an error "IOError: [Errno13] Permission denied" error, you have insta
 Troubleshooting
 ====================
 **IOError: [Errno13] Permission denied**
+
 You have Nomon installed in the Program Files directory. You can resolve this issue permanently by reinstalling Nomon in a different dirctory (such as C:\Nomon), or you can run Nomon as Administrator (see instructions on how to do this in "Running Nomon").
