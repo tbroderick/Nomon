@@ -17,9 +17,9 @@ The software is licensed under the [MIT license](https://opensource.org/licenses
 
 Installing Nomon on Windows
 ================
-1. Download the Nomon_installer zip file
-2. Unzip the file
-3. Click on the installer (Nomon-0.4-amd64)
+1. Download the Nomon folder.
+2. Click the "keyboard" folder, then the "dist" folder to locate the installer. 
+3. Click on the installer (Nomon-0.4-amd64.msi)
 4. Choose a directory for Nomon (example: C:\Nomon) **Important:** Do not choose a directory in Program Files or Program Files (x86).
 5. "Do you want to allow an unknown publisher to make changes to your device?" may appear. If it does, click "yes."
 
