@@ -47,20 +47,21 @@ theta0 = frac_period * 2.0 * numpy.pi #numpy.pi
 bgcolor = "white" #"#%02x%02x%02x" % (0,0,150)
 # clockface color
 circle_low_color = "#%02x%02x%02x" % (255,255,255)
-circle_high_color = "yellow"
+circle_high_color = "#FFFF69"#"yellow"
 circle_off_color = ""
 circle_outline_color = "black"
 circle_win_color = circle_outline_color #"#%02x%02x%02x" % (0,200,0)
 circle_lose_color = circle_outline_color #"red"
 # outline sizes
-circle_outline_width = 1
+circle_outline_width = 1.0
 circle_lose_width = circle_outline_width #3
 circle_win_width = circle_outline_width #3
 # noon position (desired hitting point) color
 noon_color = "#%02x%02x%02x" % (255,0,0)
 # color of the moving hour hand
 hour_color = "#%02x%02x%02x" % (0,0,0)
-
+# hand sizes
+hand_width = 1.5
 ### Algorithm parameters ###
 # winning score difference
 win_diff_base = numpy.log(99)

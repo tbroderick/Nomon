@@ -331,8 +331,8 @@ class BroderClocks:
             lry = y + self.radius
             ## create objects and record their IDs
             self.circle_id.append(self.canvas.create_oval([ulx,uly,lrx,lry],fill=config.circle_low_color,outline=config.circle_outline_color))
-            self.noon_id.append(self.canvas.create_line([x,y,x,uly],fill=config.noon_color))
-            self.hour_id.append(self.canvas.create_line([x,y,x,lry],fill=config.hour_color))
+            self.noon_id.append(self.canvas.create_line([x,y,x,uly],fill=config.noon_color, width=config.hand_width))
+            self.hour_id.append(self.canvas.create_line([x,y,x,lry],fill=config.hour_color, width=config.hand_width))
         # blank out the clocks that aren't in use this round
         for clock in self.clocks_off:
             self.canvas.itemconfigure(self.circle_id[clock],fill=self.circle_off_color,outline=config.circle_off_color)
@@ -535,8 +535,8 @@ class BroderClocks:
                 self.canvas.itemconfigure(self.circle_id[clock],fill=config.circle_high_color,outline=outline_color,width=cwidth)
             else:
                 self.canvas.itemconfigure(self.circle_id[clock],fill=config.circle_low_color,outline=outline_color,width=cwidth)
-            self.canvas.itemconfigure(self.noon_id[clock],fill=config.noon_color)
-            self.canvas.itemconfigure(self.hour_id[clock],fill=config.hour_color)
+            self.canvas.itemconfigure(self.noon_id[clock],fill=config.noon_color, width=config.hand_width)
+            self.canvas.itemconfigure(self.hour_id[clock],fill=config.hour_color, width=config.hand_width) 
         # turn off irrelevant faces
         for clock in self.clocks_off:
             self.canvas.itemconfigure(self.circle_id[clock],fill=config.circle_off_color,outline=config.circle_off_color,width=config.circle_outline_width)
