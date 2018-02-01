@@ -64,8 +64,8 @@ target_evt = key_evt
 base_window_width = 1200
 base_window_height = 700
 # clock radius
-base_clock_rad = 10
-clock_rad = 10
+base_clock_rad = 10 #10
+clock_rad = 10 #10
 # word width
 base_word_w = 160
 word_w = 160

@@ -131,13 +131,13 @@ class Keyboard:
         train_handle.close()
 	# check for speech
 	talk_fid = open(self.talk_file,'w')
-	talk_fid.write(".. Festival is ready ?")
-	talk_fid.close()
-	out = os.system("/usr/bin/festival --tts talk.txt")
-	if out == 32512:
-		self.has_festival = False
-	else:
-		self.has_festival = True
+##	talk_fid.write(".. Festival is ready ?")
+##	talk_fid.close()
+##	out = os.system("/usr/bin/festival --tts talk.txt")
+##	if out == 32512:
+##		self.has_festival = False
+##	else:
+##		self.has_festival = True
         # write keys
         self.init_keys()
         # write words
@@ -447,8 +447,10 @@ width=self.w_canvas/2,anchor='w')
 	# tooltip to explain what the histogram is
 	self.histogram_tooltip = ToolTip(self.histo_canvas, follow_mouse=1, font=kconfig.word_font, text="This is Nomon's estimate of where you click relative to noon on the clocks. The thinner the distribution, the more precisely Nomon thinks you are clicking.")
 
-    def draw_histogram(self):
-	bars = self.bc.get_histogram()
+    def draw_histogram(self, bars = None):
+        if bars == None:
+            bars = self.bc.get_histogram()
+            #bars = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 	max_height = self.height_bot *3/4
 	norm = max_height * 1.0 / max(bars)
 	N_bars = len(bars)
@@ -641,24 +643,25 @@ width=self.w_canvas/2,anchor='w')
 	self.canvas.itemconfigure(self.subkey_id[index],fill=kconfig.key_color)
 
     def talk_winner(self,talk_string):
-	if self.has_festival:
-		if(talk_string == 'a'):
-			talk_string = 'ay'
-		elif(talk_string == 'the'):
-			talk_string = 'thee'
-		elif(talk_string == 'of'):
-			talk_string = 'of'
-		elif(talk_string == 'on'):
-			talk_string = 'on'
-		elif(talk_string == 'or'):
-			talk_string = 'oar'
-		elif(talk_string == 'to'):
-			talk_string = 'two'
-	
-		talk_fid = open(self.talk_file,'w')
-		talk_fid.write(".. " + talk_string + " ?")
-		talk_fid.close()
-		os.spawnv(os.P_NOWAIT,'C:/festival',['festival','--tts',self.talk_file]) #"/usr/bin/festival"
+        pass
+##	if self.has_festival:
+##		if(talk_string == 'a'):
+##			talk_string = 'ay'
+##		elif(talk_string == 'the'):
+##			talk_string = 'thee'
+##		elif(talk_string == 'of'):
+##			talk_string = 'of'
+##		elif(talk_string == 'on'):
+##			talk_string = 'on'
+##		elif(talk_string == 'or'):
+##			talk_string = 'oar'
+##		elif(talk_string == 'to'):
+##			talk_string = 'two'
+##	
+##		talk_fid = open(self.talk_file,'w')
+##		talk_fid.write(".. " + talk_string + " ?")
+##		talk_fid.close()
+##		os.spawnv(os.P_NOWAIT,'C:/festival/festival.exe',['festival','--tts',self.talk_file]) #"/usr/bin/festival" "c:/festival/festival.exe" 
 
     def make_choice(self, index):
 	is_undo = False
