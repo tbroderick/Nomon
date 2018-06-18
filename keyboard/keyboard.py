@@ -9,7 +9,7 @@
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
 #
-#    Nomon Keyboard is distributed in the hope that it will be useful,
+#    Nomon Keyboard is distributed in the hope that it will be useful,dfg
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
@@ -506,6 +506,7 @@ width=self.w_canvas/2,anchor='w')
 
     def draw_words(self):
         (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq) = self.dt.get_words(self.context, self.keys_li)
+
         word = 0
         index = 0
         self.words_on = []
@@ -815,9 +816,9 @@ def main():
     root.title("Nomon Keyboard")
     
     app = Keyboard(root)
-    root.protocol('WM_DELETE_WINDOW', app.quit)
-    root.bind('<Control-q>', app.quit)
-    root.bind('<Control-Q>', app.quit)
+    # root.protocol('WM_DELETE_WINDOW', app.quit)
+    # root.bind('<Control-q>', app.quit)
+    # root.bind('<Control-Q>', app.quit)
 
     root.mainloop()
 
