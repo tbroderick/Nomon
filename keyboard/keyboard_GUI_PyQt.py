@@ -23,14 +23,7 @@ key_chars = [	['A','B','C','D','E'],
 # 		[space_char, mybad_char]
 # 		]
 
-# get frequent words
-wordListFile = open('word_list.txt', 'r')
-wordList = wordListFile.read().split()
-print(wordList)
-wordListFile.close()
-# wordList = 'and_ a_ as_ be_ by_ but_ can_ could_ do_ did_ down_ for_ from_ first_ get_ he_ have_ had_ in_ it_ is_ just_ know_ like_ more_ my_ me_ not_ no_ now_ of_ on_ or_ people_ she_ so_ said_ the_ to_ that_ up_ very_ was_ with_ which_ you_ your_ '
-# wordList=wordList.split()
-wordDisplayCount = 2
+wordDisplayCount = 3
 
 # get gaussian distribution
 bars = [4.1731209137640166e-11, 1.5674042704727563e-10, 5.702330790217924e-10, 2.009440319647259e-09, 6.858815826469396e-09, 2.2676420114286876e-08, 7.261915168381362e-08, 2.2525745454100865e-07, 6.767971122297686e-07, 1.969650386894775e-06, 5.552276918629734e-06, 1.5160181992883207e-05, 4.009489083361327e-05, 0.00010271289727370694, 0.0002548662025258791, 0.0006125631118014535, 0.001426069713163289, 0.0032157479134091965, 0.007023839199846974, 0.01485998764716699, 0.03045184848219981, 0.0604449741201335, 0.11621389459417346, 0.21642490682430432, 0.3903981461621635, 0.6821181069890906, 1.1544170528966142, 1.8924186208565767, 3.0048515131831763, 4.621470051256386, 6.884756647011963, 9.934553867306171, 13.88543429703574, 18.798443462933843, 24.65106218552027, 31.31127178097519, 38.52273404437159, 45.90762451643071, 52.99121328326851, 59.2480729571828, 64.16466330246335, 67.30834836361127, 68.39010521167417, 67.30834836361129, 64.16466330246332, 59.2480729571828, 52.99121328326855, 45.90762451643069, 38.52273404437159, 31.311271780975158, 24.65106218552027, 18.79844346293387, 13.885434297035717, 9.934553867306171, 6.884756647011954, 4.621470051256386, 3.0048515131831834, 1.8924186208565716, 1.1544170528966142, 0.6821181069890888, 0.3903981461621635, 0.21642490682430507, 0.11621389459417325, 0.06044497412013371, 0.03045184848219981, 0.014859987647167044, 0.007023839199847036, 0.0032157479134091965, 0.0014260697131632965, 0.0006125631118014535, 0.00025486620252588053, 0.00010271289727370786, 4.009489083361327e-05, 1.5160181992883289e-05, 5.552276918629734e-06, 1.969650386894789e-06, 6.767971122297759e-07, 2.2525745454100865e-07, 7.261915168381387e-08, 2.2676420114286876e-08]
@@ -38,27 +31,29 @@ bars = [4.1731209137640166e-11, 1.5674042704727563e-10, 5.702330790217924e-10, 2
 
 class ClockWidgit(QtGui.QWidget):
 
-    def __init__(self, text, start_angle, char_clock = True, highlighted = False):
+    def __init__(self, text, start_angle, parent, char_clock = True, highlighted = False):
         super(ClockWidgit, self).__init__()
 
         self.text = text
         self.start_angle = start_angle
+        self.parent = parent
         self.char_clock = char_clock
         self.highlighted = highlighted
         self.initUI()
 
+
     def initUI(self):
-        self.scaling_factor = ((len(self.text) + 2) / 1.8)
-        print(self.scaling_factor)
-        minSize = 55
-        maxSize = 80
+
+        self.size_factor = min(self.parent.screen_res)/1080.
+        self.scaling_factor = round((len(self.text) + 2) / 1.7, 6)
+        minSize = round(80*self.size_factor)
+        maxSize = round(120*self.size_factor)
         if self.char_clock == False:
-            minSize = 29
-            if wordDisplayCount == 3:
-                minSize = 20
-            maxSize = 40
-        self.setMinimumSize(minSize * self.scaling_factor, minSize)
+            minSize = round(40*self.size_factor)
+            maxSize = round(50*self.size_factor)
         self.setMaximumSize(maxSize * self.scaling_factor, maxSize)
+        self.setMinimumSize(minSize * self.scaling_factor, minSize)
+
         self.angle = 0
 
     def setAngle(self, angle):
@@ -112,24 +107,27 @@ class ClockWidgit(QtGui.QWidget):
         qp.setPen(QtGui.QColor(0, 0, 0))
         if self.highlighted:
             qp.setPen(QtGui.QColor(0, 0, 0))
-        qp.setFont(QtGui.QFont('Monospace', clock_rad*1.5))
+        qp.setFont(QtGui.QFont('Monospace', clock_rad))
         qp.drawText(center.x()+clock_rad,center.y()+clock_rad*.75, self.text)
 
 
 class HistogramWidget(QtGui.QWidget):
 
-    def __init__(self, bars):
+    def __init__(self, parent):
         super(HistogramWidget, self).__init__()
-
-        self.bars = bars
+        self.parent = parent
+        self.bars = parent.bars
         self.initUI()
+
 
     def initUI(self):
         self.setMinimumSize(200, 100)
 
     def paintEvent(self, e):
+        print("repainting")
         qp = QtGui.QPainter()
         qp.begin(self)
+        self.bars = self.parent.bars
         self.drawBars(qp)
         qp.end()
 
@@ -166,6 +164,7 @@ class VerticalSeparator(QtGui.QWidget):
 
     def initUI(self):
         self.setMinimumSize(1, 1)
+        self.setMaximumWidth(1)
 
     def paintEvent(self, e):
         qp = QtGui.QPainter()
@@ -193,6 +192,7 @@ class HorizontalSeparator(QtGui.QWidget):
 
     def initUI(self):
         self.setMinimumSize(1, 1)
+        self.setMaximumHeight(1)
 
     def paintEvent(self, e):
         qp = QtGui.QPainter()
@@ -211,13 +211,15 @@ class HorizontalSeparator(QtGui.QWidget):
         qp.drawLine(0, h/2, w, h/2)
 
 
-class Keyboard(QtGui.QWidget):
+class GUI(QtGui.QWidget):
 
-    def __init__(self, layout):
-        super(Keyboard, self).__init__()
+    def __init__(self, layout, screen_res):
+        super(GUI, self).__init__()
 
+        self.bars = bars
         self.layout = layout
-        self.initUI()
+        self.screen_res = screen_res
+
 
     def initUI(self):
 
@@ -225,10 +227,10 @@ class Keyboard(QtGui.QWidget):
         self.sld = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         self.sld.setRange(1, 24)
         self.sld.setValue(5)
-        self.sldText = QtGui.QLabel('Adjust Clock Rotation Speed:')
-        self.sldText.setFont(QtGui.QFont('Monospace', 10))
+        self.sldText = QtGui.QLabel('Clock Rotation Speed:')
+        self.sldText.setFont(QtGui.QFont('Monospace', 12))
         self.sldLabel = QtGui.QLabel(str(self.sld.value()))
-        self.sldLabel.setFont(QtGui.QFont('Monospace', 12))
+        self.sldLabel.setFont(QtGui.QFont('Monospace', 14))
 
         # generate learn, speak, talk checkboxes
         self.cb_talk = QtGui.QCheckBox('Talk', self)
@@ -247,31 +249,26 @@ class Keyboard(QtGui.QWidget):
         for row in self.layout:
             self.clocks = []
             for text in row:
-                clock = ClockWidgit(text, random.random()*math.pi*2, highlighted=bool(round(random.random()+0.25)))
+                clock = ClockWidgit(text, random.random()*math.pi*2, self, highlighted=bool(round(random.random()+0.25)))
                 self.clocks += [clock]
                 words = self.getWords(clock.text.lower())
                 if len(words) > 0:
                     wordClocks = []
                     for word in words:
-                        wordClocks += [ClockWidgit(word, random.random()*math.pi*2,char_clock=False, highlighted=bool(round(random.random()+0.25)) )]
+                        wordClocks += [ClockWidgit(word, random.random()*math.pi*2, self, char_clock=False, highlighted=bool(round(random.random()+0.25)) )]
                     self.clocks += [wordClocks]
 
 
             self.clock_rows += [self.clocks]
 
-        self.text_box = QtGui.QTextEdit("text_outputs_here",self)
+        self.text_box = QtGui.QTextEdit("",self)
         self.text_box.setFont(QtGui.QFont('Monospace', 25))
         self.text_box.setMinimumSize(300, 100)
 
         # generate histogram
-        self.histogram = HistogramWidget(bars)
+        self.histogram = HistogramWidget(self)
 
         self.sld.valueChanged[int].connect(self.changeValue)
-
-        # initialize timer for clock rotation
-        self.timer = QtCore.QBasicTimer()
-        self.timer.start((1-self.sld.value()/24.)*25+5, self)
-        self.step = 0
 
         # layout rows of keyboard
         hboxes = []
@@ -314,10 +311,11 @@ class Keyboard(QtGui.QWidget):
 
         # stack layouts vertically
         vbox = QtGui.QVBoxLayout()
-        vbox.addLayout(top_hbox,1)
+        vbox.setSpacing(0)
+        vbox.addLayout(top_hbox)
         vbox.addWidget(HorizontalSeparator())
         for hbox in hboxes:
-            vbox.addLayout(hbox,1)
+            vbox.addLayout(hbox)
             vbox.addWidget(HorizontalSeparator())
 
         splitter1 = QtGui.QSplitter(QtCore.Qt.Horizontal)
@@ -325,29 +323,34 @@ class Keyboard(QtGui.QWidget):
         splitter1.addWidget(self.histogram)
         splitter1.setSizes([1, 1])
 
-        vbox.addWidget(splitter1,1)
-
+        vbox.addWidget(splitter1)
         self.setLayout(vbox)
+
+        # Tool Tips
+        QtGui.QToolTip.setFont(QtGui.QFont('Monospace', 12))
+        self.setToolTip("This is the Nomon Keyboard. To select an option, \n "
+                        "find the clock immediately to its left. Press the \n"
+                        "spacebar when the moving hand is near noon.")
+        self.sldText.setToolTip("This slider scales the speed of clock rotation. Higher \n"
+                                "values correspond to the clock hand moving faster.")
+        self.sld.setToolTip("This slider scales the speed of clock rotation. Higher \n"
+                            "values correspond to the clock hand moving faster.")
+        self.cb_pause.setToolTip("If this button is checked, there will be a brief \n"
+                                 "pause and minty screen flash after each selection \n"
+                                 "you make.")
+        self.cb_talk.setToolTip("If this button is checked and if you have festival \n"
+                                "installed and working on your system, there will be \n"
+                                "spoken feedback after each selection you make.")
+        self.cb_learn.setToolTip("If this button is checked, the program will adapt \n"
+                                 "to how you click around noon (illustrated in the \n"
+                                 "histogram below).")
+        self.histogram.setToolTip("This is Nomon's estimate of where you click relative \n"
+                                  "to noon on the clocks. The thinner the distribution, \n"
+                                  "the more precisely Nomon thinks you are clicking.")
+
         self.setWindowTitle('Nomon Keyboard')
         self.setWindowIcon(QtGui.QIcon('nomon.ico'))
         self.show()
-
-    def timerEvent(self, e):
-
-        if self.step >= math.pi*2:
-            self.step = 0
-            return
-
-        self.step = self.step + math.pi/50
-        for row in self.clock_rows:
-            for clock in row:
-                if isinstance(clock, list):
-                    for wordClock in clock:
-                        wordClock.setAngle(self.step)
-                        wordClock.repaint()
-                else:
-                    clock.setAngle(self.step)
-                    clock.repaint()
 
     def changeValue(self, value):
         self.timer.start((1-value/24.)*25+5, self)
@@ -356,7 +359,7 @@ class Keyboard(QtGui.QWidget):
     def getWords(self, char):
         i = 0
         output = []
-        for word in wordList:
+        for word in self.word_list:
             if word[0] == char:
                 i += 1
                 if i > wordDisplayCount:
@@ -367,17 +370,9 @@ class Keyboard(QtGui.QWidget):
 
 
 
-
-
-
-
-
-
-
-
 def main():
     app = QtGui.QApplication(sys.argv)
-    ex = Keyboard(key_chars)
+    ex = GUI(key_chars)
     sys.exit(app.exec_())
 
 
