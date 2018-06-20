@@ -23,11 +23,11 @@ import dtree
 import config
 # import glob
 import kconfig
-from ToolTip import *
 import string
 import time
-import Tkinter
 import numpy
+
+from keyboard_GUI_PyQt import *
 
 if kconfig.target_evt == kconfig.joy_evt:
     import pygame
@@ -37,12 +37,10 @@ import random
 import os
 
 
-class Keyboard:
-    def __init__(self, parent):
-        ### process the inputs ###
-        ## copy
-        self.parent = parent
-        ## command line
+class Keyboard(GUI):
+    def __init__(self, layout, screen_res):
+        super(Keyboard, self).__init__(layout, screen_res)
+
         # check that number of arguments is valid
         if len(sys.argv) < 3:  # replaced with a default 0 0
             # print "Error: Too few (" + str(len(sys.argv)-1) + " < 2) arguments"
@@ -115,9 +113,9 @@ class Keyboard:
         else:
             self.file_handle = None
         ## set up canvas for displaying stuff
-        self.gen_canvas()
+        # self.gen_canvas()
         self.gen_scale()
-        self.gen_button_frame()
+        # self.gen_button_frame()
         self.gen_talk_button()
         self.gen_learn_button()
         self.gen_pause_button()
@@ -143,13 +141,13 @@ class Keyboard:
         ##	else:
         ##		self.has_festival = True
         # write keys
-        self.init_keys()
+        # self.init_keys()
         # write words
         self.init_words()
         # write typed text
         self.init_typed()
         ## set up broderclocks
-        self.bc = broderclocks.BroderClocks(self, self.canvas, self.clock_centers, self.win_diffs, kconfig.clock_rad,
+        self.bc = broderclocks.BroderClocks(self, self.clock_centers, self.win_diffs, kconfig.clock_rad,
                                             self.file_handle, self.words_on, self.words_off, kconfig.key_color,
                                             time.time(), use_num, user_id, self.time_rotate, prev_data)
         self.wait_s = self.bc.get_wait()
@@ -164,13 +162,15 @@ class Keyboard:
         self.raise_words()
 
         ### animate ###
-        self.last_anim_call = self.canvas.after(0, self.on_timer)
+        # self.last_anim_call = self.canvas.after(0, self.on_timer)
 
         # which ones to try predicting on
         try_pred = []
         for row in range(0, self.N_rows):
             for col in range(0, self.N_keys_row[row]):
                 try_pred = kconfig.key_chars[row][col].isalpha()
+
+        self.initUI()
 
     def find_events(self):
         ## check everything in the queue of pygame events
@@ -183,6 +183,10 @@ class Keyboard:
 
         ## return to check for more events in a moment
         self.parent.after(20, self.find_events)
+
+    def keyPressEvent(self, e):
+        if e.key() == QtCore.Qt.Key_Space:
+            self.on_press()
 
     def init_locs(self):
         # size of keyboard
@@ -284,45 +288,45 @@ class Keyboard:
         self.file_handle = open(data_file, 'w')
 
     def gen_canvas(self):
-        self.canvas = Tkinter.Canvas(self.parent, width=self.w_canvas, height=self.h_canvas, background=config.bgcolor)
-        self.parent.columnconfigure(0, minsize=self.w_canvas / 2.0)
-        self.parent.columnconfigure(1, minsize=self.w_canvas / 2.0)
-        self.parent.rowconfigure(0, minsize=self.key_height)
-        self.parent.rowconfigure(1, minsize=self.h_canvas)
-        self.parent.rowconfigure(2, minsize=self.height_bot)
-        self.canvas.grid(row=1, column=0, columnspan=2)
+        # self.canvas = Tkinter.Canvas(self.parent, width=self.w_canvas, height=self.h_canvas, background=config.bgcolor)
+        # self.parent.columnconfigure(0, minsize=self.w_canvas / 2.0)
+        # self.parent.columnconfigure(1, minsize=self.w_canvas / 2.0)
+        # self.parent.rowconfigure(0, minsize=self.key_height)
+        # self.parent.rowconfigure(1, minsize=self.h_canvas)
+        # self.parent.rowconfigure(2, minsize=self.height_bot)
+        # self.canvas.grid(row=1, column=0, columnspan=2)
         self.parent.bind(kconfig.target_evt, self.on_press)
-        self.canvas.focus_set()  # so don't have to click on the canvas beforehand
+        # self.canvas.focus_set()  # so don't have to click on the canvas beforehand
 
         # tool tip
-        self.keyboard_tooltip = ToolTip(self.canvas, follow_mouse=1, font=kconfig.word_font,
-                                        text="This is the Nomon Keyboard. To select an option, find the clock immediately to its left. Press the spacebar when the moving hand is near noon.")
+        # self.keyboard_tooltip = ToolTip(self.canvas, follow_mouse=1, font=kconfig.word_font,
+        #                                 text="This is the Nomon Keyboard. To select an option, find the clock immediately to its left. Press the spacebar when the moving hand is near noon.")
 
     def gen_scale(self):
         scale_length = self.w_canvas / 2  # (len(kconfig.key_chars[0])-1)*kconfig.word_w
         tick_int = int((len(config.period_li) - 1) * kconfig.word_pt * 3 / (1.0 * scale_length)) + 1
 
         # frame
-        self.scale_frame = Tkinter.Frame(self.parent, width=scale_length, height=self.key_height)
-        self.scale_frame.grid(row=0, column=0)
-        # scale
-        self.scale = Tkinter.Scale(self.scale_frame, orient=Tkinter.HORIZONTAL, label="Clock Rotation Speed",
-                                   length=scale_length, from_=config.scale_min, to=config.scale_max,
-                                   tickinterval=tick_int, command=self.change_speed, font=kconfig.word_font)
-        # careful; scale is for speed, but the settings are saved as clock periods
-        self.speed_index = config.scale_max - self.rotate_index + 1
-        self.scale.set(self.speed_index)
-        self.scale.pack(side=Tkinter.TOP)
+        # self.scale_frame = Tkinter.Frame(self.parent, width=scale_length, height=self.key_height)
+        #         # self.scale_frame.grid(row=0, column=0)
+        #         # # scale
+        #         # self.scale = Tkinter.Scale(self.scale_frame, orient=Tkinter.HORIZONTAL, label="Clock Rotation Speed",
+        #         #                            length=scale_length, from_=config.scale_min, to=config.scale_max,
+        #         #                            tickinterval=tick_int, command=self.change_speed, font=kconfig.word_font)
+        #         # # careful; scale is for speed, but the settings are saved as clock periods
+        #         # self.speed_index = config.scale_max - self.rotate_index + 1
+        #         # self.scale.set(self.speed_index)
+        #         # self.scale.pack(side=Tkinter.TOP)
         # ******
         self.time_rotate = config.period_li[self.rotate_index]
 
         # tool tip
-        self.scale_tooltip = ToolTip(self.scale, follow_mouse=1, font=kconfig.word_font,
-                                     text="This slider scales the speed of clock rotation. Higher values correspond to the clock hand moving faster.")
-
-        # bind right and left arrow events
-        self.canvas.bind("<Left>", self.dec_speed)
-        self.canvas.bind("<Right>", self.inc_speed)
+        # self.scale_tooltip = ToolTip(self.scale, follow_mouse=1, font=kconfig.word_font,
+        #                              text="This slider scales the speed of clock rotation. Higher values correspond to the clock hand moving faster.")
+        #
+        # # bind right and left arrow events
+        # self.canvas.bind("<Left>", self.dec_speed)
+        # self.canvas.bind("<Right>", self.inc_speed)
 
     def gen_button_frame(self):
         button_height = self.key_height
@@ -332,48 +336,53 @@ class Keyboard:
         self.but_frame.grid(row=0, column=1)
 
     def gen_pause_button(self):
-        self.pause_set = Tkinter.IntVar()
-        self.pause_set.set(1)
-
-        # button
-        self.pause_button = Tkinter.Checkbutton(self.but_frame, text="Pause", variable=self.pause_set,
-                                                font=kconfig.word_font)
-        self.pause_button.select()
-        self.pause_button.pack(side=Tkinter.LEFT)
-
-        # tool tip
-        self.pause_tooltip = ToolTip(self.pause_button, follow_mouse=1, font=kconfig.word_font,
-                                     text="If this button is checked, there will be a brief pause and minty screen flash after each selection you make.")
+        self.pause_set = True
+        # self.pause_set = Tkinter.IntVar()
+        # self.pause_set.set(1)
+        #
+        #
+        # # button
+        # self.pause_button = Tkinter.Checkbutton(self.but_frame, text="Pause", variable=self.pause_set,
+        #                                         font=kconfig.word_font)
+        # self.pause_button.select()
+        # self.pause_button.pack(side=Tkinter.LEFT)
+        #
+        # # tool tip
+        # self.pause_tooltip = ToolTip(self.pause_button, follow_mouse=1, font=kconfig.word_font,
+        #                              text="If this button is checked, there will be a brief pause and minty screen flash after each selection you make.")
 
     def gen_talk_button(self):
-        self.talk_set = Tkinter.IntVar()
-        self.talk_set.set(1)
-
-        # button
-        self.talk_button = Tkinter.Checkbutton(self.but_frame, text="Talk", variable=self.talk_set,
-                                               font=kconfig.word_font)
-        self.talk_button.pack(side=Tkinter.LEFT)
-
-        # tool tip
-        self.talk_tooltip = ToolTip(self.talk_button, follow_mouse=1, font=kconfig.word_font,
-                                    text="If this button is checked and if you have festival installed and working on your system, there will be spoken feedback after each selection you make.")
+        self.talk_set = False
+        # self.talk_set = Tkinter.IntVar()
+        # self.talk_set.set(1)
+        #
+        #
+        # # button
+        # self.talk_button = Tkinter.Checkbutton(self.but_frame, text="Talk", variable=self.talk_set,
+        #                                        font=kconfig.word_font)
+        # self.talk_button.pack(side=Tkinter.LEFT)
+        #
+        # # tool tip
+        # self.talk_tooltip = ToolTip(self.talk_button, follow_mouse=1, font=kconfig.word_font,
+        #                             text="If this button is checked and if you have festival installed and working on your system, there will be spoken feedback after each selection you make.")
 
     def gen_learn_button(self):
-        self.learn_set = Tkinter.IntVar()
-        self.learn_set.set(1)
-
-        # button
-        self.learn_button = Tkinter.Checkbutton(self.but_frame, text="Learn", variable=self.learn_set,
-                                                font=kconfig.word_font, command=self.checked_learn)
-        self.learn_button.select()
-        self.learn_button.pack(side=Tkinter.LEFT)
-
-        # tool tip
-        self.learn_tooltip = ToolTip(self.learn_button, follow_mouse=1, font=kconfig.word_font,
-                                     text="If this button is checked, the program will adapt to how you click around noon (illustrated in the histogram below).")
+        self.learn_set = True
+        # self.learn_set = Tkinter.IntVar()
+        # self.learn_set.set(1)
+        #
+        # # button
+        # self.learn_button = Tkinter.Checkbutton(self.but_frame, text="Learn", variable=self.learn_set,
+        #                                         font=kconfig.word_font, command=self.checked_learn)
+        # self.learn_button.select()
+        # self.learn_button.pack(side=Tkinter.LEFT)
+        #
+        # # tool tip
+        # self.learn_tooltip = ToolTip(self.learn_button, follow_mouse=1, font=kconfig.word_font,
+        #                              text="If this button is checked, the program will adapt to how you click around noon (illustrated in the histogram below).")
 
     def checked_learn(self):
-        if self.learn_set.get() == 1:
+        if self.learn_set == 1:
             config.is_learning = True
         else:
             config.is_learning = False
@@ -436,64 +445,35 @@ class Keyboard:
     def init_key_text(self):
         self.key_id = []
         for key in range(0, self.N_keys):
-            self.key_id.append(
-                self.canvas.create_text(self.char_locs[key], text=self.keys_li[key], fill=kconfig.key_text_color,
-                                        font=kconfig.key_font, anchor='w'))
+            pass
+            # self.key_id.append(
+            #     self.canvas.create_text(self.char_locs[key], text=self.keys_li[key], fill=kconfig.key_text_color,
+            #                             font=kconfig.key_font, anchor='w'))
 
     def init_histogram(self):
         ### histogram
-        self.histo_canvas = Tkinter.Canvas(self.parent, width=self.w_canvas / 2, height=self.height_bot,
-                                           background=config.bgcolor)
-        self.histo_canvas.grid(row=2, column=1)
         bars = self.bc.get_histogram()
-        max_height = self.height_bot * 3 / 4
-        norm = max_height * 1.0 / max(bars)
-        N_bars = len(bars)
-        bar_width = (self.w_canvas / 2) * 1.0 / N_bars
-
-        x = 0
-        y = self.h_canvas / 8 + max_height
-        self.bar_id = []
-        for bar in bars:
-            bar_height = bar * norm
-            self.bar_id.append(
-                self.histo_canvas.create_rectangle([x, y, x + bar_width, y - bar_height], fill=kconfig.plot_color,
-                                                   outline=kconfig.plot_outline_color))
-            x += bar_width
+        self.bars = bars
 
         ### undo_text
         self.undo_loc = [
             (self.N_keys_row[self.N_rows - 1] - 1) * (6 * kconfig.clock_rad + kconfig.word_w) - self.w_canvas / 2,
             2 * kconfig.clock_rad]
         # undo text next to undo button
-        self.undo_id = self.histo_canvas.create_text(self.undo_loc,
-                                                     text='', fill=kconfig.undo_type_color, font=kconfig.key_font,
-                                                     width=self.w_canvas / 2, anchor='w')
-
-        # accessories for the plot
-        x = bar_width * (N_bars / 2.0 + 0.5)
-        self.histo_canvas.create_line([x, y, x, y + kconfig.clock_rad], fill=config.noon_color)
+        # self.undo_id = self.histo_canvas.create_text(self.undo_loc,
+        #                                              text='', fill=kconfig.undo_type_color, font=kconfig.key_font,
+        #                                              width=self.w_canvas / 2, anchor='w')
 
         # tooltip to explain what the histogram is
-        self.histogram_tooltip = ToolTip(self.histo_canvas, follow_mouse=1, font=kconfig.word_font,
-                                         text="This is Nomon's estimate of where you click relative to noon on the clocks. The thinner the distribution, the more precisely Nomon thinks you are clicking.")
+        # self.histogram_tooltip = ToolTip(self.histo_canvas, follow_mouse=1, font=kconfig.word_font,
+        #                                  text="This is Nomon's estimate of where you click relative to noon on the clocks. The thinner the distribution, the more precisely Nomon thinks you are clicking.")
 
     def draw_histogram(self, bars=None):
         if bars == None:
             bars = self.bc.get_histogram()
         # bars = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        print(bars)
-        max_height = self.height_bot * 3 / 4
-        norm = max_height * 1.0 / max(bars)
-        N_bars = len(bars)
-        bar_width = (self.w_canvas / 2) * 1.0 / N_bars
-
-        x = 0
-        y = self.h_canvas / 8 + max_height
-        for index in range(0, N_bars):
-            bar_height = bars[index] * norm
-            self.histo_canvas.coords(self.bar_id[index], x, y, x + bar_width, y - bar_height)
-            x += bar_width
+        self.bars = bars
+        self.histogram.repaint()
 
     def init_words(self):
         (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq) = self.dt.get_words(
@@ -512,9 +492,9 @@ class Keyboard:
                 if (len_con > 1) and (len_word > kconfig.max_chars_display):
                     word_str = "+" + word_str[len_con:len_word]
                 self.word_pair.append((key, pred))
-                self.word_id.append(
-                    self.canvas.create_text(self.word_locs[word], text=word_str, fill=kconfig.key_text_color,
-                                            font=kconfig.word_font, anchor='w'))
+                # self.word_id.append(
+                #     self.canvas.create_text(self.word_locs[word], text=word_str, fill=kconfig.key_text_color,
+                #                             font=kconfig.word_font, anchor='w'))
                 if word_str == '':
                     self.words_off.append(index)
                 else:
@@ -528,16 +508,25 @@ class Keyboard:
             for pred in range(0, kconfig.N_pred):
                 word_str = self.words_li[key][pred]
                 self.word_pair.append((key, pred))
-                self.word_id.append(self.canvas.create_text(self.word_locs[word], text='', fill=kconfig.key_text_color,
-                                                            font=kconfig.word_font, anchor='w'))
+                # self.word_id.append(self.canvas.create_text(self.word_locs[word], text='', fill=kconfig.key_text_color,
+                #                                             font=kconfig.word_font, anchor='w'))
                 self.words_off.append(index)
                 index += 1
             self.words_on.append(index)
             self.word_pair.append((key,))
             index += 1
+        # Send words to GUI
+        words = []
+        for letter_group in self.words_li:
+            for word in letter_group:
+                if word != '':
+                    words += [word]
+        self.word_list = words
 
     def raise_words(self):
+        pass
         for wid in self.word_id:
+
             self.canvas.tag_raise(wid)
 
     def draw_words(self):
@@ -554,9 +543,9 @@ class Keyboard:
             for pred in range(0, kconfig.N_pred):
                 word_str = self.words_li[key][pred]
                 len_word = len(word_str)
-                if (len_con > 1) and (len_word > kconfig.max_chars_display):
+                if len_con > 1 and len_word > kconfig.max_chars_display:
                     word_str = "+" + word_str[len_con:len_word]
-                self.canvas.itemconfigure(self.word_id[word], text=word_str)
+                # self.canvas.itemconfigure(self.word_id[word], text=word_str)
                 if word_str == '':
                     self.words_off.append(index)
                 else:
@@ -570,13 +559,14 @@ class Keyboard:
             for pred in range(0, kconfig.N_pred):
                 word_str = self.words_li[key][pred]
                 self.word_pair.append((key, pred))
-                self.word_id.append(self.canvas.create_text(self.word_locs[word], text='', fill=kconfig.key_text_color,
-                                                            font=kconfig.word_font, anchor='w'))
+                # self.word_id.append(self.canvas.create_text(self.word_locs[word], text='', fill=kconfig.key_text_color,
+                #                                             font=kconfig.word_font, anchor='w'))
                 self.words_off.append(index)
                 index += 1
             self.words_on.append(index)
             self.word_pair.append((key,))
             index += 1
+        print(self.words_li)
 
     def gen_word_prior(self, is_undo):
         self.word_score_prior = []
@@ -615,6 +605,7 @@ class Keyboard:
                     self.word_score_prior.append(0)
 
     def init_typed(self):
+        return
         ## text box
         # frame
         self.type_frame = Tkinter.Frame(self.parent, width=self.w_canvas, height=self.height_bot)
@@ -634,8 +625,8 @@ class Keyboard:
         self.typed_text.tag_config("TYPED_UNDO", foreground=kconfig.undo_type_color)
 
     def draw_typed(self):
-        self.typed_text.delete("1.0", Tkinter.END)
-        self.typed_text.tag_delete("TYPED_UNDO");
+        # self.typed_text.delete("1.0", Tkinter.END)
+        #         # self.typed_text.tag_delete("TYPED_UNDO");
         if len(self.last_add_li) > 1:
             last_add = self.last_add_li[-1]
             if last_add > 0:  # typed something
@@ -643,19 +634,23 @@ class Keyboard:
                 undo_text = new_text
             elif last_add == -1:  # backspace
                 new_text = ''
+                print('Delete')
                 last_add = 0
                 undo_text = kconfig.back_char
         else:
             new_text = ''
             undo_text = new_text
             last_add = 0
-        self.typed_text.insert(Tkinter.END, self.typed[0:(len(self.typed) - last_add)])
-        self.typed_text.tag_add("TYPED_UNDO", Tkinter.END, Tkinter.END)
-        self.typed_text.insert(Tkinter.END, new_text, ("TYPED_UNDO"))
-        self.typed_text.insert(Tkinter.END, "|", ("TYPED_UNDO"))
-        self.typed_text.tag_config("TYPED_UNDO", foreground=kconfig.undo_type_color)
-        self.histo_canvas.itemconfigure(self.undo_id, text=undo_text)
-        self.typed_text.see(Tkinter.END)
+        print("DRAW TEXT: ", new_text)
+        previous_text = self.text_box.toPlainText()
+        self.text_box.setText("<span style='color:#000000;'>"+previous_text+"</span><span style='color:#00dd00;'>"+new_text+"</span>")
+        # self.typed_text.insert(Tkinter.END, self.typed[0:(len(self.typed) - last_add)])
+        # self.typed_text.tag_add("TYPED_UNDO", Tkinter.END, Tkinter.END)
+        # self.typed_text.insert(Tkinter.END, new_text, ("TYPED_UNDO"))
+        # self.typed_text.insert(Tkinter.END, "|", ("TYPED_UNDO"))
+        # self.typed_text.tag_config("TYPED_UNDO", foreground=kconfig.undo_type_color)
+        # self.histo_canvas.itemconfigure(self.undo_id, text=undo_text)
+        # self.typed_text.see(Tkinter.END)
 
     def on_timer(self):
         if not self.in_pause:
@@ -663,24 +658,27 @@ class Keyboard:
 
             self.bc.increment(start_t)
 
-            self.canvas.focus_set()  # so don't have to click on the canvas (e.g. if tooltip takes focus)
+            # self.canvas.focus_set()  # so don't have to click on the canvas (e.g. if tooltip takes focus)
 
-            self.last_anim_call = self.canvas.after(max(0, int((self.wait_s - (time.time() - start_t)) * 1000)),
-                                                    self.on_timer)
+            # self.last_anim_call = self.canvas.after(max(0, int((self.wait_s - (time.time() - start_t)) * 1000)),
+            #                                         self.on_timer)
 
-    def on_press(self, evt):
-        self.canvas.focus_set()
+    def on_press(self):
+        # self.canvas.focus_set()
+
         if not self.in_pause:
+            print("press")
             if config.is_write_data:
                 self.num_presses += 1
                 self.file_handle.write("press " + str(time.time()) + " " + str(self.num_presses) + "\n")
             self.bc.select(time.time())
 
     def highlight_winner(self, index):
-        self.canvas.itemconfigure(self.subkey_id[index], fill=kconfig.key_win_color)
-        self.canvas.update_idletasks()
-
-        self.canvas.after(kconfig.winner_time, self.end_winner, index)
+        print("HIGHLIGHT WINNER")
+        # self.canvas.itemconfigure(self.subkey_id[index], fill=kconfig.key_win_color)
+        # self.canvas.update_idletasks()
+        #
+        # self.canvas.after(kconfig.winner_time, self.end_winner, index)
 
     def end_winner(self, index):
         self.canvas.itemconfigure(self.subkey_id[index], fill=kconfig.key_color)
@@ -712,10 +710,10 @@ class Keyboard:
         is_equalize = False
 
         ## now pause (if desired)
-        if self.pause_set.get() == 1:
+        if self.pause_set == 1:
             self.in_pause = True
-            self.canvas.config(bg=kconfig.fill_win_color)
-            self.canvas.after(kconfig.pause_length, self.end_pause)
+            # self.canvas.config(bg=kconfig.fill_win_color)
+            self.end_pause()
 
         # highlight winner
         self.highlight_winner(index)
@@ -809,8 +807,8 @@ class Keyboard:
         self.gen_word_prior(is_undo)
 
         ## talk the string
-        if self.talk_set.get() == 1:
-            self.talk_winner(talk_string)
+        # if self.talk_set.get() == 1:
+        #     self.talk_winner(talk_string)
 
         # write output
         if config.is_write_data:
@@ -820,11 +818,12 @@ class Keyboard:
         return self.words_on, self.words_off, self.word_score_prior, is_undo, is_equalize
 
     def present_choice(self):
+        print("DRAW HISTOGRAM")
         self.draw_histogram()
-        self.canvas.update_idletasks()
+        # self.canvas.update_idletasks()
 
     def end_pause(self):
-        self.canvas.config(bg=config.bgcolor)
+        # self.canvas.config(bg=config.bgcolor)
         self.in_pause = False
         self.on_timer()
 
@@ -859,16 +858,20 @@ class Keyboard:
 
 def main():
     print "****************************\n****************************\n[Loading...]"
+    app = QtGui.QApplication(sys.argv)
+    screen_res = (app.desktop().screenGeometry().width(), app.desktop().screenGeometry().height())
+    ex = Keyboard(key_chars, screen_res)
+    sys.exit(app.exec_())
 
-    root = Tkinter.Tk()
-    root.title("Nomon Keyboard")
-
-    app = Keyboard(root)
-    # root.protocol('WM_DELETE_WINDOW', app.quit)
-    # root.bind('<Control-q>', app.quit)
-    # root.bind('<Control-Q>', app.quit)
-
-    root.mainloop()
+    # root = Tkinter.Tk()
+    # root.title("Nomon Keyboard")
+    #
+    # app = Keyboard(root)
+    # # root.protocol('WM_DELETE_WINDOW', app.quit)
+    # # root.bind('<Control-q>', app.quit)
+    # # root.bind('<Control-Q>', app.quit)
+    #
+    # root.mainloop()
 
 
 if __name__ == "__main__":
