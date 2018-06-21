@@ -22,6 +22,7 @@ import Tkinter
 import config
 import numpy
 import time
+import math
 import random
 
 
@@ -29,6 +30,7 @@ import random
 # number of "hours" and a given radius
 class HourLocs:
     def __init__(self, num_divs_time, radius):
+
         self.num_divs_time = num_divs_time  # amount of time filling and emptying
         self.radius = radius
 
@@ -213,6 +215,7 @@ class BroderClocks:
         ### process the inputs ###
         ## copy
         self.parent = parent
+        self.parent.bc_init = True
         self.centers = centers
         self.win_diffs = win_diffs
         self.radius = radius
@@ -356,10 +359,10 @@ class BroderClocks:
             # update time indices
             self.cur_hours[clock] = (self.cur_hours[clock] + 1) % self.num_divs_time
             # register in coordinates of hour hand
-            x = self.centers[clock][0]
-            y = self.centers[clock][1]
             v = self.hl.hour_locs[self.cur_hours[clock]]
-            # self.canvas.coords(self.hour_id[clock], x, y, x + v[0], y + v[1])
+            angle = math.atan2(v[1], v[0])
+            self.parent.clocks[clock].angle = angle + math.pi*0.25
+            self.parent.clocks[clock].repaint()
 
         # refresh the canvas
         # self.canvas.update_idletasks()
@@ -542,17 +545,21 @@ class BroderClocks:
             cwidth = config.circle_outline_width
         bound_score = top_score - self.win_diffs[self.sorted_inds[0]]
         for clock in self.clocks_on:
+
             if self.cscores[clock] > bound_score:
+                self.parent.clocks[clock].highlighted = True
                 pass
                 # self.canvas.itemconfigure(self.circle_id[clock], fill=config.circle_high_color, outline=outline_color,
                 #                           width=cwidth)
             else:
+                self.parent.clocks[clock].highlighted = False
                 pass
             #     self.canvas.itemconfigure(self.circle_id[clock], fill=config.circle_low_color, outline=outline_color,
             #                               width=cwidth)
             # self.canvas.itemconfigure(self.noon_id[clock], fill=config.noon_color, width=config.hand_width)
             # self.canvas.itemconfigure(self.hour_id[clock], fill=config.hour_color, width=config.hand_width)
             # turn off irrelevant faces
+            self.parent.clocks[clock].repaint()
         for clock in self.clocks_off:
             pass
             # self.canvas.itemconfigure(self.circle_id[clock], fill=config.circle_off_color,
@@ -563,10 +570,13 @@ class BroderClocks:
         # if(is_win):
         #    self.canvas.itemconfigure(self.circle_id[win_clock],outline=config.circle_win_color,width=config.circle_win_width)
         # register in coordinates of hour hand
-        # for clock in self.clocks_on:
-        #    x = self.centers[clock][0]
-        #    y = self.centers[clock][1]
-        #   v = self.hl.hour_locs[self.cur_hours[clock]]
-        #    self.canvas.coords(self.hour_id[clock],x,y,x+v[0],y+v[1])
+        for clock in self.clocks_on:
+            # x = self.centers[clock][0]
+            # y = self.centers[clock][1]
+            v = self.hl.hour_locs[self.cur_hours[clock]-1]
+            angle = math.atan2(v[1], v[0])
+            self.parent.clocks[clock].angle = angle + math.pi*0.25
+            self.parent.clocks[clock].repaint()
+
         # update the canvas
         # self.canvas.update_idletasks()

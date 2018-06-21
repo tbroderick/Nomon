@@ -116,9 +116,10 @@ class Keyboard(GUI):
         # self.gen_canvas()
         self.gen_scale()
         # self.gen_button_frame()
-        self.gen_talk_button()
-        self.gen_learn_button()
-        self.gen_pause_button()
+        # self.toggle_pause_button()
+        self.pause_set = False
+        # self.gen_learn_button()
+        # self.toggle_pause_button()
         ## set up "typed" text
         self.typed = ""
         self.btyped = ""
@@ -146,6 +147,10 @@ class Keyboard(GUI):
         self.init_words()
         # write typed text
         self.init_typed()
+
+        self.bc_init = False
+        self.initUI()
+
         ## set up broderclocks
         self.bc = broderclocks.BroderClocks(self, self.clock_centers, self.win_diffs, kconfig.clock_rad,
                                             self.file_handle, self.words_on, self.words_off, kconfig.key_color,
@@ -162,7 +167,7 @@ class Keyboard(GUI):
         self.raise_words()
 
         ### animate ###
-        # self.last_anim_call = self.canvas.after(0, self.on_timer)
+        self.on_timer()
 
         # which ones to try predicting on
         try_pred = []
@@ -170,7 +175,6 @@ class Keyboard(GUI):
             for col in range(0, self.N_keys_row[row]):
                 try_pred = kconfig.key_chars[row][col].isalpha()
 
-        self.initUI()
 
     def find_events(self):
         ## check everything in the queue of pygame events
@@ -328,64 +332,17 @@ class Keyboard(GUI):
         # self.canvas.bind("<Left>", self.dec_speed)
         # self.canvas.bind("<Right>", self.inc_speed)
 
-    def gen_button_frame(self):
-        button_height = self.key_height
+    def toggle_pause_button(self, value):
+        self.pause_set = value
+        self.sldLabel.setFocus()
 
-        # frame
-        self.but_frame = Tkinter.Frame(self.parent, width=kconfig.word_w, height=button_height)
-        self.but_frame.grid(row=0, column=1)
+    def toggle_talk_button(self, value):
+        self.talk_set = value
+        self.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
 
-    def gen_pause_button(self):
-        self.pause_set = True
-        # self.pause_set = Tkinter.IntVar()
-        # self.pause_set.set(1)
-        #
-        #
-        # # button
-        # self.pause_button = Tkinter.Checkbutton(self.but_frame, text="Pause", variable=self.pause_set,
-        #                                         font=kconfig.word_font)
-        # self.pause_button.select()
-        # self.pause_button.pack(side=Tkinter.LEFT)
-        #
-        # # tool tip
-        # self.pause_tooltip = ToolTip(self.pause_button, follow_mouse=1, font=kconfig.word_font,
-        #                              text="If this button is checked, there will be a brief pause and minty screen flash after each selection you make.")
-
-    def gen_talk_button(self):
-        self.talk_set = False
-        # self.talk_set = Tkinter.IntVar()
-        # self.talk_set.set(1)
-        #
-        #
-        # # button
-        # self.talk_button = Tkinter.Checkbutton(self.but_frame, text="Talk", variable=self.talk_set,
-        #                                        font=kconfig.word_font)
-        # self.talk_button.pack(side=Tkinter.LEFT)
-        #
-        # # tool tip
-        # self.talk_tooltip = ToolTip(self.talk_button, follow_mouse=1, font=kconfig.word_font,
-        #                             text="If this button is checked and if you have festival installed and working on your system, there will be spoken feedback after each selection you make.")
-
-    def gen_learn_button(self):
-        self.learn_set = True
-        # self.learn_set = Tkinter.IntVar()
-        # self.learn_set.set(1)
-        #
-        # # button
-        # self.learn_button = Tkinter.Checkbutton(self.but_frame, text="Learn", variable=self.learn_set,
-        #                                         font=kconfig.word_font, command=self.checked_learn)
-        # self.learn_button.select()
-        # self.learn_button.pack(side=Tkinter.LEFT)
-        #
-        # # tool tip
-        # self.learn_tooltip = ToolTip(self.learn_button, follow_mouse=1, font=kconfig.word_font,
-        #                              text="If this button is checked, the program will adapt to how you click around noon (illustrated in the histogram below).")
-
-    def checked_learn(self):
-        if self.learn_set == 1:
-            config.is_learning = True
-        else:
-            config.is_learning = False
+    def toggle_learn_button(self, value):
+        config.is_learning = value
+        self.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
 
     def change_speed(self, index):
         # speed (as shown on scale)
@@ -402,7 +359,6 @@ class Keyboard(GUI):
 
         # update the histogram
         self.draw_histogram()
-        self.canvas.update_idletasks()
 
     def set_sizes(self, prop_height, prop_width):
         ratioH = prop_height / (1.0 * kconfig.base_window_height)
@@ -476,7 +432,7 @@ class Keyboard(GUI):
         self.histogram.repaint()
 
     def init_words(self):
-        (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq) = self.dt.get_words(
+        (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq, self.prefix) = self.dt.get_words(
             self.context, self.keys_li)
         self.word_id = []
         self.word_pair = []
@@ -530,7 +486,7 @@ class Keyboard(GUI):
             self.canvas.tag_raise(wid)
 
     def draw_words(self):
-        (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq) = self.dt.get_words(
+        (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq, self.prefix) = self.dt.get_words(
             self.context, self.keys_li)
 
         word = 0
@@ -567,6 +523,15 @@ class Keyboard(GUI):
             self.word_pair.append((key,))
             index += 1
         print(self.words_li)
+        # Send words to GUI
+        words = []
+        for letter_group in self.words_li:
+            for word in letter_group:
+                if word != '':
+                    words += [word]
+
+        self.word_list = words
+        self.remove_clocks()
 
     def gen_word_prior(self, is_undo):
         self.word_score_prior = []
@@ -653,15 +618,15 @@ class Keyboard(GUI):
         # self.typed_text.see(Tkinter.END)
 
     def on_timer(self):
-        if not self.in_pause:
-            start_t = time.time()
+        if self.bc_init:
+            if not self.in_pause:
+                start_t = time.time()
+                self.bc.increment(start_t)
 
-            self.bc.increment(start_t)
+                # self.canvas.focus_set()  # so don't have to click on the canvas (e.g. if tooltip takes focus)
 
-            # self.canvas.focus_set()  # so don't have to click on the canvas (e.g. if tooltip takes focus)
-
-            # self.last_anim_call = self.canvas.after(max(0, int((self.wait_s - (time.time() - start_t)) * 1000)),
-            #                                         self.on_timer)
+                # self.last_anim_call = self.canvas.after(max(0, int((self.wait_s - (time.time() - start_t)) * 1000)),
+                #                                         self.on_timer)
 
     def on_press(self):
         # self.canvas.focus_set()
@@ -674,11 +639,25 @@ class Keyboard(GUI):
             self.bc.select(time.time())
 
     def highlight_winner(self, index):
-        print("HIGHLIGHT WINNER")
+        print("HIGHLIGHT WINNER", self.clock_index_to_text(index))
+        if self.clocks[index] != '':
+            self.clocks[index].selected = True
+            self.clocks[index].repaint()
+            time.sleep(2)
+
         # self.canvas.itemconfigure(self.subkey_id[index], fill=kconfig.key_win_color)
         # self.canvas.update_idletasks()
         #
         # self.canvas.after(kconfig.winner_time, self.end_winner, index)
+
+    def clock_index_to_text(self, index):
+        letter_num = int(index/4)
+        letter_rem = index-letter_num*4
+        if index < 26*4:
+            if letter_rem < 3:
+                return self.words_li[letter_num][letter_rem]
+            return string.lowercase[letter_num]
+
 
     def end_winner(self, index):
         self.canvas.itemconfigure(self.subkey_id[index], fill=kconfig.key_color)

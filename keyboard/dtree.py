@@ -76,6 +76,7 @@ class dtree:
             cur_dict = value[0]
 
     def get_words(self, prefix):
+
         cur_dict = self.head
         tot_freq = self.sum_all_freq
         key_freq = self.sum_all_freq
@@ -178,7 +179,7 @@ class DTree:
             top_word_li_li.append(top_word_li)
             top_freq_li_li.append(top_freq_li)
 
-        return (top_word_li_li, top_freq_li_li, loc_freq_li, top_freq, tot_freq)
+        return (top_word_li_li, top_freq_li_li, loc_freq_li, top_freq, tot_freq, prefix)
 
 
 def main():
