@@ -1,6 +1,7 @@
 import sys
 import math
 import random
+import config
 from PyQt4 import QtGui, QtCore
 
 space_char = '_'
@@ -31,22 +32,23 @@ bars = [4.1731209137640166e-11, 1.5674042704727563e-10, 5.702330790217924e-10, 2
 
 class ClockWidgit(QtGui.QWidget):
 
-    def __init__(self, text, start_angle, parent, char_clock = True, highlighted = False):
+    def __init__(self, text, parent, char_clock = True):
         super(ClockWidgit, self).__init__()
 
         self.text = text
-        self.start_angle = start_angle
+        self.start_angle = 0
         self.parent = parent
         self.char_clock = char_clock
-        self.highlighted = highlighted
+        self.highlighted = False
+        self.selected = False
         self.initUI()
 
 
     def initUI(self):
 
-        self.size_factor = min(self.parent.screen_res)/1080.
+        self.size_factor = self.parent.size_factor
         self.scaling_factor = round((len(self.text) + 2) / 1.7, 6)
-        minSize = round(80*self.size_factor)
+        minSize = round(90*self.size_factor)
         maxSize = round(120*self.size_factor)
         if self.char_clock == False:
             minSize = round(40*self.size_factor)
@@ -88,6 +90,8 @@ class ClockWidgit(QtGui.QWidget):
         brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
         if self.highlighted:
             pen = QtGui.QPen(QtGui.QColor(0, 0, 255))
+        if self.selected:
+            pen = QtGui.QPen(QtGui.QColor(0, 255, 0))
         qp.setPen(pen)
         qp.setBrush(brush)
 
@@ -97,6 +101,8 @@ class ClockWidgit(QtGui.QWidget):
         pen = QtGui.QPen(QtGui.QColor(0, 0, 0), clock_rad * clock_thickness)
         if self.highlighted:
             pen = QtGui.QPen(QtGui.QColor(0, 0, 255), clock_rad * clock_thickness)
+        if self.selected:
+            pen = QtGui.QPen(QtGui.QColor(0, 255, 0), clock_rad * clock_thickness)
         pen.setCapStyle(QtCore.Qt.RoundCap)
         qp.setPen(pen)
 
@@ -215,17 +221,19 @@ class GUI(QtGui.QWidget):
 
     def __init__(self, layout, screen_res):
         super(GUI, self).__init__()
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         self.bars = bars
         self.layout = layout
         self.screen_res = screen_res
+        self.size_factor = min(self.screen_res) / 1080.
 
 
     def initUI(self):
 
         # generate slider for clock rotation speed
         self.sld = QtGui.QSlider(QtCore.Qt.Horizontal, self)
-        self.sld.setRange(1, 24)
+        self.sld.setRange(config.scale_min, config.scale_max)
         self.sld.setValue(5)
         self.sldText = QtGui.QLabel('Clock Rotation Speed:')
         self.sldText.setFont(QtGui.QFont('Monospace', 12))
@@ -244,22 +252,7 @@ class GUI(QtGui.QWidget):
         self.cb_pause.setFont(QtGui.QFont('Monospace', 12))
 
         # generate clocks from layout
-        self.clock_rows=[]
-        self.clocks=[]
-        for row in self.layout:
-            self.clocks = []
-            for text in row:
-                clock = ClockWidgit(text, random.random()*math.pi*2, self, highlighted=bool(round(random.random()+0.25)))
-                self.clocks += [clock]
-                words = self.getWords(clock.text.lower())
-                if len(words) > 0:
-                    wordClocks = []
-                    for word in words:
-                        wordClocks += [ClockWidgit(word, random.random()*math.pi*2, self, char_clock=False, highlighted=bool(round(random.random()+0.25)) )]
-                    self.clocks += [wordClocks]
-
-
-            self.clock_rows += [self.clocks]
+        self.generate_clocks()
 
         self.text_box = QtGui.QTextEdit("",self)
         self.text_box.setFont(QtGui.QFont('Monospace', 25))
@@ -269,62 +262,41 @@ class GUI(QtGui.QWidget):
         self.histogram = HistogramWidget(self)
 
         self.sld.valueChanged[int].connect(self.changeValue)
-
-        # layout rows of keyboard
-        hboxes = []
-
-        for row in self.clock_rows:
-            hbox = QtGui.QHBoxLayout()
-            i = 0
-            for clock in row:
-
-                if isinstance(clock, list):
-                    if len(clock) > 1:
-                        wordClock_vbox = QtGui.QVBoxLayout()
-                        for wordClock in clock:
-                            wordClock_vbox.addWidget(wordClock)  # multiply by LCM of [1,7] to make integers
-                        hbox.addLayout(wordClock_vbox, 1)
-
-                    else:
-                        hbox.addWidget(clock[0], clock[0].scaling_factor*420)
-
-                else:
-                    hbox.addStretch(1)
-                    if i != 0:
-                        hbox.addWidget(VerticalSeparator())
-                    hbox.addWidget(clock, clock.scaling_factor*420)  # multiply by LCM of [1,7] to make integers
-                i += 1
-            hbox.addStretch(1)
-            hboxes += [hbox]
-
+        self.cb_learn.toggled[bool].connect(self.toggle_learn_button)
+        self.cb_pause.toggled[bool].connect(self.toggle_pause_button)
+        self.cb_talk.toggled[bool].connect(self.toggle_talk_button)
 
         # layout slider and checkboxes
         top_hbox = QtGui.QHBoxLayout()
-        top_hbox.addWidget(self.sldText)
-        top_hbox.addWidget(self.sld,4)
-        top_hbox.addWidget(self.sldLabel)
-        top_hbox.addStretch(1)
-        top_hbox.addWidget(self.cb_talk)
-        top_hbox.addWidget(self.cb_learn)
-        top_hbox.addWidget(self.cb_pause)
+        top_hbox.addWidget(self.sldText, 1)
+        top_hbox.addWidget(self.sld, 16)
+        top_hbox.addWidget(self.sldLabel, 1)
+        top_hbox.addStretch(4)
+        top_hbox.addWidget(self.cb_talk, 1)
+        top_hbox.addWidget(self.cb_learn, 1)
+        top_hbox.addWidget(self.cb_pause, 1)
         top_hbox.addStretch(1)
 
         # stack layouts vertically
-        vbox = QtGui.QVBoxLayout()
-        vbox.setSpacing(0)
-        vbox.addLayout(top_hbox)
-        vbox.addWidget(HorizontalSeparator())
-        for hbox in hboxes:
-            vbox.addLayout(hbox)
-            vbox.addWidget(HorizontalSeparator())
+        self.vbox = QtGui.QVBoxLayout()
+        self.vbox.setSpacing(0)
+        self.vbox.addLayout(top_hbox)
+        self.vbox.addWidget(HorizontalSeparator())
 
         splitter1 = QtGui.QSplitter(QtCore.Qt.Horizontal)
         splitter1.addWidget(self.text_box)
         splitter1.addWidget(self.histogram)
         splitter1.setSizes([1, 1])
+        self.histogram.setMaximumHeight(120*self.size_factor)
+        self.text_box.setMaximumHeight(120*self.size_factor)
 
-        vbox.addWidget(splitter1)
-        self.setLayout(vbox)
+        self.vbox.addWidget(splitter1)
+        self.layoutClocks(first_time=True)
+        self.setLayout(self.vbox)
+
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.on_timer)
+        self.timer.start(50)
 
         # Tool Tips
         QtGui.QToolTip.setFont(QtGui.QFont('Monospace', 12))
@@ -350,23 +322,100 @@ class GUI(QtGui.QWidget):
 
         self.setWindowTitle('Nomon Keyboard')
         self.setWindowIcon(QtGui.QIcon('nomon.ico'))
+        self.move(100, 50)
         self.show()
 
     def changeValue(self, value):
-        self.timer.start((1-value/24.)*25+5, self)
         self.sldLabel.setText(str(self.sld.value()))
+        self.change_speed(value)
 
     def getWords(self, char):
         i = 0
         output = []
         for word in self.word_list:
-            if word[0] == char:
+            index = len(self.prefix)
+            if word[index] == char:
                 i += 1
                 if i > wordDisplayCount:
                     break
                 output += [word]
 
         return output
+
+    def generate_clocks(self):
+        self.clocks = []
+        for row in self.layout:
+            for text in row:
+                clock = ClockWidgit(text, self)
+                words = self.getWords(clock.text.lower())
+                wordClocks = ['','','']
+                i=0
+                for word in words:
+                    wordClocks[i] = ClockWidgit(word, self, char_clock=False)
+                    i += 1
+                self.clocks += wordClocks
+                self.clocks += [clock]
+
+    def layoutClocks(self, first_time=False):
+        # layout rows of keyboard
+        self.hboxes = []
+        layout_pos = 0
+        layout_row = 0
+        hbox = QtGui.QHBoxLayout()
+        for clock_index in range(len(self.clocks)):
+            if clock_index % 4 == 3:  # check if main character clock
+                layout_pos += 1
+                if layout_pos != 1:
+                    hbox.addWidget(VerticalSeparator())
+                hbox.addWidget(self.clocks[clock_index], self.clocks[clock_index].scaling_factor * 480)
+                if self.clocks[clock_index-3] != '':  # check if char clock has word clocks
+                    clock_index-=4
+                    vbox = QtGui.QVBoxLayout()
+                    for i in range(3):
+                        clock_index += 1
+                        if self.clocks[clock_index] != '':
+                            vbox.addWidget(self.clocks[clock_index],self.clocks[clock_index].scaling_factor * 360)
+                    hbox.addLayout(vbox, 480)
+                hbox.addStretch(1)
+
+            if layout_pos == len(self.layout[layout_row]):
+                self.hboxes += [hbox]
+                hbox = QtGui.QHBoxLayout()
+                layout_pos = 0
+                if layout_row < len(self.layout) - 1:
+                    layout_row += 1
+
+
+
+        if first_time == True:
+            self.clock_vboxes = []
+            self.clock_vboxes += [QtGui.QVBoxLayout()]
+            for hbox in self.hboxes:
+                self.clock_vboxes[-1].addLayout(hbox, 2)
+                self.clock_vboxes[-1].addWidget(HorizontalSeparator())
+            self.vbox.insertLayout(2, self.clock_vboxes[-1])
+
+    def remove_clocks(self):
+
+        self.generate_clocks()
+        self.layoutClocks()
+        self.clock_vboxes = [QtGui.QVBoxLayout()]+self.clock_vboxes
+        for hbox in self.hboxes:
+            self.clock_vboxes[0].addLayout(hbox, 2)
+            self.clock_vboxes[0].addWidget(HorizontalSeparator())
+        self.vbox.insertLayout(2, self.clock_vboxes[0])
+        self.clearLayout(self.clock_vboxes[-1])
+        self.clock_vboxes = [self.clock_vboxes[0]]
+
+
+
+    def clearLayout(self, layout):
+        while layout.count():
+            child = layout.takeAt(0)
+            if child.widget() is not None:
+                child.widget().deleteLater()
+            elif child.layout() is not None:
+                self.clearLayout(child.layout())
 
 
 
