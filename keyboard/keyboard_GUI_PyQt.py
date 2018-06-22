@@ -2,32 +2,8 @@ import sys
 import math
 import random
 import config
+import kconfig
 from PyQt4 import QtGui, QtCore
-
-space_char = '_'
-mybad_char = 'Undo'
-break_char = '.'
-back_char = 'Delete'
-# alphabetic
-# always put alpha-numeric keys first (self.N_alpha_keys)
-key_chars = [	['A','B','C','D','E'],
-		        ['F','G','H','I','J'],
-		        ['K','L','M','N','O'],
-		        ['P','Q','R','S','T'],
-		        ['U','V','W','X','Y'],
-		['Z',space_char,break_char,back_char,mybad_char]
-		    ]
-
-# key_chars = [	['q','w','e','r','t','y','u','i','o','p'],
-# 		['a','s','d','f','g','h','j','k','l','\''],
-# 		['z','x','c','v','b','n','m',',','.','?'],
-# 		[space_char, mybad_char]
-# 		]
-
-wordDisplayCount = 3
-
-# get gaussian distribution
-bars = [4.1731209137640166e-11, 1.5674042704727563e-10, 5.702330790217924e-10, 2.009440319647259e-09, 6.858815826469396e-09, 2.2676420114286876e-08, 7.261915168381362e-08, 2.2525745454100865e-07, 6.767971122297686e-07, 1.969650386894775e-06, 5.552276918629734e-06, 1.5160181992883207e-05, 4.009489083361327e-05, 0.00010271289727370694, 0.0002548662025258791, 0.0006125631118014535, 0.001426069713163289, 0.0032157479134091965, 0.007023839199846974, 0.01485998764716699, 0.03045184848219981, 0.0604449741201335, 0.11621389459417346, 0.21642490682430432, 0.3903981461621635, 0.6821181069890906, 1.1544170528966142, 1.8924186208565767, 3.0048515131831763, 4.621470051256386, 6.884756647011963, 9.934553867306171, 13.88543429703574, 18.798443462933843, 24.65106218552027, 31.31127178097519, 38.52273404437159, 45.90762451643071, 52.99121328326851, 59.2480729571828, 64.16466330246335, 67.30834836361127, 68.39010521167417, 67.30834836361129, 64.16466330246332, 59.2480729571828, 52.99121328326855, 45.90762451643069, 38.52273404437159, 31.311271780975158, 24.65106218552027, 18.79844346293387, 13.885434297035717, 9.934553867306171, 6.884756647011954, 4.621470051256386, 3.0048515131831834, 1.8924186208565716, 1.1544170528966142, 0.6821181069890888, 0.3903981461621635, 0.21642490682430507, 0.11621389459417325, 0.06044497412013371, 0.03045184848219981, 0.014859987647167044, 0.007023839199847036, 0.0032157479134091965, 0.0014260697131632965, 0.0006125631118014535, 0.00025486620252588053, 0.00010271289727370786, 4.009489083361327e-05, 1.5160181992883289e-05, 5.552276918629734e-06, 1.969650386894789e-06, 6.767971122297759e-07, 2.2525745454100865e-07, 7.261915168381387e-08, 2.2676420114286876e-08]
 
 
 class ClockWidgit(QtGui.QWidget):
@@ -91,7 +67,7 @@ class ClockWidgit(QtGui.QWidget):
         if self.highlighted:
             pen = QtGui.QPen(QtGui.QColor(0, 0, 255))
         if self.selected:
-            pen = QtGui.QPen(QtGui.QColor(0, 255, 0))
+            pen = QtGui.QPen(QtGui.QColor(20, 229, 20))
         qp.setPen(pen)
         qp.setBrush(brush)
 
@@ -102,7 +78,7 @@ class ClockWidgit(QtGui.QWidget):
         if self.highlighted:
             pen = QtGui.QPen(QtGui.QColor(0, 0, 255), clock_rad * clock_thickness)
         if self.selected:
-            pen = QtGui.QPen(QtGui.QColor(0, 255, 0), clock_rad * clock_thickness)
+            pen = QtGui.QPen(QtGui.QColor(	20, 229, 20), clock_rad * clock_thickness)
         pen.setCapStyle(QtCore.Qt.RoundCap)
         qp.setPen(pen)
 
@@ -223,7 +199,6 @@ class GUI(QtGui.QWidget):
         super(GUI, self).__init__()
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
-        self.bars = bars
         self.layout = layout
         self.screen_res = screen_res
         self.size_factor = min(self.screen_res) / 1080.
@@ -292,11 +267,21 @@ class GUI(QtGui.QWidget):
 
         self.vbox.addWidget(splitter1)
         self.layoutClocks(first_time=True)
+        self.setStyleSheet("background-color:##f2f2f2;")
         self.setLayout(self.vbox)
 
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.on_timer)
-        self.timer.start(50)
+        self.frame_timer = QtCore.QTimer()
+        self.frame_timer.timeout.connect(self.on_timer)
+        self.frame_timer.start(config.ideal_wait_s*1000)
+
+        self.pause_timer = QtCore.QTimer()
+        self.pause_timer.setSingleShot(True)
+        self.pause_timer.timeout.connect(self.end_pause)
+
+        self.highlight_timer = QtCore.QTimer()
+        self.highlight_timer.setSingleShot(True)
+        self.highlight_timer.timeout.connect(self.end_highlight)
+
 
         # Tool Tips
         QtGui.QToolTip.setFont(QtGui.QFont('Monospace', 12))
@@ -336,7 +321,7 @@ class GUI(QtGui.QWidget):
             index = len(self.prefix)
             if word[index] == char:
                 i += 1
-                if i > wordDisplayCount:
+                if i > 3:
                     break
                 output += [word]
 
@@ -376,7 +361,16 @@ class GUI(QtGui.QWidget):
                         if self.clocks[clock_index] != '':
                             vbox.addWidget(self.clocks[clock_index],self.clocks[clock_index].scaling_factor * 360)
                     hbox.addLayout(vbox, 480)
+
+                if clock_index == 119:  # check if UNDO clock
+                    self.undo_label = QtGui.QLabel(self.previous_undo_text)
+                    undo_font = QtGui.QFont('Monospace', 25)
+                    self.undo_label.setFont(undo_font)
+
+                    hbox.addWidget(self.undo_label)
+
                 hbox.addStretch(1)
+
 
             if layout_pos == len(self.layout[layout_row]):
                 self.hboxes += [hbox]
@@ -406,6 +400,7 @@ class GUI(QtGui.QWidget):
         self.vbox.insertLayout(2, self.clock_vboxes[0])
         self.clearLayout(self.clock_vboxes[-1])
         self.clock_vboxes = [self.clock_vboxes[0]]
+        self.highlight_winner(self.previous_winner)
 
 
 
