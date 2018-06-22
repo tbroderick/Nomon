@@ -117,7 +117,7 @@ class Keyboard(GUI):
         self.gen_scale()
         # self.gen_button_frame()
         # self.toggle_pause_button()
-        self.pause_set = False
+        self.pause_set = True
         # self.gen_learn_button()
         # self.toggle_pause_button()
         ## set up "typed" text
@@ -145,10 +145,10 @@ class Keyboard(GUI):
         # self.init_keys()
         # write words
         self.init_words()
-        # write typed text
-        self.init_typed()
 
         self.bc_init = False
+        self.bars = kconfig.bars
+        self.previous_undo_text = ''
         self.initUI()
 
         ## set up broderclocks
@@ -522,7 +522,6 @@ class Keyboard(GUI):
             self.words_on.append(index)
             self.word_pair.append((key,))
             index += 1
-        print(self.words_li)
         # Send words to GUI
         words = []
         for letter_group in self.words_li:
@@ -569,27 +568,9 @@ class Keyboard(GUI):
                 else:
                     self.word_score_prior.append(0)
 
-    def init_typed(self):
-        return
-        ## text box
-        # frame
-        self.type_frame = Tkinter.Frame(self.parent, width=self.w_canvas, height=self.height_bot)
-        self.type_frame.grid(row=2, column=0)
-        # scrollbar
-        scrollbar = Tkinter.Scrollbar(self.type_frame)
-        scrollbar.pack(side=Tkinter.RIGHT, fill=Tkinter.Y)
-        # text
-        self.typed_text = Tkinter.Text(self.type_frame, width=self.w_canvas / (2 * kconfig.type_pt),
-                                       height=self.height_bot / (2 * kconfig.type_pt), font=kconfig.type_font,
-                                       fg=kconfig.type_color, bg=config.bgcolor, wrap=Tkinter.CHAR, takefocus=0,
-                                       yscrollcommand=scrollbar.set)
-        scrollbar.config(command=self.typed_text.yview)
-        self.typed_text.pack()
-        self.typed_text.insert(Tkinter.END, self.typed + "|")
-        self.typed_text.tag_add("TYPED_UNDO", "1.0", "1.1")
-        self.typed_text.tag_config("TYPED_UNDO", foreground=kconfig.undo_type_color)
-
     def draw_typed(self):
+        delete = False
+        undo = False
         # self.typed_text.delete("1.0", Tkinter.END)
         #         # self.typed_text.tag_delete("TYPED_UNDO");
         if len(self.last_add_li) > 1:
@@ -599,7 +580,8 @@ class Keyboard(GUI):
                 undo_text = new_text
             elif last_add == -1:  # backspace
                 new_text = ''
-                print('Delete')
+                delete = True
+                print("DELETE")
                 last_add = 0
                 undo_text = kconfig.back_char
         else:
@@ -607,15 +589,28 @@ class Keyboard(GUI):
             undo_text = new_text
             last_add = 0
         print("DRAW TEXT: ", new_text)
+
+        if self.previous_winner == 119:
+            undo = True
+
         previous_text = self.text_box.toPlainText()
-        self.text_box.setText("<span style='color:#000000;'>"+previous_text+"</span><span style='color:#00dd00;'>"+new_text+"</span>")
-        # self.typed_text.insert(Tkinter.END, self.typed[0:(len(self.typed) - last_add)])
-        # self.typed_text.tag_add("TYPED_UNDO", Tkinter.END, Tkinter.END)
-        # self.typed_text.insert(Tkinter.END, new_text, ("TYPED_UNDO"))
-        # self.typed_text.insert(Tkinter.END, "|", ("TYPED_UNDO"))
-        # self.typed_text.tag_config("TYPED_UNDO", foreground=kconfig.undo_type_color)
-        # self.histo_canvas.itemconfigure(self.undo_id, text=undo_text)
-        # self.typed_text.see(Tkinter.END)
+        if delete:
+            self.text_box.setText("<span style='color:#000000;'>" + previous_text[:-1] + "</span>")
+        elif undo:
+            if self.previous_undo_text == kconfig.back_char:
+                self.text_box.setText("<span style='color:#000000;'>" + previous_text + "</span><span style='color:#00dd00;'>" + undo_text[-1] + "</span>")
+            else:
+                self.text_box.setText("<span style='color:#000000;'>" + previous_text[:-(len(self.previous_undo_text))] + "</span>")
+        else:
+            self.text_box.setText("<span style='color:#000000;'>"+previous_text+"</span><span style='color:#00dd00;'>"+new_text+"</span>")
+        self.previous_undo_text = undo_text
+        self.undo_label.setText("<font color='green'>"+undo_text+"</font>")
+
+    def on_pause(self):
+        print("Pausing")
+        self.pause_timer.start(kconfig.pause_length)
+        self.in_pause = True
+        self.setStyleSheet("background-color:#ddf6dd;")
 
     def on_timer(self):
         if self.bc_init:
@@ -623,16 +618,10 @@ class Keyboard(GUI):
                 start_t = time.time()
                 self.bc.increment(start_t)
 
-                # self.canvas.focus_set()  # so don't have to click on the canvas (e.g. if tooltip takes focus)
-
-                # self.last_anim_call = self.canvas.after(max(0, int((self.wait_s - (time.time() - start_t)) * 1000)),
-                #                                         self.on_timer)
-
     def on_press(self):
         # self.canvas.focus_set()
 
         if not self.in_pause:
-            print("press")
             if config.is_write_data:
                 self.num_presses += 1
                 self.file_handle.write("press " + str(time.time()) + " " + str(self.num_presses) + "\n")
@@ -643,12 +632,18 @@ class Keyboard(GUI):
         if self.clocks[index] != '':
             self.clocks[index].selected = True
             self.clocks[index].repaint()
-            time.sleep(2)
+            self.highlight_timer.start(2000)
 
         # self.canvas.itemconfigure(self.subkey_id[index], fill=kconfig.key_win_color)
         # self.canvas.update_idletasks()
         #
         # self.canvas.after(kconfig.winner_time, self.end_winner, index)
+    def end_highlight(self):
+        index = self.previous_winner
+        if self.clocks[index] != '':
+            self.clocks[index].selected = False
+            self.clocks[index].repaint()
+            self.highlight_timer.stop()
 
     def clock_index_to_text(self, index):
         letter_num = int(index/4)
@@ -690,11 +685,11 @@ class Keyboard(GUI):
 
         ## now pause (if desired)
         if self.pause_set == 1:
-            self.in_pause = True
-            # self.canvas.config(bg=kconfig.fill_win_color)
-            self.end_pause()
+            self.on_pause()
+            self.pause_timer.start(kconfig.pause_length)
 
         # highlight winner
+        self.previous_winner = index
         self.highlight_winner(index)
 
         # initialize talk string
@@ -797,13 +792,14 @@ class Keyboard(GUI):
         return self.words_on, self.words_off, self.word_score_prior, is_undo, is_equalize
 
     def present_choice(self):
-        print("DRAW HISTOGRAM")
         self.draw_histogram()
         # self.canvas.update_idletasks()
 
     def end_pause(self):
         # self.canvas.config(bg=config.bgcolor)
+        self.pause_timer.stop()
         self.in_pause = False
+        self.setStyleSheet("background-color:##f2f2f2;")
         self.on_timer()
 
     def quit(self, event=None):
@@ -839,18 +835,8 @@ def main():
     print "****************************\n****************************\n[Loading...]"
     app = QtGui.QApplication(sys.argv)
     screen_res = (app.desktop().screenGeometry().width(), app.desktop().screenGeometry().height())
-    ex = Keyboard(key_chars, screen_res)
+    ex = Keyboard(kconfig.key_chars, screen_res)
     sys.exit(app.exec_())
-
-    # root = Tkinter.Tk()
-    # root.title("Nomon Keyboard")
-    #
-    # app = Keyboard(root)
-    # # root.protocol('WM_DELETE_WINDOW', app.quit)
-    # # root.bind('<Control-q>', app.quit)
-    # # root.bind('<Control-Q>', app.quit)
-    #
-    # root.mainloop()
 
 
 if __name__ == "__main__":
