@@ -1,6 +1,7 @@
 import sys
 import math
 import random
+import string
 import config
 import kconfig
 from PyQt4 import QtGui, QtCore
@@ -24,13 +25,12 @@ class ClockWidgit(QtGui.QWidget):
 
         self.size_factor = self.parent.size_factor
         self.scaling_factor = round((len(self.text) + 2) / 1.7, 6)
-        minSize = round(90*self.size_factor)
-        maxSize = round(120*self.size_factor)
-        if self.char_clock == False:
-            minSize = round(40*self.size_factor)
-            maxSize = round(50*self.size_factor)
-        self.setMaximumSize(maxSize * self.scaling_factor, maxSize)
-        self.setMinimumSize(minSize * self.scaling_factor, minSize)
+        self.minSize = round(35*self.size_factor)
+        self.maxSize = round(50*self.size_factor)
+        # self.setMaximumSize(self.maxSize, self.maxSize)\
+        self.setMinimumSize(self.minSize * self.scaling_factor, self.minSize)
+        self.setMaximumHeight(self.maxSize)
+        self.setBaseSize(self.minSize * self.scaling_factor, self.minSize)
 
         self.angle = 0
 
@@ -46,17 +46,45 @@ class ClockWidgit(QtGui.QWidget):
 
     def drawClock(self, e, qp):
 
-        def hand_from_angle(angle, radius):
-            angle -= math.pi/2  # reference angle from noon
+        def clock_color(color_factor):
+            if self.selected:
+                pen.setColor(QtGui.QColor(255 * color_factor, 255, 255 * color_factor))
+                qp.setPen(pen)
+            elif self.highlighted:
+                pen.setColor(QtGui.QColor(255*color_factor,255*color_factor,255))
+                qp.setPen(pen)
+            else:
+                pen.setColor(QtGui.QColor(255 * (color_factor), 255 * (color_factor), 255 * (color_factor)))
+                qp.setPen(pen)
 
+        def hour_hand_from_angle(angle, radius):
+            angle -= math.pi/2  # reference angle from noon
             far_point = center+QtCore.QPointF(math.cos(angle)*radius, math.sin(angle)*radius)
             qp.drawLine(center, far_point)
+
+        def hand_from_angle(angle, radius):
+            angle -= math.pi/2  # reference angle from noon
+            for inc_angle in range(int(math.pi*7)+1):
+                color_factor = min(float(inc_angle)/float(math.pi*7), 1)
+                clock_color(color_factor)
+                far_point = center+QtCore.QPointF(math.cos(angle+(1-inc_angle)/7.)*radius, math.sin(angle+(1-inc_angle)/7.)*radius)
+                qp.drawLine(center, far_point)
+            far_point = center + QtCore.QPointF(math.cos(angle) * radius, math.sin(angle) * radius)
+
+            if self.selected:
+                pen.setColor(QtGui.QColor(20, 245, 20))
+
+            elif self.highlighted:
+                pen.setColor(QtGui.QColor(0, 0, 255))
+            else:
+                pen.setColor(QtGui.QColor(0, 0, 0))
+            qp.setPen(pen)
 
         # calculate size of clock from available space
         size = self.size()
         w = size.width()
         h = size.height()
-        constraint = min((w/(len(self.text)+2)*1.6), h)
+        constraint = h
         clock_rad = constraint/2
         clock_thickness = 1./6
         center = QtCore.QPointF(constraint / 2, constraint / 2)
@@ -82,15 +110,17 @@ class ClockWidgit(QtGui.QWidget):
         pen.setCapStyle(QtCore.Qt.RoundCap)
         qp.setPen(pen)
 
-        hand_from_angle(0, clock_rad * 0.4)  # Hour hand
-        hand_from_angle(self.angle+self.start_angle, clock_rad * 0.7)  # Minute Hand
+        hand_from_angle(self.angle + self.start_angle, clock_rad * 0.825)  # Minute Hand
+        pen.setWidth(3)
+        qp.setPen(pen)
+        hour_hand_from_angle(0, clock_rad * 0.85)  # Hour hand
 
         # draw text
         qp.setPen(QtGui.QColor(0, 0, 0))
         if self.highlighted:
             qp.setPen(QtGui.QColor(0, 0, 0))
         qp.setFont(QtGui.QFont('Monospace', clock_rad))
-        qp.drawText(center.x()+clock_rad,center.y()+clock_rad*.75, self.text)
+        qp.drawText(center.x()+clock_rad,center.y()+clock_rad*.6, self.text)
 
 
 class HistogramWidget(QtGui.QWidget):
@@ -209,7 +239,7 @@ class GUI(QtGui.QWidget):
         # generate slider for clock rotation speed
         self.sld = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         self.sld.setRange(config.scale_min, config.scale_max)
-        self.sld.setValue(5)
+        self.sld.setValue(config.start_speed)
         self.sldText = QtGui.QLabel('Clock Rotation Speed:')
         self.sldText.setFont(QtGui.QFont('Monospace', 12))
         self.sldLabel = QtGui.QLabel(str(self.sld.value()))
@@ -232,14 +262,16 @@ class GUI(QtGui.QWidget):
         self.text_box = QtGui.QTextEdit("",self)
         self.text_box.setFont(QtGui.QFont('Monospace', 25))
         self.text_box.setMinimumSize(300, 100)
+        self.text_box.setReadOnly(True)
 
         # generate histogram
         self.histogram = HistogramWidget(self)
 
-        self.sld.valueChanged[int].connect(self.changeValue)
-        self.cb_learn.toggled[bool].connect(self.toggle_learn_button)
-        self.cb_pause.toggled[bool].connect(self.toggle_pause_button)
-        self.cb_talk.toggled[bool].connect(self.toggle_talk_button)
+        if __name__ != '__main__':
+            self.sld.valueChanged[int].connect(self.changeValue)
+            self.cb_learn.toggled[bool].connect(self.toggle_learn_button)
+            self.cb_pause.toggled[bool].connect(self.toggle_pause_button)
+            self.cb_talk.toggled[bool].connect(self.toggle_talk_button)
 
         # layout slider and checkboxes
         top_hbox = QtGui.QHBoxLayout()
@@ -262,25 +294,27 @@ class GUI(QtGui.QWidget):
         splitter1.addWidget(self.text_box)
         splitter1.addWidget(self.histogram)
         splitter1.setSizes([1, 1])
-        self.histogram.setMaximumHeight(120*self.size_factor)
-        self.text_box.setMaximumHeight(120*self.size_factor)
+        self.histogram.setMaximumHeight(150*self.size_factor)
+        self.text_box.setMaximumHeight(150*self.size_factor)
 
+        self.vbox.addSpacing(5)
         self.vbox.addWidget(splitter1)
         self.layoutClocks(first_time=True)
-        self.setStyleSheet("background-color:##f2f2f2;")
         self.setLayout(self.vbox)
 
-        self.frame_timer = QtCore.QTimer()
-        self.frame_timer.timeout.connect(self.on_timer)
-        self.frame_timer.start(config.ideal_wait_s*1000)
+        if __name__ != '__main__':
 
-        self.pause_timer = QtCore.QTimer()
-        self.pause_timer.setSingleShot(True)
-        self.pause_timer.timeout.connect(self.end_pause)
+            self.frame_timer = QtCore.QTimer()
+            self.frame_timer.timeout.connect(self.on_timer)
+            self.frame_timer.start(config.ideal_wait_s*1000)
 
-        self.highlight_timer = QtCore.QTimer()
-        self.highlight_timer.setSingleShot(True)
-        self.highlight_timer.timeout.connect(self.end_highlight)
+            self.pause_timer = QtCore.QTimer()
+            self.pause_timer.setSingleShot(True)
+            self.pause_timer.timeout.connect(self.end_pause)
+
+            self.highlight_timer = QtCore.QTimer()
+            self.highlight_timer.setSingleShot(True)
+            self.highlight_timer.timeout.connect(self.end_highlight)
 
 
         # Tool Tips
@@ -307,7 +341,7 @@ class GUI(QtGui.QWidget):
 
         self.setWindowTitle('Nomon Keyboard')
         self.setWindowIcon(QtGui.QIcon('nomon.ico'))
-        self.move(100, 50)
+        self.setGeometry(self.screen_res[0]*0.05, self.screen_res[1]*0.0675, self.screen_res[0]*0.9, self.screen_res[1]*0.85)
         self.show()
 
     def changeValue(self, value):
@@ -324,7 +358,6 @@ class GUI(QtGui.QWidget):
                 if i > 3:
                     break
                 output += [word]
-
         return output
 
     def generate_clocks(self):
@@ -333,7 +366,7 @@ class GUI(QtGui.QWidget):
             for text in row:
                 clock = ClockWidgit(text, self)
                 words = self.getWords(clock.text.lower())
-                wordClocks = ['','','']
+                wordClocks = ['' for i in range(kconfig.N_pred)]
                 i=0
                 for word in words:
                     wordClocks[i] = ClockWidgit(word, self, char_clock=False)
@@ -342,51 +375,55 @@ class GUI(QtGui.QWidget):
                 self.clocks += [clock]
 
     def layoutClocks(self, first_time=False):
-        # layout rows of keyboard
-        self.hboxes = []
-        layout_pos = 0
-        layout_row = 0
-        hbox = QtGui.QHBoxLayout()
-        for clock_index in range(len(self.clocks)):
-            if clock_index % 4 == 3:  # check if main character clock
-                layout_pos += 1
-                if layout_pos != 1:
-                    hbox.addWidget(VerticalSeparator())
-                hbox.addWidget(self.clocks[clock_index], self.clocks[clock_index].scaling_factor * 480)
-                if self.clocks[clock_index-3] != '':  # check if char clock has word clocks
-                    clock_index-=4
-                    vbox = QtGui.QVBoxLayout()
-                    for i in range(3):
-                        clock_index += 1
-                        if self.clocks[clock_index] != '':
-                            vbox.addWidget(self.clocks[clock_index],self.clocks[clock_index].scaling_factor * 360)
-                    hbox.addLayout(vbox, 480)
+        # layout keyboard in grid
+        self.keyboard_rows = []
+        clock_index = 0
+        for row in range(len(self.layout)):
+            keyboard_row = QtGui.QHBoxLayout()
+            for key in range(len(self.layout[row])):
+                if self.layout[row][key] in string.ascii_letters + kconfig.space_char:
+                    key_grid = QtGui.QGridLayout()
+                    key_grid.addWidget(self.clocks[clock_index+kconfig.N_pred], 0, 0, kconfig.N_pred, 1)
+                    for i in range(kconfig.N_pred):
+                        if isinstance(self.clocks[clock_index + i],ClockWidgit):
+                            key_grid.addWidget(self.clocks[clock_index + i], i, 1)
 
-                if clock_index == 119:  # check if UNDO clock
-                    self.undo_label = QtGui.QLabel(self.previous_undo_text)
-                    undo_font = QtGui.QFont('Monospace', 25)
-                    self.undo_label.setFont(undo_font)
+                    key_grid.setColumnMinimumWidth(0,self.clocks[clock_index+kconfig.N_pred].minSize*3)
 
-                    hbox.addWidget(self.undo_label)
+                    key_grid.setColumnStretch(0, 1)
+                    key_grid.setColumnStretch(1, 3)
 
-                hbox.addStretch(1)
+                    keyboard_row.addWidget(VerticalSeparator())
+                    keyboard_row.addLayout(key_grid,1)
 
+                else:
+                    keyboard_row.addWidget(VerticalSeparator())
+                    clock = self.clocks[clock_index+kconfig.N_pred]
+                    if clock.text == kconfig.mybad_char:  # check if UNDO clock
+                        self.undo_label = QtGui.QLabel(self.previous_undo_text)
+                        undo_font = QtGui.QFont('Monospace', 20)
+                        self.undo_label.setFont(undo_font)
 
-            if layout_pos == len(self.layout[layout_row]):
-                self.hboxes += [hbox]
-                hbox = QtGui.QHBoxLayout()
-                layout_pos = 0
-                if layout_row < len(self.layout) - 1:
-                    layout_row += 1
+                        undo_hbox = QtGui.QVBoxLayout()
+                        undo_hbox.addWidget(self.clocks[clock_index+kconfig.N_pred])
+                        undo_hbox.addWidget(self.undo_label)
+                        keyboard_row.addLayout(undo_hbox,1)
+                    else:
+                        keyboard_row.addWidget(self.clocks[clock_index+kconfig.N_pred], 1)
 
+                clock_index += kconfig.N_pred + 1
 
+            keyboard_row.addWidget(VerticalSeparator())
+            self.keyboard_rows += [keyboard_row]
 
         if first_time == True:
             self.clock_vboxes = []
             self.clock_vboxes += [QtGui.QVBoxLayout()]
-            for hbox in self.hboxes:
-                self.clock_vboxes[-1].addLayout(hbox, 2)
-                self.clock_vboxes[-1].addWidget(HorizontalSeparator())
+            i=0
+            for row in self.keyboard_rows:
+                self.clock_vboxes[-1].insertLayout(2+i, row)
+                self.clock_vboxes[-1].insertWidget(3+i, HorizontalSeparator())
+                i += 2
             self.vbox.insertLayout(2, self.clock_vboxes[-1])
 
     def remove_clocks(self):
@@ -394,9 +431,11 @@ class GUI(QtGui.QWidget):
         self.generate_clocks()
         self.layoutClocks()
         self.clock_vboxes = [QtGui.QVBoxLayout()]+self.clock_vboxes
-        for hbox in self.hboxes:
-            self.clock_vboxes[0].addLayout(hbox, 2)
-            self.clock_vboxes[0].addWidget(HorizontalSeparator())
+        i=0
+        for row in self.keyboard_rows:
+            self.clock_vboxes[0].insertLayout(2 + i, row)
+            self.clock_vboxes[0].insertWidget(3 + i, HorizontalSeparator())
+            i += 2
         self.vbox.insertLayout(2, self.clock_vboxes[0])
         self.clearLayout(self.clock_vboxes[-1])
         self.clock_vboxes = [self.clock_vboxes[0]]
@@ -413,10 +452,26 @@ class GUI(QtGui.QWidget):
                 self.clearLayout(child.layout())
 
 
-
 def main():
     app = QtGui.QApplication(sys.argv)
-    ex = GUI(key_chars)
+    screen_res = (app.desktop().screenGeometry().width(), app.desktop().screenGeometry().height())
+    ex = GUI(kconfig.key_chars, screen_res)
+    word_list = open('word_list.txt', 'r')
+    words = word_list.read()
+    words = words.split()
+    word_list.close()
+    ex.word_list = []
+    for letter in string.ascii_lowercase:
+        i=0
+        for word in words:
+            if word[0] == letter and i < kconfig.N_pred:
+                i += 1
+                ex.word_list += [word]
+    ex.prefix = ''
+    ex.bars = kconfig.bars
+    ex.previous_undo_text = 'sss'
+
+    ex.initUI()
     sys.exit(app.exec_())
 
 

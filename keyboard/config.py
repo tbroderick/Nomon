@@ -31,6 +31,8 @@ period_li = [0,  # place holder
              0.86, 0.96, 1.06, 1.18, 1.31,
              1.46, 1.62, 1.80, 2.00, 2.22,
              2.47, 2.74, 3.05]
+period_li = [i*1.5 for i in period_li]
+start_speed = 10
 scale_min = 1
 scale_max = len(period_li) - 1
 default_rotate_ind = 19  # 19 # (22,) 19, 16, 13, 10, 7
