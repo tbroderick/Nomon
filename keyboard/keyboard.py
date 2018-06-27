@@ -155,6 +155,8 @@ class Keyboard(GUI):
         self.bc = broderclocks.BroderClocks(self, self.clock_centers, self.win_diffs, kconfig.clock_rad,
                                             self.file_handle, self.words_on, self.words_off, kconfig.key_color,
                                             time.time(), use_num, user_id, self.time_rotate, prev_data)
+        self.changeValue(config.start_speed)
+
         self.wait_s = self.bc.get_wait()
         # get language model results
         self.gen_word_prior(False)
@@ -223,7 +225,7 @@ class Keyboard(GUI):
         index = 0  # how far into the clock_centers matrix
         word = 0  # word index
         key = 0  # key index
-        # kconfig.N_pred = 3 # number of words per key
+        # kconfig.N_pred = 2 # number of words per key
         self.key_height = 6.5 * kconfig.clock_rad
         self.w_canvas = 0
         self.index_to_wk = []  # overall index to word or key index
@@ -291,46 +293,10 @@ class Keyboard(GUI):
         data_file = kconfig.file_pre + str(self.user_id) + "." + str(self.use_num) + kconfig.file_suff
         self.file_handle = open(data_file, 'w')
 
-    def gen_canvas(self):
-        # self.canvas = Tkinter.Canvas(self.parent, width=self.w_canvas, height=self.h_canvas, background=config.bgcolor)
-        # self.parent.columnconfigure(0, minsize=self.w_canvas / 2.0)
-        # self.parent.columnconfigure(1, minsize=self.w_canvas / 2.0)
-        # self.parent.rowconfigure(0, minsize=self.key_height)
-        # self.parent.rowconfigure(1, minsize=self.h_canvas)
-        # self.parent.rowconfigure(2, minsize=self.height_bot)
-        # self.canvas.grid(row=1, column=0, columnspan=2)
-        self.parent.bind(kconfig.target_evt, self.on_press)
-        # self.canvas.focus_set()  # so don't have to click on the canvas beforehand
-
-        # tool tip
-        # self.keyboard_tooltip = ToolTip(self.canvas, follow_mouse=1, font=kconfig.word_font,
-        #                                 text="This is the Nomon Keyboard. To select an option, find the clock immediately to its left. Press the spacebar when the moving hand is near noon.")
-
     def gen_scale(self):
         scale_length = self.w_canvas / 2  # (len(kconfig.key_chars[0])-1)*kconfig.word_w
         tick_int = int((len(config.period_li) - 1) * kconfig.word_pt * 3 / (1.0 * scale_length)) + 1
-
-        # frame
-        # self.scale_frame = Tkinter.Frame(self.parent, width=scale_length, height=self.key_height)
-        #         # self.scale_frame.grid(row=0, column=0)
-        #         # # scale
-        #         # self.scale = Tkinter.Scale(self.scale_frame, orient=Tkinter.HORIZONTAL, label="Clock Rotation Speed",
-        #         #                            length=scale_length, from_=config.scale_min, to=config.scale_max,
-        #         #                            tickinterval=tick_int, command=self.change_speed, font=kconfig.word_font)
-        #         # # careful; scale is for speed, but the settings are saved as clock periods
-        #         # self.speed_index = config.scale_max - self.rotate_index + 1
-        #         # self.scale.set(self.speed_index)
-        #         # self.scale.pack(side=Tkinter.TOP)
-        # ******
         self.time_rotate = config.period_li[self.rotate_index]
-
-        # tool tip
-        # self.scale_tooltip = ToolTip(self.scale, follow_mouse=1, font=kconfig.word_font,
-        #                              text="This slider scales the speed of clock rotation. Higher values correspond to the clock hand moving faster.")
-        #
-        # # bind right and left arrow events
-        # self.canvas.bind("<Left>", self.dec_speed)
-        # self.canvas.bind("<Right>", self.inc_speed)
 
     def toggle_pause_button(self, value):
         self.pause_set = value
@@ -400,11 +366,6 @@ class Keyboard(GUI):
 
     def init_key_text(self):
         self.key_id = []
-        for key in range(0, self.N_keys):
-            pass
-            # self.key_id.append(
-            #     self.canvas.create_text(self.char_locs[key], text=self.keys_li[key], fill=kconfig.key_text_color,
-            #                             font=kconfig.key_font, anchor='w'))
 
     def init_histogram(self):
         ### histogram
@@ -415,14 +376,6 @@ class Keyboard(GUI):
         self.undo_loc = [
             (self.N_keys_row[self.N_rows - 1] - 1) * (6 * kconfig.clock_rad + kconfig.word_w) - self.w_canvas / 2,
             2 * kconfig.clock_rad]
-        # undo text next to undo button
-        # self.undo_id = self.histo_canvas.create_text(self.undo_loc,
-        #                                              text='', fill=kconfig.undo_type_color, font=kconfig.key_font,
-        #                                              width=self.w_canvas / 2, anchor='w')
-
-        # tooltip to explain what the histogram is
-        # self.histogram_tooltip = ToolTip(self.histo_canvas, follow_mouse=1, font=kconfig.word_font,
-        #                                  text="This is Nomon's estimate of where you click relative to noon on the clocks. The thinner the distribution, the more precisely Nomon thinks you are clicking.")
 
     def draw_histogram(self, bars=None):
         if bars == None:
@@ -448,9 +401,6 @@ class Keyboard(GUI):
                 if (len_con > 1) and (len_word > kconfig.max_chars_display):
                     word_str = "+" + word_str[len_con:len_word]
                 self.word_pair.append((key, pred))
-                # self.word_id.append(
-                #     self.canvas.create_text(self.word_locs[word], text=word_str, fill=kconfig.key_text_color,
-                #                             font=kconfig.word_font, anchor='w'))
                 if word_str == '':
                     self.words_off.append(index)
                 else:
@@ -464,8 +414,6 @@ class Keyboard(GUI):
             for pred in range(0, kconfig.N_pred):
                 word_str = self.words_li[key][pred]
                 self.word_pair.append((key, pred))
-                # self.word_id.append(self.canvas.create_text(self.word_locs[word], text='', fill=kconfig.key_text_color,
-                #                                             font=kconfig.word_font, anchor='w'))
                 self.words_off.append(index)
                 index += 1
             self.words_on.append(index)
@@ -501,7 +449,6 @@ class Keyboard(GUI):
                 len_word = len(word_str)
                 if len_con > 1 and len_word > kconfig.max_chars_display:
                     word_str = "+" + word_str[len_con:len_word]
-                # self.canvas.itemconfigure(self.word_id[word], text=word_str)
                 if word_str == '':
                     self.words_off.append(index)
                 else:
@@ -515,8 +462,6 @@ class Keyboard(GUI):
             for pred in range(0, kconfig.N_pred):
                 word_str = self.words_li[key][pred]
                 self.word_pair.append((key, pred))
-                # self.word_id.append(self.canvas.create_text(self.word_locs[word], text='', fill=kconfig.key_text_color,
-                #                                             font=kconfig.word_font, anchor='w'))
                 self.words_off.append(index)
                 index += 1
             self.words_on.append(index)
@@ -613,6 +558,8 @@ class Keyboard(GUI):
         self.setStyleSheet("background-color:#ddf6dd;")
 
     def on_timer(self):
+        if self.focusWidget() == self.text_box:
+            self.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
         if self.bc_init:
             if not self.in_pause:
                 start_t = time.time()
@@ -796,10 +743,9 @@ class Keyboard(GUI):
         # self.canvas.update_idletasks()
 
     def end_pause(self):
-        # self.canvas.config(bg=config.bgcolor)
         self.pause_timer.stop()
         self.in_pause = False
-        self.setStyleSheet("background-color:##f2f2f2;")
+        self.setStyleSheet("background-color:#f2f2f2;")
         self.on_timer()
 
     def quit(self, event=None):

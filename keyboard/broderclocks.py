@@ -361,7 +361,7 @@ class BroderClocks:
             # register in coordinates of hour hand
             v = self.hl.hour_locs[self.cur_hours[clock]]
             angle = math.atan2(v[1], v[0])
-            self.parent.clocks[clock].angle = angle + math.pi*0.25
+            self.parent.clocks[clock].angle = angle + math.pi*0.5
             self.parent.clocks[clock].repaint()
 
         # refresh the canvas
@@ -575,7 +575,7 @@ class BroderClocks:
             # y = self.centers[clock][1]
             v = self.hl.hour_locs[self.cur_hours[clock]-1]
             angle = math.atan2(v[1], v[0])
-            self.parent.clocks[clock].angle = angle + math.pi*0.25
+            self.parent.clocks[clock].angle = angle + math.pi*0.5
             self.parent.clocks[clock].repaint()
 
         # update the canvas
