@@ -2,7 +2,7 @@ import sys
 from cx_Freeze import setup, Executable
 
 build_exe_options = {"packages": ["broderclocks","dtree","config","kconfig","string","time","PyQt4.QtGui","PyQt4.QtCore","numpy","sys","cPickle","random","os"],
-                     "include_files": ["data", "corpus", "phrases",]}#"pygame",
+                     "include_files": ["data", "corpus", "phrases"]}#"pygame",
 
 base = None
 

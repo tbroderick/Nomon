@@ -361,8 +361,9 @@ class BroderClocks:
             # register in coordinates of hour hand
             v = self.hl.hour_locs[self.cur_hours[clock]]
             angle = math.atan2(v[1], v[0])
-            self.parent.clocks[clock].angle = angle + math.pi*0.5
-            self.parent.clocks[clock].repaint()
+            self.parent.mainWidgit.clocks[clock].angle = angle + math.pi*0.5
+            self.parent.mainWidgit.clocks[clock].repaint()
+
 
         # refresh the canvas
         # self.canvas.update_idletasks()
@@ -547,19 +548,19 @@ class BroderClocks:
         for clock in self.clocks_on:
 
             if self.cscores[clock] > bound_score:
-                self.parent.clocks[clock].highlighted = True
+                self.parent.mainWidgit.clocks[clock].highlighted = True
                 pass
                 # self.canvas.itemconfigure(self.circle_id[clock], fill=config.circle_high_color, outline=outline_color,
                 #                           width=cwidth)
             else:
-                self.parent.clocks[clock].highlighted = False
+                self.parent.mainWidgit.clocks[clock].highlighted = False
                 pass
             #     self.canvas.itemconfigure(self.circle_id[clock], fill=config.circle_low_color, outline=outline_color,
             #                               width=cwidth)
             # self.canvas.itemconfigure(self.noon_id[clock], fill=config.noon_color, width=config.hand_width)
             # self.canvas.itemconfigure(self.hour_id[clock], fill=config.hour_color, width=config.hand_width)
             # turn off irrelevant faces
-            self.parent.clocks[clock].repaint()
+            self.parent.mainWidgit.clocks[clock].repaint()
         for clock in self.clocks_off:
             pass
             # self.canvas.itemconfigure(self.circle_id[clock], fill=config.circle_off_color,
@@ -575,8 +576,8 @@ class BroderClocks:
             # y = self.centers[clock][1]
             v = self.hl.hour_locs[self.cur_hours[clock]-1]
             angle = math.atan2(v[1], v[0])
-            self.parent.clocks[clock].angle = angle + math.pi*0.5
-            self.parent.clocks[clock].repaint()
+            self.parent.mainWidgit.clocks[clock].angle = angle + math.pi*0.5
+            self.parent.mainWidgit.clocks[clock].repaint()
 
         # update the canvas
         # self.canvas.update_idletasks()
