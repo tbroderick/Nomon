@@ -37,7 +37,7 @@ import random
 import os
 
 
-class Keyboard(GUI):
+class Keyboard(MainWindow):
     def __init__(self, layout, screen_res):
         super(Keyboard, self).__init__(layout, screen_res)
 
@@ -155,7 +155,7 @@ class Keyboard(GUI):
         self.bc = broderclocks.BroderClocks(self, self.clock_centers, self.win_diffs, kconfig.clock_rad,
                                             self.file_handle, self.words_on, self.words_off, kconfig.key_color,
                                             time.time(), use_num, user_id, self.time_rotate, prev_data)
-        self.changeValue(config.start_speed)
+        self.mainWidgit.changeValue(config.start_speed)
 
         self.wait_s = self.bc.get_wait()
         # get language model results
@@ -204,6 +204,8 @@ class Keyboard(GUI):
             n_keys = len(kconfig.key_chars[row])
             for col in range(0, n_keys):
                 if kconfig.key_chars[row][col].isalpha() and (len(kconfig.key_chars[row][col]) == 1):
+                    self.N_alpha_keys = self.N_alpha_keys + 1
+                elif kconfig.key_chars[row][col] == kconfig.space_char and (len(kconfig.key_chars[row][col]) == 1):
                     self.N_alpha_keys = self.N_alpha_keys + 1
             self.N_keys_row.append(n_keys)
             self.N_keys += n_keys
@@ -300,15 +302,15 @@ class Keyboard(GUI):
 
     def toggle_pause_button(self, value):
         self.pause_set = value
-        self.sldLabel.setFocus()
+        self.mainWidgit.sldLabel.setFocus()
 
     def toggle_talk_button(self, value):
         self.talk_set = value
-        self.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
+        self.mainWidgit.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
 
     def toggle_learn_button(self, value):
         config.is_learning = value
-        self.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
+        self.mainWidgit.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
 
     def change_speed(self, index):
         # speed (as shown on scale)
@@ -382,7 +384,7 @@ class Keyboard(GUI):
             bars = self.bc.get_histogram()
         # bars = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.bars = bars
-        self.histogram.repaint()
+        self.mainWidgit.histogram.repaint()
 
     def init_words(self):
         (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq, self.prefix) = self.dt.get_words(
@@ -426,6 +428,7 @@ class Keyboard(GUI):
                 if word != '':
                     words += [word]
         self.word_list = words
+        self.typed_versions = ['']
 
     def raise_words(self):
         pass
@@ -436,7 +439,6 @@ class Keyboard(GUI):
     def draw_words(self):
         (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq, self.prefix) = self.dt.get_words(
             self.context, self.keys_li)
-
         word = 0
         index = 0
         self.words_on = []
@@ -475,7 +477,7 @@ class Keyboard(GUI):
                     words += [word]
 
         self.word_list = words
-        self.remove_clocks()
+        self.mainWidgit.remove_clocks()
 
     def gen_word_prior(self, is_undo):
         self.word_score_prior = []
@@ -516,6 +518,7 @@ class Keyboard(GUI):
     def draw_typed(self):
         delete = False
         undo = False
+        previous_text = self.mainWidgit.text_box.toPlainText()
         # self.typed_text.delete("1.0", Tkinter.END)
         #         # self.typed_text.tag_delete("TYPED_UNDO");
         if len(self.last_add_li) > 1:
@@ -526,40 +529,53 @@ class Keyboard(GUI):
             elif last_add == -1:  # backspace
                 new_text = ''
                 delete = True
-                print("DELETE")
-                last_add = 0
                 undo_text = kconfig.back_char
+                last_add = 0
+
         else:
             new_text = ''
             undo_text = new_text
             last_add = 0
         print("DRAW TEXT: ", new_text)
 
-        if self.previous_winner == 119:
-            undo = True
+        index = self.previous_winner
+        if self.mainWidgit.clocks[index] != '':
+            if self.mainWidgit.clocks[index].text == kconfig.mybad_char:
+                undo = True
+                delete = False
 
-        previous_text = self.text_box.toPlainText()
         if delete:
-            self.text_box.setText("<span style='color:#000000;'>" + previous_text[:-1] + "</span>")
+            print("DELETE")
+            self.prefix = self.prefix[:-1]
+            if self.typed_versions[-1] != '':
+                self.typed_versions += [previous_text[:-1]]
+                self.mainWidgit.text_box.setText("<span style='color:#000000;'>" + self.typed_versions[-1] + "</span>")
         elif undo:
-            if self.previous_undo_text == kconfig.back_char:
-                self.text_box.setText("<span style='color:#000000;'>" + previous_text + "</span><span style='color:#00dd00;'>" + undo_text[-1] + "</span>")
-            else:
-                self.text_box.setText("<span style='color:#000000;'>" + previous_text[:-(len(self.previous_undo_text))] + "</span>")
+            if len(self.typed_versions) > 1:
+                self.typed_versions = self.typed_versions[:-1]
+                self.mainWidgit.text_box.setText("<span style='color:#000000;'>" + self.typed_versions[-1] + "</span>")
         else:
-            self.text_box.setText("<span style='color:#000000;'>"+previous_text+"</span><span style='color:#00dd00;'>"+new_text+"</span>")
+            self.typed_versions += [previous_text+new_text]
+            self.mainWidgit.text_box.setText("<span style='color:#000000;'>"+previous_text+"</span><span style='color:#00dd00;'>"+new_text+"</span>")
         self.previous_undo_text = undo_text
-        self.undo_label.setText("<font color='green'>"+undo_text+"</font>")
+        self.mainWidgit.undo_label.setText("<font color='green'>"+undo_text+"</font>")
 
     def on_pause(self):
         print("Pausing")
-        self.pause_timer.start(kconfig.pause_length)
+        self.mainWidgit.pause_timer.start(kconfig.pause_length)
         self.in_pause = True
         self.setStyleSheet("background-color:#ddf6dd;")
+        self.mainWidgit.text_box.setStyleSheet("background-color:#ffffff;")
+
+    def end_pause(self):
+        self.mainWidgit.pause_timer.stop()
+        self.in_pause = False
+        self.setStyleSheet("background-color:#f2f2f2;")
+        self.on_timer()
 
     def on_timer(self):
-        if self.focusWidget() == self.text_box:
-            self.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
+        if self.focusWidget() == self.mainWidgit.text_box:
+            self.mainWidgit.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
         if self.bc_init:
             if not self.in_pause:
                 start_t = time.time()
@@ -575,11 +591,12 @@ class Keyboard(GUI):
             self.bc.select(time.time())
 
     def highlight_winner(self, index):
+
         print("HIGHLIGHT WINNER", self.clock_index_to_text(index))
-        if self.clocks[index] != '':
-            self.clocks[index].selected = True
-            self.clocks[index].repaint()
-            self.highlight_timer.start(2000)
+        if self.mainWidgit.clocks[index] != '':
+            self.mainWidgit.clocks[index].selected = True
+            self.mainWidgit.clocks[index].repaint()
+            self.mainWidgit.highlight_timer.start(2000)
 
         # self.canvas.itemconfigure(self.subkey_id[index], fill=kconfig.key_win_color)
         # self.canvas.update_idletasks()
@@ -587,10 +604,10 @@ class Keyboard(GUI):
         # self.canvas.after(kconfig.winner_time, self.end_winner, index)
     def end_highlight(self):
         index = self.previous_winner
-        if self.clocks[index] != '':
-            self.clocks[index].selected = False
-            self.clocks[index].repaint()
-            self.highlight_timer.stop()
+        if self.mainWidgit.clocks[index] != '':
+            self.mainWidgit.clocks[index].selected = False
+            self.mainWidgit.clocks[index].repaint()
+            self.mainWidgit.highlight_timer.stop()
 
     def clock_index_to_text(self, index):
         letter_num = int(index/4)
@@ -633,7 +650,7 @@ class Keyboard(GUI):
         ## now pause (if desired)
         if self.pause_set == 1:
             self.on_pause()
-            self.pause_timer.start(kconfig.pause_length)
+            self.mainWidgit.pause_timer.start(kconfig.pause_length)
 
         # highlight winner
         self.previous_winner = index
@@ -741,12 +758,6 @@ class Keyboard(GUI):
     def present_choice(self):
         self.draw_histogram()
         # self.canvas.update_idletasks()
-
-    def end_pause(self):
-        self.pause_timer.stop()
-        self.in_pause = False
-        self.setStyleSheet("background-color:#f2f2f2;")
-        self.on_timer()
 
     def quit(self, event=None):
         if not self.undefined:
