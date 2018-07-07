@@ -19,6 +19,7 @@
 ######################################
 
 import kconfig
+import subWindows
 
 
 class dtree:
@@ -113,24 +114,25 @@ class dtree:
 class DTree:
     # file_handle: points to the file with the counts
     # ---each line should be: word\scount
-    def __init__(self, file_handle):
+    def __init__(self, file_handle, parent):
         ### process the inputs ###
         ## copy
         self.file_handle = file_handle
+        self.parent = parent
         ## text during loading
         self.loading_text = [
             "",
             "Quotes from Nomon users:",
             "",
-            "@ \"lots of fun\"",
-            "@ \"really useful\"",
+            ">> \"lots of fun\"",
+            ">> \"really useful\"",
             "",
-            "@ \"The writing system looks intimidating",
+            ">> \"The writing system looks intimidating",
             "when it first comes up on the screen",
             "but is actually very easy to use\"",
             "",
             "",
-            "[...finished]\n****************************\n****************************"]
+            "[...finished]********************************************************"]
 
         ### initialize ###
         ## start tree (as empty dictionary)
@@ -153,6 +155,9 @@ class DTree:
             if n_line % 10000 == 0:
                 if self.loading_text[n_line / 10000] != "":
                     print self.loading_text[n_line / 10000]
+                    subWindows.loading_text = self.loading_text[n_line / 10000]  # send messages to GUI splash screen
+                    self.parent.app.processEvents()  # allow splash screen to refresh
+
 
     # returns a list (one for each letter)
     # of top-frequency word lists
