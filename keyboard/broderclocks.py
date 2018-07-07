@@ -511,7 +511,7 @@ class BroderClocks:
                     count += 1
                 top_score = 0
 
-        # update the sorted info
+        # update the sorted loading_text
         self.sorted_inds = list(self.clocks_on)
         self.sorted_inds.sort(self.compare_score)
 
@@ -538,12 +538,6 @@ class BroderClocks:
         top_score = self.cscores[self.sorted_inds[0]]
 
         # highlight all clockfaces "near" the winning score
-        if (is_win):
-            outline_color = config.circle_lose_color
-            cwidth = config.circle_lose_width
-        else:
-            outline_color = config.circle_outline_color
-            cwidth = config.circle_outline_width
         bound_score = top_score - self.win_diffs[self.sorted_inds[0]]
         for clock in self.clocks_on:
 

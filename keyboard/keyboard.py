@@ -20,26 +20,22 @@
 
 import broderclocks
 import dtree
-import config
-# import glob
-import kconfig
-import string
 import time
 import numpy
-
-from keyboard_GUI_PyQt import *
+import cPickle
+from mainWindow import *
+from subWindows import *
 
 if kconfig.target_evt == kconfig.joy_evt:
     import pygame
-import sys
-import cPickle
-import random
-import os
 
 
 class Keyboard(MainWindow):
-    def __init__(self, layout, screen_res):
-        super(Keyboard, self).__init__(layout, screen_res)
+
+    def __init__(self, screen_res, app):
+        super(Keyboard, self).__init__(screen_res)
+
+        self.app = app
 
         # check that number of arguments is valid
         if len(sys.argv) < 3:  # replaced with a default 0 0
@@ -130,7 +126,7 @@ class Keyboard(MainWindow):
         self.talk_file = "talk.txt"
         ## set up dictionary tree
         train_handle = open(kconfig.train_file_name, 'r')
-        self.dt = dtree.DTree(train_handle)
+        self.dt = dtree.DTree(train_handle, self)
         train_handle.close()
         # check for speech
         talk_fid = open(self.talk_file, 'w')
@@ -421,7 +417,7 @@ class Keyboard(MainWindow):
             self.words_on.append(index)
             self.word_pair.append((key,))
             index += 1
-        # Send words to GUI
+        # Send words to MainKeyboardWidget
         words = []
         for letter_group in self.words_li:
             for word in letter_group:
@@ -458,6 +454,7 @@ class Keyboard(MainWindow):
                 word += 1
                 index += 1
             self.words_on.append(index)
+
             self.word_pair.append((key,))
             index += 1
         for key in range(self.N_alpha_keys, self.N_keys):
@@ -469,7 +466,7 @@ class Keyboard(MainWindow):
             self.words_on.append(index)
             self.word_pair.append((key,))
             index += 1
-        # Send words to GUI
+        # Send words to MainKeyboardWidget
         words = []
         for letter_group in self.words_li:
             for word in letter_group:
@@ -477,7 +474,7 @@ class Keyboard(MainWindow):
                     words += [word]
 
         self.word_list = words
-        self.mainWidgit.remove_clocks()
+        self.mainWidgit.updateClocks()
 
     def gen_word_prior(self, is_undo):
         self.word_score_prior = []
@@ -519,8 +516,7 @@ class Keyboard(MainWindow):
         delete = False
         undo = False
         previous_text = self.mainWidgit.text_box.toPlainText()
-        # self.typed_text.delete("1.0", Tkinter.END)
-        #         # self.typed_text.tag_delete("TYPED_UNDO");
+
         if len(self.last_add_li) > 1:
             last_add = self.last_add_li[-1]
             if last_add > 0:  # typed something
@@ -564,13 +560,13 @@ class Keyboard(MainWindow):
         print("Pausing")
         self.mainWidgit.pause_timer.start(kconfig.pause_length)
         self.in_pause = True
-        self.setStyleSheet("background-color:#ddf6dd;")
+        self.setStyleSheet("background-color:"+config.bg_color_highlt+";")
         self.mainWidgit.text_box.setStyleSheet("background-color:#ffffff;")
 
     def end_pause(self):
         self.mainWidgit.pause_timer.stop()
         self.in_pause = False
-        self.setStyleSheet("background-color:#f2f2f2;")
+        self.setStyleSheet("")
         self.on_timer()
 
     def on_timer(self):
@@ -598,10 +594,6 @@ class Keyboard(MainWindow):
             self.mainWidgit.clocks[index].repaint()
             self.mainWidgit.highlight_timer.start(2000)
 
-        # self.canvas.itemconfigure(self.subkey_id[index], fill=kconfig.key_win_color)
-        # self.canvas.update_idletasks()
-        #
-        # self.canvas.after(kconfig.winner_time, self.end_winner, index)
     def end_highlight(self):
         index = self.previous_winner
         if self.mainWidgit.clocks[index] != '':
@@ -787,12 +779,24 @@ class Keyboard(MainWindow):
         import sys
         sys.exit()
 
+    def launch_help(self):
+        help_window = StartWindow(self.mainWidgit.screen_res, False)
+        help_window.help_screen = True
+
 
 def main():
     print "****************************\n****************************\n[Loading...]"
     app = QtGui.QApplication(sys.argv)
     screen_res = (app.desktop().screenGeometry().width(), app.desktop().screenGeometry().height())
-    ex = Keyboard(kconfig.key_chars, screen_res)
+
+    splash = StartWindow(screen_res, True)
+    app.processEvents()
+    ex = Keyboard(screen_res, app)
+
+    if kconfig.first_load:
+        welcome = Pretraining(screen_res)
+        pickle.dump(False, open("user_preferences/first_load.p", "wb"))
+
     sys.exit(app.exec_())
 
 
