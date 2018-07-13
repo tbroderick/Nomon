@@ -19,49 +19,120 @@
 ######################################
 
 import numpy
+from PyQt4 import QtGui
+import pickle
 
 ### Configuration settings for the BroderClocks module ###
 
 ### Clock animation parameters ###
 # time for single rotation of the clock
-#time_rotate = 1.2 #1.35 #2.0**(0.5)
-period_li = [0, # place holder
-		0.30, 0.33, 0.37, 0.41, 0.46,
-		0.51, 0.56, 0.63, 0.70, 0.77,
-		0.86, 0.96, 1.06, 1.18, 1.31,
-		1.46, 1.62, 1.80, 2.00, 2.22,
-		2.47, 2.74, 3.05]
+# time_rotate = 1.2 #1.35 #2.0**(0.5)
+period_li = [0,  # place holder
+             0.30, 0.33, 0.37, 0.41, 0.46,
+             0.51, 0.56, 0.63, 0.70, 0.77,
+             0.86, 0.96, 1.06, 1.18, 1.31,
+             1.46, 1.62, 1.80, 2.00, 2.22,
+             2.47, 2.74, 3.05]
+period_li = [i*1.5 for i in period_li]
+start_speed = pickle.load(open("user_preferences/start_speed.p", 'rb'))
 scale_min = 1
-scale_max = len(period_li)-1
-default_rotate_ind = 19 #19 # (22,) 19, 16, 13, 10, 7
+scale_max = len(period_li) - 1
+default_rotate_ind = 19  # 19 # (22,) 19, 16, 13, 10, 7
 # number of clock divisions that register as a unique place to click
 num_divs_click = 80
 # seconds / frame; display update rate to aim for
 ideal_wait_s = 0.05
 # starting point of the highest scorer
-frac_period = 4.0/8.0 #4.0/8.0 # 7, 6, 5, 4, 3, 2, 1
-theta0 = frac_period * 2.0 * numpy.pi #numpy.pi
+frac_period = 4.0 / 8.0  # 4.0/8.0 # 7, 6, 5, 4, 3, 2, 1
+theta0 = frac_period * 2.0 * numpy.pi  # numpy.pi
 
 ### Colors ###
-# background
-bgcolor = "white" #"#%02x%02x%02x" % (0,0,150)
-# clockface color
-circle_low_color = "#%02x%02x%02x" % (255,255,255)
-circle_high_color = "#FFFF69"#"yellow"
-circle_off_color = ""
-circle_outline_color = "black"
-circle_win_color = circle_outline_color #"#%02x%02x%02x" % (0,200,0)
-circle_lose_color = circle_outline_color #"red"
-# outline sizes
-circle_outline_width = 1.0
-circle_lose_width = circle_outline_width #3
-circle_win_width = circle_outline_width #3
-# noon position (desired hitting point) color
-noon_color = "#%02x%02x%02x" % (255,0,0)
-# color of the moving hour hand
-hour_color = "#%02x%02x%02x" % (0,0,0)
-# hand sizes
-hand_width = 1.5
+# Background Color
+bg_color_highlt = "#ddf6dd"
+high_contrast = pickle.load(open("user_preferences/high_contrast.p", 'rb'))
+if high_contrast:
+
+    # clock colors
+    clock_bg_color = QtGui.QColor(255, 255, 255)
+
+    clock_text_color = QtGui.QColor(0, 0, 0)
+    clock_text_hl_color = QtGui.QColor(0, 0, 200)
+    clock_text_reg_color = QtGui.QColor(200, 0, 0)
+    # default
+    default_hh_color = QtGui.QColor(0, 200, 0)
+
+    default_selct_color = QtGui.QColor(20, 245, 20)
+    default_highlt_color = QtGui.QColor(255, 0, 0)
+    default_reg_color = QtGui.QColor(0, 0, 255)
+
+    # bar
+    bar_hh_selct_color = QtGui.QColor(10, 255, 10)
+    bar_hh_highlt_color = QtGui.QColor(255, 0, 0)
+    bar_hh_reg_color = QtGui.QColor(0, 0, 255)
+
+    bar_mh_selct_color = QtGui.QColor(20, 245, 20)
+    bar_mh_highlt_color = QtGui.QColor(255, 150, 150)
+    bar_mh_reg_color = QtGui.QColor(150, 150, 255)
+
+    # ball
+    ball_mh_selct_color = QtGui.QColor(20, 245, 20)
+    ball_mh_highlt_color = QtGui.QColor(255, 150, 150)
+    ball_mh_reg_color = QtGui.QColor(150, 150, 255)
+
+    # pac_man
+    pac_man_selct_color = QtGui.QColor(20, 245, 20)
+    pac_man_highlt_color = QtGui.QColor(255, 0, 0)
+    pac_man_reg_color = QtGui.QColor(0, 0, 255)
+
+else:
+    # clock colors
+    clock_bg_color = QtGui.QColor(255, 255, 255)
+    clock_text_color = QtGui.QColor(0, 0, 0)
+    # default
+    default_hh_color = QtGui.QColor(255, 0, 0)
+
+    default_selct_color = QtGui.QColor(20, 245, 20)
+    default_highlt_color = QtGui.QColor(0, 0, 255)
+    default_reg_color = QtGui.QColor(0, 0, 0)
+
+    # bar
+    bar_hh_selct_color = QtGui.QColor(10, 255, 10)
+    bar_hh_highlt_color = QtGui.QColor(75, 75, 255)
+    bar_hh_reg_color = QtGui.QColor(0, 0, 0)
+
+    bar_mh_selct_color = QtGui.QColor(20, 245, 20)
+    bar_mh_highlt_color = QtGui.QColor(150, 150, 255)
+    bar_mh_reg_color = QtGui.QColor(170, 170, 170)
+
+    # ball
+    ball_mh_selct_color = QtGui.QColor(20, 245, 20)
+    ball_mh_highlt_color = QtGui.QColor(150, 150, 255)
+    ball_mh_reg_color = QtGui.QColor(100, 100, 100)
+
+    # pac_man
+    pac_man_selct_color = QtGui.QColor(20, 245, 20)
+    pac_man_highlt_color = QtGui.QColor(0, 0, 255)
+    pac_man_reg_color = QtGui.QColor(0, 0, 0)
+
+### Fonts ###
+base_font = 'consolas'
+
+splash_font = QtGui.QFont(base_font, 15)
+
+welcome_main_font = QtGui.QFont('Consolas', 15)
+welcome_sub_font = QtGui.QFont('Consolas', 12)
+clock_font = QtGui.QFont(base_font)
+clock_font.setBold(False)
+
+top_bar_font = QtGui.QFont(base_font, 16)
+top_bar_font.setStretch(80)
+top_bar_font.setBold(True)
+
+text_box_font = QtGui.QFont(base_font, 20)
+text_box_font.setStretch(90)
+
+
+
 ### Algorithm parameters ###
 # winning score difference
 win_diff_base = numpy.log(99)
@@ -69,6 +140,7 @@ win_diff_high = numpy.log(999)
 max_init_diff = win_diff_base - numpy.log(4)
 # learning press distribution or not
 is_learning = True
+is_pre_learning = True
 # whether to output data
 is_write_data = True
 # last index to include when "undo"-ing scores
@@ -77,7 +149,7 @@ undo_index = 5
 learn_delay = 2
 # click density prior
 ## prior def
-mu0 = 0.05 # on a range [-1s,1s]
-sigma0 = 0.14 # on a range [-1s,1s]
+mu0 = 0.05  # on a range [-1s,1s]
+sigma0 = 0.14  # on a range [-1s,1s]
 sigma0_sq = sigma0 * sigma0
 range0 = 2
