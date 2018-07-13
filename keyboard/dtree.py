@@ -19,6 +19,8 @@
 ######################################
 
 import kconfig
+import subWindows
+
 
 class dtree:
     def __init__(self):
@@ -26,10 +28,10 @@ class dtree:
         self.sum_all_freq = 0
 
     def add_word(self, word, freq):
-        if(len(word) <= 1):
-            if((word != 'i') and (word != 'I') and (word != 'a') and (word != 'A')):
+        if (len(word) <= 1):
+            if ((word != 'i') and (word != 'I') and (word != 'a') and (word != 'A')):
                 return
-            
+
         word = word + '_'
         self.add_string(word, freq)
         self.sum_all_freq += freq
@@ -43,12 +45,12 @@ class dtree:
                 value = cur_dict[char]
                 top_word_li = value[1]
                 top_freq_li = value[2]
-                value[3] += freq # sum over all frequencies
+                value[3] += freq  # sum over all frequencies
                 n = 0
                 while n < kconfig.N_pred:
                     if top_freq_li[n] < freq:
-                        top_freq_li.pop(kconfig.N_pred-1)
-                        top_word_li.pop(kconfig.N_pred-1)
+                        top_freq_li.pop(kconfig.N_pred - 1)
+                        top_word_li.pop(kconfig.N_pred - 1)
                         top_freq_li.insert(n, freq)
                         top_word_li.insert(n, word)
                         n = kconfig.N_pred
@@ -63,7 +65,7 @@ class dtree:
                 if kconfig.N_pred > 0:
                     top_word_li.append(word)
                     top_freq_li.append(freq)
-                for n in range(1,kconfig.N_pred):
+                for n in range(1, kconfig.N_pred):
                     top_word_li.append("")
                     top_freq_li.append(0)
                 # dictionary, word list, frequency list, sum over frequencies
@@ -75,6 +77,7 @@ class dtree:
             cur_dict = value[0]
 
     def get_words(self, prefix):
+
         cur_dict = self.head
         tot_freq = self.sum_all_freq
         key_freq = self.sum_all_freq
@@ -83,7 +86,7 @@ class dtree:
         N_char = len(prefix)
         while is_next_char:
             char = prefix[index]
-            
+
             # if key is already there
             if cur_dict.has_key(char):
                 # increment
@@ -101,33 +104,35 @@ class dtree:
             # if key is not already there
             else:
                 is_next_char = False
-                top_word_li = ["" for index in range(0,kconfig.N_pred)]
-                top_freq_li = [0 for index in range(0,kconfig.N_pred)]
+                top_word_li = ["" for index in range(0, kconfig.N_pred)]
+                top_freq_li = [0 for index in range(0, kconfig.N_pred)]
                 loc_freq = 0
-                
+
         return (top_word_li, top_freq_li, loc_freq, tot_freq)
-                                
+
+
 class DTree:
     # file_handle: points to the file with the counts
     # ---each line should be: word\scount
-    def __init__(self, file_handle):
+    def __init__(self, file_handle, parent):
         ### process the inputs ###
         ## copy
         self.file_handle = file_handle
-	## text during loading
-	self.loading_text = [
-		"",
-		"Quotes from Nomon users:",
-		"",
-		"@ \"lots of fun\"",
-		"@ \"really useful\"",
-		"",
-		"@ \"The writing system looks intimidating",
-		"when it first comes up on the screen",
-		"but is actually very easy to use\"",
-		"",
-		"",
-		"[...finished]\n****************************\n****************************"]
+        self.parent = parent
+        ## text during loading
+        self.loading_text = [
+            "",
+            "Quotes from Nomon users:",
+            "",
+            ">> \"lots of fun\"",
+            ">> \"really useful\"",
+            "",
+            ">> \"The writing system looks intimidating",
+            "when it first comes up on the screen",
+            "but is actually very easy to use\"",
+            "",
+            "",
+            "[...finished]********************************************************"]
 
         ### initialize ###
         ## start tree (as empty dictionary)
@@ -140,16 +145,19 @@ class DTree:
         for line in self.file_handle.xreadlines():
             # read each line
             toks = line.split()
-            if(len(toks) != 2):
+            if (len(toks) != 2):
                 print "Error: len(toks) = %d" % (len(toks))
 
             # add word to the tree
-            self.dt.add_word(toks[0],int(toks[1]))
+            self.dt.add_word(toks[0], int(toks[1]))
 
-	    n_line += 1
-	    if n_line % 10000 == 0:
-		if self.loading_text[n_line / 10000] != "":
-			print self.loading_text[n_line / 10000]
+            n_line += 1
+            if n_line % 10000 == 0:
+                if self.loading_text[n_line / 10000] != "":
+                    print self.loading_text[n_line / 10000]
+                    subWindows.loading_text = self.loading_text[n_line / 10000]  # send messages to GUI splash screen
+                    self.parent.app.processEvents()  # allow splash screen to refresh
+
 
     # returns a list (one for each letter)
     # of top-frequency word lists
@@ -162,21 +170,22 @@ class DTree:
         for char in next_char_li:
             loc_prefix = prefix + char
             (word_li, freq_li, loc_freq, tot_freq) = self.dt.get_words(loc_prefix)
-            loc_freq_li.append(loc_freq) # list of the key frequencies
+            loc_freq_li.append(loc_freq)  # list of the key frequencies
             top_word_li = []
             top_freq_li = []
-            for n in range(0,kconfig.N_pred):
+            for n in range(0, kconfig.N_pred):
                 if freq_li[n] > (tot_freq * kconfig.prob_thres):
                     top_word_li.append(word_li[n])
                     top_freq_li.append(freq_li[n])
-                    top_freq = max(top_freq,freq_li[n])
+                    top_freq = max(top_freq, freq_li[n])
                 else:
                     top_word_li.append("")
                     top_freq_li.append(0)
             top_word_li_li.append(top_word_li)
             top_freq_li_li.append(top_freq_li)
 
-        return (top_word_li_li, top_freq_li_li, loc_freq_li, top_freq, tot_freq)
+        return (top_word_li_li, top_freq_li_li, loc_freq_li, top_freq, tot_freq, prefix)
+
 
 def main():
     print "in dtree.py"
@@ -192,15 +201,16 @@ def main():
     dt = DTree(file_handle)
 
     # run some checks
-    #li = dt.get_words("",map(chr, range(97, 123)))
-    #print str(li)
+    # li = dt.get_words("",map(chr, range(97, 123)))
+    # print str(li)
 
     # store
-    #pickle.dump(dt, out_handle)
+    # pickle.dump(dt, out_handle)
 
     # close stuff
     file_handle.close()
     out_handle.close()
 
+
 if __name__ == "__main__":
-    main()    
+    main()
