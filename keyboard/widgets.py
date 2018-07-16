@@ -77,10 +77,10 @@ class ClockWidgit(QtGui.QWidget):
                         brush.setColor(QtGui.QColor(0, 255, 0, 255 * color_factor))
                         qp.setBrush(brush)
                     elif self.highlighted:
-                        brush.setColor(QtGui.QColor(255, 0, 0, 255 * color_factor))
+                        brush.setColor(QtGui.QColor(0, 0, 255, 255 * color_factor))
                         qp.setBrush(brush)
                     else:
-                        brush.setColor(QtGui.QColor(0, 0, 255, 255 * color_factor))
+                        brush.setColor(QtGui.QColor(255, 0, 0, 255 * color_factor))
                         qp.setBrush(brush)
             else:
                 def clock_color(color_factor):
@@ -263,7 +263,10 @@ class ClockWidgit(QtGui.QWidget):
                 font.setBold(True)
                 font.setPointSize(min(20 * self.parent.size_factor, font.pointSize() * 1.5 * self.parent.size_factor))
             elif self.parent.parent.clock_type == 'bar':
+                font.setBold(True)
                 font.setPointSize(min(15 * self.parent.size_factor, font.pointSize() * 0.7 * self.parent.size_factor))
+            else:
+                font.setBold(False)
 
         qp.setFont(font)
 
@@ -345,12 +348,20 @@ class ClockWidgit(QtGui.QWidget):
 
         # draw text
         if self.parent.parent.high_contrast:
-            if self.highlighted:
-                qp.setPen(clock_text_hl_color)
-            elif self.selected:
-                qp.setPen(clock_text_color)
+            if self.parent.parent.clock_type == 'bar':
+                if self.highlighted:
+                    qp.setPen(clock_text_reg_color)
+                elif self.selected:
+                    qp.setPen(clock_text_color)
+                else:
+                    qp.setPen(clock_text_hl_color)
             else:
-                qp.setPen(clock_text_reg_color)
+                if self.highlighted:
+                    qp.setPen(clock_text_hl_color)
+                elif self.selected:
+                    qp.setPen(clock_text_color)
+                else:
+                    qp.setPen(clock_text_reg_color)
         else:
             qp.setPen(clock_text_color)
 

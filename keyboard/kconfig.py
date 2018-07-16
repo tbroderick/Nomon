@@ -29,8 +29,9 @@ space_char = '_'
 mybad_char = 'Undo'
 # yourbad_char = 'Yours'
 yourbad_char = 'Undo+'
-break_char = '.'
+break_chars = [['.', ',', '?'], '\'']
 back_char = 'Backspace'
+clear_char = 'Clear'
 # word length to display in completions
 max_chars_display = 11
 ## alphabetic
@@ -38,19 +39,19 @@ max_chars_display = 11
 
 alpha_key_chars = [['a', 'b', 'c', 'd', 'e'],
                    ['f', 'g', 'h', 'i', 'j'],
-                   ['k', 'l', 'm', 'n', 'o', ],
+                   ['k', 'l', 'm', 'n', 'o',],
                    ['p', 'q', 'r', 's', 't'],
                    ['u', 'v', 'w', 'x', 'y'],
-                   ['z', space_char, break_char, back_char, mybad_char]
+                   ['z', space_char, break_chars[1], break_chars[0][0], break_chars[0][1], break_chars[0][2], back_char, clear_char, mybad_char]
                    ]
 
 ## qwerty
 qwerty_key_chars = [['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
-                    ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', '\''],
-                    ['z', 'x', 'c', 'v', 'b', 'n', 'm', ',', break_char, '?'],
-                    [back_char, space_char, mybad_char]
+                    ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+                    ['z', 'x', 'c', 'v', 'b', 'n', 'm', space_char, break_chars[1], break_chars[0][1], break_chars[0][0], break_chars[0][2]],
+                    [back_char, clear_char, mybad_char]
                     ]
-
+# key_chars = pickle.dump(qwerty_key_chars, open("user_preferences/layout_preference.p", "wb"))
 key_chars = pickle.load(open("user_preferences/layout_preference.p", "rb"))
 # get gaussian distribution
 bars = [4.1731209137640166e-11, 1.5674042704727563e-10, 5.702330790217924e-10, 2.009440319647259e-09,
@@ -134,8 +135,8 @@ file_pre = "data/clocks."
 file_suff = ".txt"
 # train file name
 # TESTING:train_file_name = "../corpus/ANC-token-proc-small.txt"
-train_file_name_default = "corpus/BNC-token-proc.txt"  # removed "../" from beginning
-train_file_name_censored = "corpus/BNC-token-proc-CENSORED.txt"
+train_file_name_default = "corpus/merged_ce-0.2.txt"  # removed "../" from beginning
+train_file_name_censored = "corpus/merged_ce-0.2_censored.txt"
 train_file_name = pickle.load(open('user_preferences/profanity_filter_preference.p', 'rb'))
 
 # phrases file

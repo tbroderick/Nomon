@@ -17,13 +17,15 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Nomon Keyboard.  If not, see <http://www.gnu.org/licenses/>.
 ######################################
-
+from __future__ import division
 import Tkinter
 import config
 import numpy
 import time
 import math
 import random
+import os
+import pickle
 
 
 # pre-compute locations of the hour hands for a given
@@ -54,6 +56,7 @@ class HourLocs:
 # are computed online
 class HourScoreIncs:
     def __init__(self, use_num, user_id, time_rotate, prev_data):
+        self.pressed_at_least_once = 0
         # rotation period
         self.time_rotate = time_rotate
         # index over histogram bins
@@ -75,17 +78,30 @@ class HourScoreIncs:
         self.y_ksigma = []
 
         ## initialize the density histogram
-        self.Z = 0
-        self.dens_li = []
-        for x in self.x_li:
-            diff = x - config.mu0
-            dens = numpy.exp(-1 / (2 * config.sigma0_sq) * diff * diff)
-            dens /= numpy.sqrt(2 * numpy.pi * config.sigma0_sq)
-            dens *= self.n_ksigma
-            self.dens_li.append(dens)
-            self.Z += dens
-        self.ksigma0 = 1.06 * config.sigma0 / (self.n_ksigma ** 0.2)
-        self.ksigma = self.ksigma0
+        if os.path.exists("preconfig.pickle"):
+            print "using the trained preconfig!"
+            with open("preconfig.pickle", 'rb') as handle:
+                temp_dens = pickle.load(handle)
+                self.dens_li = temp_dens[0]
+                print "I'm starting(reading) and the self.dens_li" + str(temp_dens[0])
+                self.Z = temp_dens[1]
+                self.ksigma0 = temp_dens[2]
+                print "Also the self.ksimga0" + str(temp_dens[2])
+                self.ksigma = self.ksigma0
+                self.y_li_from_pre = temp_dens[3]
+        else:
+            print "couldn't find the trained preconfig!"
+            self.Z = 0
+            self.dens_li = []
+            for x in self.x_li:
+                diff = x - config.mu0
+                dens = numpy.exp(-1 / (2 * config.sigma0_sq) * diff * diff)
+                dens /= numpy.sqrt(2 * numpy.pi * config.sigma0_sq)
+                dens *= self.n_ksigma
+                self.dens_li.append(dens)
+                self.Z += dens
+            self.ksigma0 = 1.06 * config.sigma0 / (self.n_ksigma ** 0.2)
+            self.ksigma = self.ksigma0
 
         ## add in previous data, if any
         if (use_num > 0):  # case: already have click data
@@ -107,10 +123,45 @@ class HourScoreIncs:
         for index in self.index_li:
             self.x_li.append(index * self.time_rotate / config.num_divs_click - self.time_rotate / 2.0)
 
+        # not pressed at all
+        if os.path.exists("preconfig.pickle") and self.pressed_at_least_once == 0:
+            # update self.dens_li and other things
+            empirical = [self.index_into_compatible_with_xloc(self.yin_into_index(yin)) for yin in self.y_li_from_pre]
+            opt_sig = self.optimal_bandwith(empirical)
+            self.dens_li = []
+            self.Z = 0
+            for x in self.x_li:
+                x_loc = x
+                dens = sum(
+                    [self.normal(x_loc, self.index_into_compatible_with_xloc(self.yin_into_index(yin)), opt_sig ** 2)
+                     for yin in self.y_li_from_pre])
+                # print "dens" + str(dens)
+                self.dens_li.append(dens)
+                self.Z += dens
+
         yL = len(self.y_li)
         for n in range(0, yL):
             self.increment_dens(self.y_li[n], self.y_ksigma[n])
         self.calc_ksigma()
+
+    # Helper functions
+    def normal(self, x, mu, sig_sq):
+        return numpy.exp(-((x - mu) ** 2) / (2 * sig_sq)) / float(numpy.sqrt(2 * numpy.pi * sig_sq))
+
+    # return the click score for a particular press time
+    # yin will be index!
+    def yin_into_index(self, yin):
+        # yin_into_index = yin
+        index = int(config.num_divs_click * (yin / self.time_rotate + 0.5)) % config.num_divs_click
+        return index
+
+    def index_into_compatible_with_xloc(self, index):
+        x_compat = index * self.time_rotate / config.num_divs_click - self.time_rotate / 2.0
+        return x_compat
+
+    def optimal_bandwith(self, things):
+        n = len(things)
+        return 1.06 * (n ** -0.2) * numpy.std(things)
 
     def increment_dens(self, yin, ksigma):
         self.Z = 0
@@ -253,7 +304,8 @@ class BroderClocks:
         self.cscores = []  # just initializing here; real values later
         for clock in self.clock_li:
             self.cscores.append(0)
-        self.old_cscores = list(self.cscores)
+        self.prev_cscores = list(self.cscores)
+
         # array of spacings for high scorers
         self.spaced = SpacedArray(self.num_divs_time)
         # undo settings
@@ -320,36 +372,6 @@ class BroderClocks:
         #	self.file_handle.write("bits " + str(bit_rate) + " " + str(loc_rate) + "\n")
         self.last_win_time = t
 
-    def init_canvas_clocks(self):
-        # list of IDs so can retrieve these objects to change them later
-        self.circle_id = []
-        self.noon_id = []
-        self.hour_id = []
-        for clock in self.clock_li:
-            ## position coordinates
-            # clock center
-            x = self.centers[clock][0]
-            y = self.centers[clock][1]
-            # upper left corner
-            ulx = x - self.radius
-            uly = y - self.radius
-            # lower right corner
-            lrx = x + self.radius
-            lry = y + self.radius
-            ## create objects and record their IDs
-            self.circle_id.append(self.canvas.create_oval([ulx, uly, lrx, lry], fill=config.circle_low_color,
-                                                          outline=config.circle_outline_color))
-            self.noon_id.append(
-                self.canvas.create_line([x, y, x, uly], fill=config.noon_color, width=config.hand_width))
-            self.hour_id.append(
-                self.canvas.create_line([x, y, x, lry], fill=config.hour_color, width=config.hand_width))
-        # blank out the clocks that aren't in use this round
-        for clock in self.clocks_off:
-            self.canvas.itemconfigure(self.circle_id[clock], fill=self.circle_off_color,
-                                      outline=config.circle_off_color)
-            self.canvas.itemconfigure(self.noon_id[clock], fill=config.circle_off_color)
-            self.canvas.itemconfigure(self.hour_id[clock], fill=config.circle_off_color)
-
     # usually called after a timer increment in the parent program
     def increment(self, time_in):
         self.latest_time = time_in
@@ -361,9 +383,8 @@ class BroderClocks:
             # register in coordinates of hour hand
             v = self.hl.hour_locs[self.cur_hours[clock]]
             angle = math.atan2(v[1], v[0])
-            self.parent.mainWidgit.clocks[clock].angle = angle + math.pi*0.5
+            self.parent.mainWidgit.clocks[clock].angle = angle + math.pi * 0.5
             self.parent.mainWidgit.clocks[clock].repaint()
-
 
         # refresh the canvas
         # self.canvas.update_idletasks()
@@ -425,6 +446,7 @@ class BroderClocks:
 
     def update_scores(self, time_diff_in):
         # add score for this round to cumulative score
+
         for clock in self.clocks_on:
             time_in = self.cur_hours[
                           clock] * self.time_rotate * 1.0 / self.num_divs_time + time_diff_in - self.time_rotate * config.frac_period
@@ -458,6 +480,7 @@ class BroderClocks:
             return -1
         else:
             return 0
+
 
     # determine if a single clock has won out above the rest
     def is_winner(self):
@@ -510,7 +533,6 @@ class BroderClocks:
                     self.cscores[clock] = clock_score_prior[count]
                     count += 1
                 top_score = 0
-
         # update the sorted loading_text
         self.sorted_inds = list(self.clocks_on)
         self.sorted_inds.sort(self.compare_score)
@@ -568,9 +590,9 @@ class BroderClocks:
         for clock in self.clocks_on:
             # x = self.centers[clock][0]
             # y = self.centers[clock][1]
-            v = self.hl.hour_locs[self.cur_hours[clock]-1]
+            v = self.hl.hour_locs[self.cur_hours[clock] - 1]
             angle = math.atan2(v[1], v[0])
-            self.parent.mainWidgit.clocks[clock].angle = angle + math.pi*0.5
+            self.parent.mainWidgit.clocks[clock].angle = angle + math.pi * 0.5
             self.parent.mainWidgit.clocks[clock].repaint()
 
         # update the canvas

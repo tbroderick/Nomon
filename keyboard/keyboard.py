@@ -145,6 +145,10 @@ class Keyboard(MainWindow):
         self.bc_init = False
         self.bars = kconfig.bars
         self.previous_undo_text = ''
+        self.previous_winner=0
+        self.wpm_data = config.Stack(config.wpm_history_length)
+        self.wpm_time = 0
+        self.clear_text = False
         self.initUI()
 
         ## set up broderclocks
@@ -199,10 +203,15 @@ class Keyboard(MainWindow):
         for row in range(0, self.N_rows):
             n_keys = len(kconfig.key_chars[row])
             for col in range(0, n_keys):
-                if kconfig.key_chars[row][col].isalpha() and (len(kconfig.key_chars[row][col]) == 1):
-                    self.N_alpha_keys = self.N_alpha_keys + 1
-                elif kconfig.key_chars[row][col] == kconfig.space_char and (len(kconfig.key_chars[row][col]) == 1):
-                    self.N_alpha_keys = self.N_alpha_keys + 1
+                if isinstance(kconfig.key_chars[row][col], list):
+                    pass
+                else:
+                    if kconfig.key_chars[row][col].isalpha() and (len(kconfig.key_chars[row][col]) == 1):
+                        self.N_alpha_keys = self.N_alpha_keys + 1
+                    elif kconfig.key_chars[row][col] == kconfig.space_char and (len(kconfig.key_chars[row][col]) == 1):
+                        self.N_alpha_keys = self.N_alpha_keys + 1
+                    elif kconfig.key_chars[row][col] == kconfig.break_chars[1] and (len(kconfig.key_chars[row][col]) == 1):
+                        self.N_alpha_keys = self.N_alpha_keys + 1
             self.N_keys_row.append(n_keys)
             self.N_keys += n_keys
 
@@ -428,9 +437,6 @@ class Keyboard(MainWindow):
 
     def raise_words(self):
         pass
-        for wid in self.word_id:
-
-            self.canvas.tag_raise(wid)
 
     def draw_words(self):
         (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq, self.prefix) = self.dt.get_words(
@@ -494,10 +500,12 @@ class Keyboard(MainWindow):
                     prob = prob * kconfig.rem_prob
                     if self.keys_li[key] == kconfig.mybad_char or self.keys_li[key] == kconfig.yourbad_char:
                         prob = kconfig.undo_prob
-                    if self.keys_li[key] == kconfig.break_char:
+                    if self.keys_li[key] in kconfig.break_chars[0]:
                         prob = kconfig.break_prob
                     if self.keys_li[key] == kconfig.back_char:
                         prob = kconfig.back_prob
+                    if self.keys_li[key] == kconfig.clear_char:
+                        prob = kconfig.undo_prob
                     self.word_score_prior.append(numpy.log(prob))
         else:
             for index in self.words_on:
@@ -513,6 +521,7 @@ class Keyboard(MainWindow):
                     self.word_score_prior.append(0)
 
     def draw_typed(self):
+        self.wpm_update()
         delete = False
         undo = False
         previous_text = self.mainWidgit.text_box.toPlainText()
@@ -532,7 +541,6 @@ class Keyboard(MainWindow):
             new_text = ''
             undo_text = new_text
             last_add = 0
-        print("DRAW TEXT: ", new_text)
 
         index = self.previous_winner
         if self.mainWidgit.clocks[index] != '':
@@ -540,8 +548,12 @@ class Keyboard(MainWindow):
                 undo = True
                 delete = False
 
-        if delete:
-            print("DELETE")
+        if self.clear_text:
+            self.typed_versions += ['']
+            self.mainWidgit.text_box.setText('')
+            self.clear_text = False
+            undo_text = 'Clear'
+        elif delete:
             self.prefix = self.prefix[:-1]
             if self.typed_versions[-1] != '':
                 self.typed_versions += [previous_text[:-1]]
@@ -556,8 +568,14 @@ class Keyboard(MainWindow):
         self.previous_undo_text = undo_text
         self.mainWidgit.undo_label.setText("<font color='green'>"+undo_text+"</font>")
 
+    def wpm_update(self):
+        time_diff = (time.time()-self.wpm_time)
+        if time_diff < 15.*10/self.time_rotate:
+            self.wpm_data+time_diff
+            self.wpm_time = 0
+            self.mainWidgit.wpm_label.setText("Selections/Min: "+str(round(self.wpm_data.average(), 2)))
+
     def on_pause(self):
-        print("Pausing")
         self.mainWidgit.pause_timer.start(kconfig.pause_length)
         self.in_pause = True
         self.setStyleSheet("background-color:"+config.bg_color_highlt+";")
@@ -570,6 +588,13 @@ class Keyboard(MainWindow):
         self.on_timer()
 
     def on_timer(self):
+        if self.wpm_time != 0:
+            if time.time()-self.wpm_time > 15:  # reset wrd prior and click history after inactivity
+                self.wpm_time = 0
+                self.bc.clock_history = [[]]
+                self.bc.is_undo = True
+                self.bc.init_round(True, False, self.bc.prev_cscores)
+                self.wpm_time = 0
         if self.focusWidget() == self.mainWidgit.text_box:
             self.mainWidgit.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
         if self.bc_init:
@@ -579,7 +604,8 @@ class Keyboard(MainWindow):
 
     def on_press(self):
         # self.canvas.focus_set()
-
+        if self.wpm_time == 0:
+            self.wpm_time = time.time()
         if not self.in_pause:
             if config.is_write_data:
                 self.num_presses += 1
@@ -588,7 +614,6 @@ class Keyboard(MainWindow):
 
     def highlight_winner(self, index):
 
-        print("HIGHLIGHT WINNER", self.clock_index_to_text(index))
         if self.mainWidgit.clocks[index] != '':
             self.mainWidgit.clocks[index].selected = True
             self.mainWidgit.clocks[index].repaint()
@@ -638,7 +663,6 @@ class Keyboard(MainWindow):
     def make_choice(self, index):
         is_undo = False
         is_equalize = False
-
         ## now pause (if desired)
         if self.pause_set == 1:
             self.on_pause()
@@ -664,7 +688,7 @@ class Keyboard(MainWindow):
                 self.old_context_li.append(self.context)
                 self.context = ""
                 self.last_add_li.append(1)
-            elif (new_char == kconfig.mybad_char) or (new_char == kconfig.yourbad_char):
+            elif new_char == kconfig.mybad_char or new_char == kconfig.yourbad_char:
                 talk_string = new_char
                 # if added characters that turn
                 if len(self.last_add_li) > 1:
@@ -684,6 +708,7 @@ class Keyboard(MainWindow):
                 talk_string = new_char
                 # if delete the last character that turn
                 self.old_context_li.append(self.context)
+                print(self.context)
                 lt = len(self.typed)
                 if lt > 0:  # typed anything yet?
                     self.btyped += self.typed[-1]
@@ -702,6 +727,13 @@ class Keyboard(MainWindow):
                             i -= 1
                         self.context = self.typed[i + 1:lt]
                 new_char = ''
+            elif new_char == kconfig.clear_char:
+                talk_string = 'clear'
+                new_char = '_'
+                self.old_context_li.append(self.context)
+                self.context = ""
+                self.last_add_li.append(1)
+                self.clear_text = True
             elif new_char.isalpha():
                 talk_string = new_char
                 self.old_context_li.append(self.context)
@@ -794,7 +826,7 @@ def main():
     ex = Keyboard(screen_res, app)
 
     if kconfig.first_load:
-        welcome = Pretraining(screen_res)
+        welcome = Pretraining(screen_res, ex)
         pickle.dump(False, open("user_preferences/first_load.p", "wb"))
 
     sys.exit(app.exec_())
