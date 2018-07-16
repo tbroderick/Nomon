@@ -67,6 +67,7 @@ class Stack(list):
         return 60./(float(sum(self)) / float(len(self)))
 
 
+
 ### Colors ###
 # Background Color
 bg_color_highlt = "#ddf6dd"
@@ -104,6 +105,7 @@ if high_contrast:
     pac_man_selct_color = QtGui.QColor(20, 245, 20)
     pac_man_reg_color = QtGui.QColor(255, 0, 0)
     pac_man_highlt_color = QtGui.QColor(0, 0, 255)
+
 
 else:
     # clock colors
@@ -157,6 +159,7 @@ top_bar_font.setStretch(80)
 top_bar_font.setBold(True)
 
 text_box_font = QtGui.QFont(base_font, 20*font_scale)
+
 text_box_font.setStretch(90)
 
 
@@ -168,6 +171,7 @@ win_diff_high = numpy.log(999)
 max_init_diff = win_diff_base - numpy.log(4)
 # learning press distribution or not
 is_learning = True
+is_pre_learning = True
 # whether to output data
 is_write_data = True
 # last index to include when "undo"-ing scores

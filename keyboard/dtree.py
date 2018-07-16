@@ -156,6 +156,7 @@ class DTree:
                 if self.loading_text[n_line / 20000] != "":
                     print self.loading_text[n_line / 20000]
                     subWindows.loading_text = self.loading_text[n_line / 20000]  # send messages to GUI splash screen
+
                     self.parent.app.processEvents()  # allow splash screen to refresh
 
 

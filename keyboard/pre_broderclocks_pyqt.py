@@ -104,7 +104,6 @@ class Pre_broderclocks:
         self.hl = broderclocks.HourLocs(self.num_divs_time, self.parent.radius)
         self.cur_hour = 0
 
-
         ## scores
         self.hsi = Pre_HourScoreIncs(use_num, user_id, time_rotate, prev_data)
         self.cscore = 0
@@ -133,6 +132,13 @@ class Pre_broderclocks:
         y = self.parent.y
         v = self.hl.hour_locs[self.cur_hour]
         self.parent.v = v
+        
+
+        
+        angle = math.atan2(v[1], v[0])
+        self.parent.mainWidgit.clock.angle = angle + math.pi*0.5
+        self.parent.mainWidgit.clock.repaint()
+
         
         self.parent.update()
             
