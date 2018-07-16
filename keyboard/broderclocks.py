@@ -83,16 +83,32 @@ class HourScoreIncs:
         ## initialize the density histogram
         if os.path.exists("data/preconfig.pickle") and self.not_read_pickle == 0:
             print "using the trained preconfig!"
-            with open("data/preconfig.pickle", 'rb') as handle:
-                temp_dens = pickle.load(handle)
-                self.dens_li = temp_dens[0]
-                print "I'm starting(reading) and the self.dens_li" + str(temp_dens[0])
-                self.Z = temp_dens[1]
-                self.ksigma0 = temp_dens[2]
-                print "Also the self.ksimga0" + str(temp_dens[2])
-                self.ksigma = self.ksigma0 
-                self.y_li_from_pre = temp_dens[3]
-            self.not_read_pickle = 1
+            try:
+                with open("data/preconfig.pickle", 'rb') as handle:
+                    temp_dens = pickle.load(handle)
+                    self.dens_li = temp_dens[0]
+                    print "I'm starting(reading) and the self.dens_li" + str(temp_dens[0])
+                    self.Z = temp_dens[1]
+                    self.ksigma0 = temp_dens[2]
+                    print "Also the self.ksimga0" + str(temp_dens[2])
+                    self.ksigma = self.ksigma0 
+                    self.y_li_from_pre = temp_dens[3]
+                self.not_read_pickle = 1
+            except:
+                print "preconfig.pickle exists but it is empty!"
+                self.Z = 0
+                self.dens_li = []
+                for x in self.x_li:
+                    diff = x - config.mu0
+                    dens = numpy.exp(-1/(2*config.sigma0_sq) * diff*diff)
+                    dens /= numpy.sqrt(2*numpy.pi*config.sigma0_sq)
+                    dens *= self.n_ksigma
+                    self.dens_li.append(dens)
+                    self.Z += dens
+                self.ksigma0 = 1.06*config.sigma0 / (self.n_ksigma**0.2)
+                self.ksigma = self.ksigma0
+                self.not_read_pickle = 1
+
         else:
             print "couldn't find the trained preconfig!"
             self.Z = 0
@@ -138,21 +154,23 @@ class HourScoreIncs:
         if os.path.exists("data/preconfig.pickle"):
             print "preconfig exists"
             
-        if os.path.exists("data/preconfig.pickle") and self.not_read_pickle ==0:
-            print "not pressed once so update from training"
-            #update self.dens_li and other things
-            empirical = [self.index_into_compatible_with_xloc(self.yin_into_index(yin)) for yin in self.y_li_from_pre] 
-            opt_sig = self.optimal_bandwith(empirical)
-            self.dens_li = []
-            self.Z = 0
-            for x in self.x_li:
-                x_loc = x
-                dens = sum([self.normal(x_loc, self.index_into_compatible_with_xloc(self.yin_into_index(yin)), opt_sig**2) for yin in self.y_li_from_pre])
-                #print "dens" + str(dens)
-                self.dens_li.append(dens)
-                self.Z += dens
-                
-            self.not_read_pickle = 1
+# =============================================================================
+#         if os.path.exists("data/preconfig.pickle") and self.not_read_pickle ==0:
+#             print "not pressed once so update from training"
+#             #update self.dens_li and other things
+#             empirical = [self.index_into_compatible_with_xloc(self.yin_into_index(yin)) for yin in self.y_li_from_pre] 
+#             opt_sig = self.optimal_bandwith(empirical)
+#             self.dens_li = []
+#             self.Z = 0
+#             for x in self.x_li:
+#                 x_loc = x
+#                 dens = sum([self.normal(x_loc, self.index_into_compatible_with_xloc(self.yin_into_index(yin)), opt_sig**2) for yin in self.y_li_from_pre])
+#                 #print "dens" + str(dens)
+#                 self.dens_li.append(dens)
+#                 self.Z += dens
+#                 
+#             self.not_read_pickle = 1
+# =============================================================================
         
         yL = len(self.y_li)
         for n in range(0, yL):
