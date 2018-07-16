@@ -26,6 +26,7 @@ import math
 import random
 import os
 import pickle
+import numpy
 
 
 # pre-compute locations of the hour hands for a given
@@ -233,6 +234,11 @@ class HourScoreIncs:
         index = int(config.num_divs_click * (yin / self.time_rotate + 0.5)) % config.num_divs_click
         return numpy.log(self.dens_li[index] / self.Z)
 
+    def reverse_index_gsi(self, log_dens_val):
+        dens_val = numpy.e ** log_dens_val
+        most_likely_index = numpy.argmin([abs(x - dens_val) for x in self.dens_li])
+        return most_likely_index
+        
     # plot exp(the click scores) across press times
     def get_plot(self):
         # don't return x information
@@ -464,6 +470,17 @@ class BroderClocks:
         if config.is_learning:
             self.update_history(time_in - self.latest_time)
 
+        ##Save the click time of the current 
+        top_score_clock = self.top_cscore_arg()
+        ind_in_histo = self.hsi.reverse_index_gsi(self.cscores[top_score_clock])
+        
+        #Save all click time by the user
+        
+        last_gap_time = (time_in - self.last_press_time) % self.time_rotate
+        self.save_click_time(last_gap_time, ind_in_histo)
+        self.last_press_time = time_in
+        print "click time was recorded!"
+
         # proceed based on whether there was a winner
         if (self.is_winner()):
             # record winner
@@ -484,22 +501,15 @@ class BroderClocks:
             self.init_round(False, False, [])
             
             
-        #Save all click time by the user
         
-        last_gap_time = (time_in - self.last_press_time) % self.time_rotate
-        self.save_click_time(last_gap_time)
-        self.last_press_time = time_in
-        print "click time was recorded!"
 
     #Save all click time by the user
-    def save_click_time(self,last_gap_time):
+    def save_click_time(self,last_gap_time, index):
         #time_diff_in = time_in - self.latest_time
         #No such thing as cur_hour
         #click_time = self.cur_hour*self.time_rotate*1.0/self.num_divs_time + time_diff_in - self.time_rotate*config.frac_period
         
-        self.click_time_list.append(last_gap_time)
-
-   
+        self.click_time_list.append((last_gap_time, index))     
 
     def learn_scores(self):
         n_hist = len(self.clock_history)
@@ -539,6 +549,10 @@ class BroderClocks:
         # sort the scores so as to ensure spacing between top scorers
         self.sorted_inds = list(self.clocks_on)
         self.sorted_inds.sort(self.compare_score)
+
+    def top_cscore_arg(self):
+        return numpy.argmax(self.cscores)
+        
 
     def update_history(self, time_diff_in):
         n_press = len(self.clock_history[0])
