@@ -1,3 +1,3 @@
-S'corpus/BNC-token-proc.txt'
+S'corpus/merged_ce-0.2.txt'
 p0
 .

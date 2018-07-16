@@ -152,10 +152,10 @@ class DTree:
             self.dt.add_word(toks[0], int(toks[1]))
 
             n_line += 1
-            if n_line % 10000 == 0:
-                if self.loading_text[n_line / 10000] != "":
-                    print self.loading_text[n_line / 10000]
-                    subWindows.loading_text = self.loading_text[n_line / 10000]  # send messages to GUI splash screen
+            if n_line % 20000 == 0:
+                if self.loading_text[n_line / 20000] != "":
+                    print self.loading_text[n_line / 20000]
+                    subWindows.loading_text = self.loading_text[n_line / 20000]  # send messages to GUI splash screen
                     self.parent.app.processEvents()  # allow splash screen to refresh
 
 

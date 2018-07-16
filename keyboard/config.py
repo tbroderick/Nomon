@@ -46,6 +46,27 @@ ideal_wait_s = 0.05
 frac_period = 4.0 / 8.0  # 4.0/8.0 # 7, 6, 5, 4, 3, 2, 1
 theta0 = frac_period * 2.0 * numpy.pi  # numpy.pi
 
+# words per min tracking
+wpm_history_length = 20
+
+
+class Stack(list):
+
+    def __init__(self, max_size):
+        super(Stack, self).__init__()
+        self.max_size = max_size
+
+    def __add__(self, other):
+        if len(self) < self.max_size:
+            self.insert(0, other)
+        else:
+            self.pop(-1)
+            self.insert(0, other)
+
+    def average(self):
+        return 60./(float(sum(self)) / float(len(self)))
+
+
 ### Colors ###
 # Background Color
 bg_color_highlt = "#ddf6dd"
@@ -62,27 +83,27 @@ if high_contrast:
     default_hh_color = QtGui.QColor(0, 200, 0)
 
     default_selct_color = QtGui.QColor(20, 245, 20)
-    default_highlt_color = QtGui.QColor(255, 0, 0)
-    default_reg_color = QtGui.QColor(0, 0, 255)
+    default_reg_color = QtGui.QColor(255, 0, 0)
+    default_highlt_color = QtGui.QColor(0, 0, 255)
 
     # bar
     bar_hh_selct_color = QtGui.QColor(10, 255, 10)
-    bar_hh_highlt_color = QtGui.QColor(255, 0, 0)
-    bar_hh_reg_color = QtGui.QColor(0, 0, 255)
+    bar_hh_reg_color = QtGui.QColor(255, 0, 0)
+    bar_hh_highlt_color = QtGui.QColor(0, 0, 255)
 
     bar_mh_selct_color = QtGui.QColor(20, 245, 20)
-    bar_mh_highlt_color = QtGui.QColor(255, 150, 150)
-    bar_mh_reg_color = QtGui.QColor(150, 150, 255)
+    bar_mh_reg_color = QtGui.QColor(255, 150, 150)
+    bar_mh_highlt_color = QtGui.QColor(150, 150, 255)
 
     # ball
     ball_mh_selct_color = QtGui.QColor(20, 245, 20)
-    ball_mh_highlt_color = QtGui.QColor(255, 150, 150)
-    ball_mh_reg_color = QtGui.QColor(150, 150, 255)
+    ball_mh_reg_color = QtGui.QColor(255, 150, 150)
+    ball_mh_highlt_color = QtGui.QColor(150, 150, 255)
 
     # pac_man
     pac_man_selct_color = QtGui.QColor(20, 245, 20)
-    pac_man_highlt_color = QtGui.QColor(255, 0, 0)
-    pac_man_reg_color = QtGui.QColor(0, 0, 255)
+    pac_man_reg_color = QtGui.QColor(255, 0, 0)
+    pac_man_highlt_color = QtGui.QColor(0, 0, 255)
 
 else:
     # clock colors
@@ -116,19 +137,26 @@ else:
 
 ### Fonts ###
 base_font = 'consolas'
+font_scale = pickle.load(open("user_preferences/font_scale.p", 'rb'))
 
-splash_font = QtGui.QFont(base_font, 15)
+if font_scale == 'med':
+    font_scale = 1
+elif font_scale == 'large':
+    font_scale = 1.5
+elif font_scale == 'small':
+    font_scale = 0.75
+splash_font = QtGui.QFont(base_font, 15*font_scale)
 
-welcome_main_font = QtGui.QFont('Consolas', 15)
-welcome_sub_font = QtGui.QFont('Consolas', 12)
+welcome_main_font = QtGui.QFont('Consolas', 15*font_scale)
+welcome_sub_font = QtGui.QFont('Consolas', 12*font_scale)
 clock_font = QtGui.QFont(base_font)
 clock_font.setBold(False)
 
-top_bar_font = QtGui.QFont(base_font, 16)
+top_bar_font = QtGui.QFont(base_font, 16*font_scale)
 top_bar_font.setStretch(80)
 top_bar_font.setBold(True)
 
-text_box_font = QtGui.QFont(base_font, 20)
+text_box_font = QtGui.QFont(base_font, 20*font_scale)
 text_box_font.setStretch(90)
 
 

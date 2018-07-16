@@ -12,8 +12,8 @@ class StartWindow(QtGui.QMainWindow):
         loading_text = '****************************\n****************************\n[Loading...]'
 
         self.screen_res = screen_res
-        self.clock_type = 'default'
-        self.high_contrast = False
+        self.clock_type = pickle.load(open("user_preferences/clock_preference.p", "rb"))
+        self.high_contrast = pickle.load(open("user_preferences/high_contrast.p", "rb"))
         self.splash = splash
         self.help_screen = False  # if triggered under help menu adjust number of follow up screens
         self.screen_num = 0  # start at first screen if welcome screen
@@ -311,10 +311,11 @@ class PretrainScreen(QtGui.QWidget):
 
 class Pretraining(StartWindow):
 
-    def __init__(self, screen_res):
+    def __init__(self, screen_res, sister):
         super(Pretraining, self).__init__(screen_res, False)
         self.num_presses = 0
         self.total_presses = 20
+        self.sister = sister
         ######  Tiffany's pretraining alogrithm can go here #######
         # treat this wrapper class of the pretraining GUI Window as the keyboard class above
         # add whatever attributes from the keyboard class you need in here
