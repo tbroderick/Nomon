@@ -32,6 +32,7 @@ yourbad_char = 'Undo+'
 break_chars = [['.', ',', '?'], '\'']
 back_char = 'Backspace'
 clear_char = 'Clear'
+
 # word length to display in completions
 max_chars_display = 11
 ## alphabetic
@@ -43,6 +44,7 @@ alpha_key_chars = [['a', 'b', 'c', 'd', 'e'],
                    ['p', 'q', 'r', 's', 't'],
                    ['u', 'v', 'w', 'x', 'y'],
                    ['z', space_char, break_chars[1], break_chars[0][0], break_chars[0][1], break_chars[0][2], back_char, clear_char, mybad_char]
+
                    ]
 
 ## qwerty
@@ -51,7 +53,8 @@ qwerty_key_chars = [['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
                     ['z', 'x', 'c', 'v', 'b', 'n', 'm', space_char, break_chars[1], break_chars[0][1], break_chars[0][0], break_chars[0][2]],
                     [back_char, clear_char, mybad_char]
                     ]
-# key_chars = pickle.dump(qwerty_key_chars, open("user_preferences/layout_preference.p", "wb"))
+key_chars = pickle.dump(qwerty_key_chars, open("user_preferences/layout_preference.p", "wb"))
+
 key_chars = pickle.load(open("user_preferences/layout_preference.p", "rb"))
 # get gaussian distribution
 bars = [4.1731209137640166e-11, 1.5674042704727563e-10, 5.702330790217924e-10, 2.009440319647259e-09,
@@ -74,6 +77,7 @@ bars = [4.1731209137640166e-11, 1.5674042704727563e-10, 5.702330790217924e-10, 2
 
 ### First Load ###
 first_load = pickle.load(open("user_preferences/first_load.p", "rb"))
+
 ### Events ###
 # event selection
 joy_evt = "<<JoyFoo>>"
@@ -91,6 +95,8 @@ base_window_width = 1200
 base_window_height = 700
 # clock radius
 base_clock_rad = 10  # 10
+
+pre_clock_rad = 200
 clock_rad = 10  # 10
 # word width
 base_word_w = 160
@@ -137,6 +143,7 @@ file_suff = ".txt"
 # TESTING:train_file_name = "../corpus/ANC-token-proc-small.txt"
 train_file_name_default = "corpus/merged_ce-0.2.txt"  # removed "../" from beginning
 train_file_name_censored = "corpus/merged_ce-0.2_censored.txt"
+
 train_file_name = pickle.load(open('user_preferences/profanity_filter_preference.p', 'rb'))
 
 # phrases file

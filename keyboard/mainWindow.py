@@ -1,7 +1,6 @@
 import sys
 import os
 import string
-import imp
 import config
 import pickle
 from widgets import *
@@ -20,6 +19,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setCentralWidget(self.mainWidgit)
         self.high_contrast = pickle.load(open("user_preferences/high_contrast.p", "rb"))
         self.profanity_filter = pickle.load(open("user_preferences/profanity_filter_preference.p", "rb"))
+
 
         self.clockTextAlign('auto', message=False)
 
@@ -93,6 +93,7 @@ class MainWindow(QtGui.QMainWindow):
         # Tools Menu Actions
         self.profanityFilterAction = QtGui.QAction('&Profanity Filter', self, checkable=True)
         self.profanityFilterAction.triggered.connect(self.profanityFilterEvent)
+
 
         # Help Menu Actions
         helpAction = QtGui.QAction('&Help', self)
@@ -224,6 +225,7 @@ class MainWindow(QtGui.QMainWindow):
         messageBox.addButton(QtGui.QPushButton('On'), QtGui.QMessageBox.YesRole)
         messageBox.addButton(QtGui.QPushButton('Off'), QtGui.QMessageBox.NoRole)
 
+
         messageBox.setDefaultButton(QtGui.QMessageBox.No)
         messageBox.setWindowIcon(self.icon)
 
@@ -233,6 +235,7 @@ class MainWindow(QtGui.QMainWindow):
         elif reply == 0:
             pickle.dump(True, open("user_preferences/high_contrast.p", "wb"))
         self.check_filemenu()
+
 
     def clockChangeEvent(self, design):
         messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Change Clock Design", "This will change the clocks "
@@ -257,6 +260,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.clockTextAlign('auto', message=False)
                 self.check_filemenu()
 
+
     def layoutChangeEvent(self, layout):
         messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Change Keyboard Layout", "This will change the clock "
                                                                                          "layout to <b>" + layout + "</b"
@@ -274,6 +278,7 @@ class MainWindow(QtGui.QMainWindow):
             elif layout == 'qwerty':
                 pickle.dump(kconfig.qwerty_key_chars, open("user_preferences/layout_preference.p", "wb"))
             self.check_filemenu()
+
 
     def clockTextAlign(self, alignment, message=True):
         if alignment == "auto":
@@ -315,6 +320,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.mainWidgit.alignment = alignment
                 self.resizeClocks()
                 self.check_filemenu()
+
         else:
             self.mainWidgit.alignment = alignment
             self.resizeClocks()
@@ -345,6 +351,7 @@ class MainWindow(QtGui.QMainWindow):
         messageBox.addButton(QtGui.QPushButton('On'), QtGui.QMessageBox.YesRole)
         messageBox.addButton(QtGui.QPushButton('Off'), QtGui.QMessageBox.NoRole)
         messageBox.setIconPixmap(QtGui.QPixmap(os.path.join('icons/block.png')))
+
         messageBox.setDefaultButton(QtGui.QMessageBox.No)
         messageBox.setWindowIcon(self.icon)
 
@@ -354,6 +361,7 @@ class MainWindow(QtGui.QMainWindow):
         elif reply == 0:
             pickle.dump(kconfig.train_file_name_censored, open('user_preferences/profanity_filter_preference.p', 'wb'))
         self.check_filemenu()
+
 
     def aboutEvent(self):
         QtGui.QMessageBox.question(self, 'About Nomon', "Copyright 2009 Tamara Broderick\n"
@@ -407,6 +415,7 @@ class MainKeyboardWidget(QtGui.QWidget):
         self.wpm_label = QtGui.QLabel("Selections/Min: "+"----")
         self.wpm_label.setFont(top_bar_font)
 
+
         # generate learn, speak, talk checkboxes
         self.cb_talk = QtGui.QCheckBox('Talk', self)
         self.cb_learn = QtGui.QCheckBox('Learn', self)
@@ -444,6 +453,7 @@ class MainKeyboardWidget(QtGui.QWidget):
         top_hbox.addStretch(2)
         top_hbox.addWidget(self.wpm_label, 1)
         top_hbox.addStretch(2)
+
         top_hbox.addWidget(self.cb_talk, 1)
         top_hbox.addWidget(self.cb_learn, 1)
         top_hbox.addWidget(self.cb_pause, 1)
@@ -559,6 +569,7 @@ class MainKeyboardWidget(QtGui.QWidget):
         self.keyboard_grid = QtGui.QGridLayout()
         self.punctuation_grid = QtGui.QGridLayout()
         self.back_clear_vbox = QtGui.QVBoxLayout()
+
         clock_index = 0
         if len(self.layout) > 4:  # layout used for keyboard with many rows (Alphabetical)
             for row in range(len(self.layout)):
@@ -609,6 +620,7 @@ class MainKeyboardWidget(QtGui.QWidget):
                         else:
                             self.keyboard_grid.addWidget(clock, row * 2,
                                                          (key - len(kconfig.break_chars[0])) * 2 + 1)
+
                     # add sub grid to main keyboard grid
                     self.keyboard_grid.addWidget(VerticalSeparator(), row * 2, key * 2 + 2)
                     self.keyboard_grid.addWidget(HorizontalSeparator(), row * 2 + 1, key * 2 + 1)
@@ -624,6 +636,7 @@ class MainKeyboardWidget(QtGui.QWidget):
                 for key in range(len(self.layout[row])):
                     clock = self.clocks[clock_index + kconfig.N_pred]
                     if self.layout[row][key] in string.ascii_letters:
+
                         key_grid = QtGui.QGridLayout()
                         key_grid.addWidget(self.clocks[clock_index + kconfig.N_pred], 0, 0)
                         for i in range(kconfig.N_pred):
@@ -631,6 +644,7 @@ class MainKeyboardWidget(QtGui.QWidget):
 
                         self.keyboard_grid.addLayout(key_grid, row * 2, key * 2 + 1)
                     else:
+
                         if clock.text == kconfig.mybad_char:  # check if UNDO clock
                             self.undo_label = QtGui.QLabel(self.parent.previous_undo_text)
                             undo_font = QtGui.QFont('Consolas', 20)
@@ -669,6 +683,7 @@ class MainKeyboardWidget(QtGui.QWidget):
                     if key < 10:
                         self.keyboard_grid.addWidget(VerticalSeparator(), row * 2, key * 2 + 2)
                         self.keyboard_grid.addWidget(HorizontalSeparator(), row * 2 + 1, key * 2 + 1)
+
 
                     clock_index += kconfig.N_pred + 1
                 self.keyboard_grid.setRowStretch(row * 2, 2)

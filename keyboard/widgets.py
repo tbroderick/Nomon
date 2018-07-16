@@ -1,3 +1,4 @@
+from __future__ import division
 from PyQt4 import QtGui, QtCore
 import math
 import kconfig
@@ -18,6 +19,15 @@ class ClockWidgit(QtGui.QWidget):
         self.previous_angle = -360.  # used in pac-man clock to compare if hand passed noon (- to + angle)
         self.color_switch = False  # used in pac-man clock to alternate color fill
         self.initUI()
+
+        try:
+            if self.parent.alignment[0] != 'c':
+                self.constraint_factor = 0.5
+            else:
+                self.constraint_factor = 1
+            self.radius = self.size().height() * self.constraint_factor / 2
+        except:
+            pass
 
     def initUI(self):
 
@@ -81,6 +91,7 @@ class ClockWidgit(QtGui.QWidget):
                         qp.setBrush(brush)
                     else:
                         brush.setColor(QtGui.QColor(255, 0, 0, 255 * color_factor))
+
                         qp.setBrush(brush)
             else:
                 def clock_color(color_factor):
@@ -245,6 +256,8 @@ class ClockWidgit(QtGui.QWidget):
 
         constraint = h * constraint_factor
         clock_rad = constraint / 2
+
+        self.radius = clock_rad
         clock_thickness = 1. / 6
 
         # calculate size of text from leftover space
@@ -267,6 +280,7 @@ class ClockWidgit(QtGui.QWidget):
                 font.setPointSize(min(15 * self.parent.size_factor, font.pointSize() * 0.7 * self.parent.size_factor))
             else:
                 font.setBold(False)
+
 
         qp.setFont(font)
 
@@ -362,6 +376,7 @@ class ClockWidgit(QtGui.QWidget):
                     qp.setPen(clock_text_color)
                 else:
                     qp.setPen(clock_text_reg_color)
+
         else:
             qp.setPen(clock_text_color)
 

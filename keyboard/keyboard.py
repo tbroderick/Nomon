@@ -22,7 +22,8 @@ import broderclocks
 import dtree
 import time
 import numpy
-import cPickle
+
+import cPickle, pickle
 from mainWindow import *
 from subWindows import *
 
@@ -100,6 +101,7 @@ class Keyboard(MainWindow):
             prev_data = []
         ## set up file handle for printing useful stuff
         self.undefined = False
+
         if config.is_write_data:
             self.gen_handle()
             self.num_presses = 0
@@ -149,6 +151,7 @@ class Keyboard(MainWindow):
         self.wpm_data = config.Stack(config.wpm_history_length)
         self.wpm_time = 0
         self.clear_text = False
+
         self.initUI()
 
         ## set up broderclocks
@@ -168,6 +171,9 @@ class Keyboard(MainWindow):
         # bring word text to the front
         self.raise_words()
 
+        
+        
+        self.gen_click_time_handle()
         ### animate ###
         self.on_timer()
 
@@ -186,6 +192,7 @@ class Keyboard(MainWindow):
             if event.type == pygame.JOYBUTTONDOWN:
                 # generate the event I've defined
                 self.canvas.event_generate(kconfig.joy_evt)
+
 
         ## return to check for more events in a moment
         self.parent.after(20, self.find_events)
@@ -212,6 +219,7 @@ class Keyboard(MainWindow):
                         self.N_alpha_keys = self.N_alpha_keys + 1
                     elif kconfig.key_chars[row][col] == kconfig.break_chars[1] and (len(kconfig.key_chars[row][col]) == 1):
                         self.N_alpha_keys = self.N_alpha_keys + 1
+
             self.N_keys_row.append(n_keys)
             self.N_keys += n_keys
 
@@ -299,6 +307,13 @@ class Keyboard(MainWindow):
         # file handle
         data_file = kconfig.file_pre + str(self.user_id) + "." + str(self.use_num) + kconfig.file_suff
         self.file_handle = open(data_file, 'w')
+
+
+    #Pickle file to save click time
+    def gen_click_time_handle(self):
+        click_data_file = "data/click_time_log" + str(self.user_id) + "." + str(self.use_num) + ".pickle"
+        self.click_handle = open( click_data_file,'w')
+        
 
     def gen_scale(self):
         scale_length = self.w_canvas / 2  # (len(kconfig.key_chars[0])-1)*kconfig.word_w
@@ -438,6 +453,7 @@ class Keyboard(MainWindow):
     def raise_words(self):
         pass
 
+
     def draw_words(self):
         (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq, self.prefix) = self.dt.get_words(
             self.context, self.keys_li)
@@ -506,6 +522,7 @@ class Keyboard(MainWindow):
                         prob = kconfig.back_prob
                     if self.keys_li[key] == kconfig.clear_char:
                         prob = kconfig.undo_prob
+
                     self.word_score_prior.append(numpy.log(prob))
         else:
             for index in self.words_on:
@@ -522,6 +539,7 @@ class Keyboard(MainWindow):
 
     def draw_typed(self):
         self.wpm_update()
+
         delete = False
         undo = False
         previous_text = self.mainWidgit.text_box.toPlainText()
@@ -542,6 +560,7 @@ class Keyboard(MainWindow):
             undo_text = new_text
             last_add = 0
 
+
         index = self.previous_winner
         if self.mainWidgit.clocks[index] != '':
             if self.mainWidgit.clocks[index].text == kconfig.mybad_char:
@@ -554,6 +573,7 @@ class Keyboard(MainWindow):
             self.clear_text = False
             undo_text = 'Clear'
         elif delete:
+
             self.prefix = self.prefix[:-1]
             if self.typed_versions[-1] != '':
                 self.typed_versions += [previous_text[:-1]]
@@ -568,6 +588,7 @@ class Keyboard(MainWindow):
         self.previous_undo_text = undo_text
         self.mainWidgit.undo_label.setText("<font color='green'>"+undo_text+"</font>")
 
+
     def wpm_update(self):
         time_diff = (time.time()-self.wpm_time)
         if time_diff < 15.*10/self.time_rotate:
@@ -576,6 +597,7 @@ class Keyboard(MainWindow):
             self.mainWidgit.wpm_label.setText("Selections/Min: "+str(round(self.wpm_data.average(), 2)))
 
     def on_pause(self):
+
         self.mainWidgit.pause_timer.start(kconfig.pause_length)
         self.in_pause = True
         self.setStyleSheet("background-color:"+config.bg_color_highlt+";")
@@ -595,6 +617,7 @@ class Keyboard(MainWindow):
                 self.bc.is_undo = True
                 self.bc.init_round(True, False, self.bc.prev_cscores)
                 self.wpm_time = 0
+
         if self.focusWidget() == self.mainWidgit.text_box:
             self.mainWidgit.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
         if self.bc_init:
@@ -606,6 +629,7 @@ class Keyboard(MainWindow):
         # self.canvas.focus_set()
         if self.wpm_time == 0:
             self.wpm_time = time.time()
+
         if not self.in_pause:
             if config.is_write_data:
                 self.num_presses += 1
@@ -613,6 +637,7 @@ class Keyboard(MainWindow):
             self.bc.select(time.time())
 
     def highlight_winner(self, index):
+
 
         if self.mainWidgit.clocks[index] != '':
             self.mainWidgit.clocks[index].selected = True
@@ -663,6 +688,7 @@ class Keyboard(MainWindow):
     def make_choice(self, index):
         is_undo = False
         is_equalize = False
+
         ## now pause (if desired)
         if self.pause_set == 1:
             self.on_pause()
@@ -684,6 +710,7 @@ class Keyboard(MainWindow):
                     talk_string = self.context
                 else:
                     talk_string = "space"
+
                 new_char = '_'
                 self.old_context_li.append(self.context)
                 self.context = ""
@@ -729,11 +756,15 @@ class Keyboard(MainWindow):
                 new_char = ''
             elif new_char == kconfig.clear_char:
                 talk_string = 'clear'
+
                 new_char = '_'
                 self.old_context_li.append(self.context)
                 self.context = ""
                 self.last_add_li.append(1)
+
                 self.clear_text = True
+
+            
             elif new_char.isalpha():
                 talk_string = new_char
                 self.old_context_li.append(self.context)
@@ -783,7 +814,19 @@ class Keyboard(MainWindow):
         self.draw_histogram()
         # self.canvas.update_idletasks()
 
+    
+    def closeEvent(self, event):
+        self.quit(event)
+        #self.deleteLater()
+    
+    
     def quit(self, event=None):
+        #Save click time log 
+        
+        pickle.dump([self.user_id, self.bc.click_time_list], self.click_handle, protocol=pickle.HIGHEST_PROTOCOL)
+        self.click_handle.close()
+        print "click pickle closed properly!"
+        
         if not self.undefined:
             ## close clocks
             try:
@@ -824,6 +867,7 @@ def main():
     splash = StartWindow(screen_res, True)
     app.processEvents()
     ex = Keyboard(screen_res, app)
+
 
     if kconfig.first_load:
         welcome = Pretraining(screen_res, ex)
