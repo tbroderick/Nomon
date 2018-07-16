@@ -73,7 +73,7 @@ bars = [4.1731209137640166e-11, 1.5674042704727563e-10, 5.702330790217924e-10, 2
 
 ### First Load ###
 first_load = pickle.load(open("user_preferences/first_load.p", "rb"))
-#first_load = True
+first_load = True
 ### Events ###
 # event selection
 joy_evt = "<<JoyFoo>>"
