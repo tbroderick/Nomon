@@ -53,8 +53,6 @@ qwerty_key_chars = [['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
                     ['z', 'x', 'c', 'v', 'b', 'n', 'm', space_char, break_chars[1], break_chars[0][1], break_chars[0][0], break_chars[0][2]],
                     [back_char, clear_char, mybad_char]
                     ]
-key_chars = pickle.dump(qwerty_key_chars, open("user_preferences/layout_preference.p", "wb"))
-
 key_chars = pickle.load(open("user_preferences/layout_preference.p", "rb"))
 # get gaussian distribution
 bars = [4.1731209137640166e-11, 1.5674042704727563e-10, 5.702330790217924e-10, 2.009440319647259e-09,

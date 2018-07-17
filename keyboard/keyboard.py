@@ -826,30 +826,43 @@ class Keyboard(MainWindow):
         pickle.dump([self.user_id, self.bc.click_time_list], self.click_handle, protocol=pickle.HIGHEST_PROTOCOL)
         self.click_handle.close()
         print "click pickle closed properly!"
-        
-        if not self.undefined:
-            ## close clocks
-            try:
-                self.bc
-            except AttributeError:
-                bc_data = []
-            else:
-                bc_data = self.bc.quit()
-                ## save settings
-                dump_file_out = kconfig.dump_pre + "clocks." + str(self.user_id) + "." + str(
-                    self.use_num) + kconfig.dump_suff
-                fid = open(dump_file_out, 'w')
-                cPickle.dump([self.rotate_index, bc_data], fid)
-                fid.close()
 
-            ## close write file
-            if config.is_write_data:
-                try:
-                    self.file_handle
-                except AttributeError:
-                    pass
-                else:
-                    self.file_handle.close()
+        if config.is_write_data:
+            data_file = "data/preconfig.pickle"
+            file_handle = open(data_file, 'wb')
+            try:
+                li = self.bc.hsi.dens_li
+                z = self.bc.hsi.Z
+                pickle.dump([li, z, self.bc.hsi.ksigma, self.bc.hsi.y_li], file_handle, protocol=pickle.HIGHEST_PROTOCOL)
+                print "I'm quitting and the density is" + str(li)
+                print "And the Z is " + str(z)
+                print "file closed"
+            except IOError as (errno,strerror):
+                print "I/O error({0}): {1}".format(errno, strerror)
+        
+        # if not self.undefined:
+        #     ## close clocks
+        #     try:
+        #         self.bc
+        #     except AttributeError:
+        #         bc_data = []
+        #     else:
+        #         bc_data = self.bc.quit()
+        #         ## save settings
+        #         dump_file_out = kconfig.dump_pre + "clocks." + str(self.user_id) + "." + str(
+        #             self.use_num) + kconfig.dump_suff
+        #         fid = open(dump_file_out, 'w')
+        #         cPickle.dump([self.rotate_index, bc_data], fid)
+        #         fid.close()
+        #
+        #     ## close write file
+        #     if config.is_write_data:
+        #         try:
+        #             self.file_handle
+        #         except AttributeError:
+        #             pass
+        #         else:
+        #             self.file_handle.close()
 
         import sys
         sys.exit()

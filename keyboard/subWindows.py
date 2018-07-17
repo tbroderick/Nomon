@@ -320,7 +320,6 @@ class PretrainScreen(QtGui.QWidget):
     def start_buttton_func(self):
         if self.parent.num_presses >= self.parent.total_presses:
             self.parent.on_finish()
-            
         else:
             self.parent.on_start()
 
@@ -385,7 +384,7 @@ class Pretraining(StartWindow):
         
     def gen_handle(self):
         data_file = "data/preconfig.pickle"
-        self.file_handle = open( data_file,'w')
+        self.file_handle = open(data_file, 'wb')
         
     
 # =============================================================================
@@ -464,7 +463,6 @@ class Pretraining(StartWindow):
                 pickle.dump([li, z, self.pbc.hsi.opt_sig, self.pbc.hsi.y_li], self.file_handle, protocol=pickle.HIGHEST_PROTOCOL)
                 print "I'm quitting and the density is" + str(li)
                 print "And the Z is " + str(z)
-                self.file_handle.close()
                 print "file closed"
             except IOError as (errno,strerror):
                 print "I/O error({0}): {1}".format(errno, strerror)

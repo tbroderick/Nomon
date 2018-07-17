@@ -78,6 +78,7 @@ class HourScoreIncs:
         # latest data points
         self.y_li = []
         self.y_ksigma = []
+        self.opt_sig = 1.
         self.not_read_pickle = 0
         
     
@@ -85,15 +86,14 @@ class HourScoreIncs:
         if os.path.exists("data/preconfig.pickle") and self.not_read_pickle == 0:
             print "using the trained preconfig!"
             try:
-                with open("data/preconfig.pickle", 'rb') as handle:
-                    temp_dens = pickle.load(handle)
-                    self.dens_li = temp_dens[0]
-                    print "I'm starting(reading) and the self.dens_li" + str(temp_dens[0])
-                    self.Z = temp_dens[1]
-                    self.ksigma0 = temp_dens[2]
-                    print "Also the self.ksimga0" + str(temp_dens[2])
-                    self.ksigma = self.ksigma0 
-                    self.y_li_from_pre = temp_dens[3]
+                temp_dens = pickle.load(open("data/preconfig.pickle", 'rb'))
+                self.dens_li = temp_dens[0]
+                print "I'm starting(reading) and the self.dens_li" + str(temp_dens[0])
+                self.Z = temp_dens[1]
+                self.ksigma0 = temp_dens[2]
+                print "Also the self.ksimga0" + str(temp_dens[2])
+                self.ksigma = self.ksigma0
+                self.y_li_from_pre = temp_dens[3]
                 self.not_read_pickle = 1
             except:
                 print "preconfig.pickle exists but it is empty!"
@@ -248,6 +248,7 @@ class HourScoreIncs:
         # optimal bandwidth
         self.ksigma_sq = self.ns_factor * self.ns_factor * ave_sigma_sq
         self.ksigma = numpy.sqrt(self.ksigma_sq)
+
 
     # return the click score for a particular press time
     def get_score_inc(self, yin):
