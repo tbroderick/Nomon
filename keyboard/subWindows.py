@@ -35,7 +35,9 @@ class StartWindow(QtGui.QMainWindow):
         w = 700
         h = 500
 
-        self.setGeometry((self.screen_res[0] - w) / 2, (self.screen_res[1] - h) / 2, w, h)
+        #self.setGeometry((self.screen_res[0] - w) / 2, (self.screen_res[1] - h) / 2, w, h)
+        self.setGeometry(self.screen_res[0] * 0.05, self.screen_res[1] * 0.0675, self.screen_res[0] * 0.9,
+                         self.screen_res[1] * 0.85)
         self.setWindowTitle('Nomon Keyboard')
         self.setWindowIcon(QtGui.QIcon('icons/nomon.png'))
 
@@ -49,7 +51,9 @@ class StartWindow(QtGui.QMainWindow):
         w = 700
         h = 500
 
-        self.setGeometry((self.screen_res[0] - w) / 2, (self.screen_res[1] - h) / 2, w, h)
+        #self.setGeometry((self.screen_res[0] - w) / 2, (self.screen_res[1] - h) / 2, w, h)
+        self.setGeometry(self.screen_res[0] * 0.05, self.screen_res[1] * 0.0675, self.screen_res[0] * 0.9,
+                         self.screen_res[1] * 0.85)
         self.setWindowTitle('Nomon Keyboard')
         self.setWindowIcon(QtGui.QIcon('icons/nomon.png'))
 
@@ -411,6 +415,7 @@ class Pretraining(StartWindow):
         
         if self.num_presses >= self.total_presses:
             print "finished calculating density"
+            
             self.pbc.hsi.calculate_density()
             self.mainWidgit.main_label.setText("Training has finished!")
             
@@ -459,6 +464,7 @@ class Pretraining(StartWindow):
         if config.is_write_data:
             try:
                 li = self.pbc.hsi.dens_li
+                print "The length of li is" + str(len(li))
                 z = self.pbc.hsi.Z
                 pickle.dump([li, z, self.pbc.hsi.opt_sig, self.pbc.hsi.y_li], self.file_handle, protocol=pickle.HIGHEST_PROTOCOL)
                 print "I'm quitting and the density is" + str(li)
