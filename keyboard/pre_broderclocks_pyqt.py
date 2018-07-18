@@ -46,30 +46,35 @@ class Pre_HourScoreIncs:
     def calculate_density(self):
         #calculate density over all x locations and normalize them after
         #prop = 1.0 / self.n_training / self.optimal_bandwith()
-        self.empirical = [self.index_into_compatible_with_xloc(self.yin_into_index(yin)) for yin in self.y_li]
-        opt_sig = self.optimal_bandwith(self.empirical)
-        self.opt_sig = opt_sig
-        ##I think this line is the problem
-        for x in self.x_li:
-            x_loc = x
-            #print "is yinto index nan?" + str(self.yin_into_index(self.y_li[0]))
-            #print "is opt_sig squared nan?" + str(opt_sig**2)
-            #print "is x_loc nan?" + str(x_loc)
-            #print "is yin_into_index fucking up?" + str(self.yin_into_index(self.y_li[0]))
-            #print "is it being compatible with x?" + str(self.index_into_compatible_with_xloc(self.yin_into_index(self.y_li[0])))
-            #print "sum of normals " + str([self.normal(x_loc, self.index_into_compatible_with_xloc(self.yin_into_index(yin)), opt_sig**2) for yin in self.y_li]) 
+        if len(self.dens_li) == config.num_divs_click:
+            print "density already calculated; density needs to be reinitilazed if you want to recalculate"
+            return [self.dens_li, self.Z]
+        else:
+        
+            self.empirical = [self.index_into_compatible_with_xloc(self.yin_into_index(yin)) for yin in self.y_li]
+            opt_sig = self.optimal_bandwith(self.empirical)
+            self.opt_sig = opt_sig
+            ##I think this line is the problem
+            for x in self.x_li:
+                x_loc = x
+                #print "is yinto index nan?" + str(self.yin_into_index(self.y_li[0]))
+                #print "is opt_sig squared nan?" + str(opt_sig**2)
+                #print "is x_loc nan?" + str(x_loc)
+                #print "is yin_into_index fucking up?" + str(self.yin_into_index(self.y_li[0]))
+                #print "is it being compatible with x?" + str(self.index_into_compatible_with_xloc(self.yin_into_index(self.y_li[0])))
+                #print "sum of normals " + str([self.normal(x_loc, self.index_into_compatible_with_xloc(self.yin_into_index(yin)), opt_sig**2) for yin in self.y_li]) 
+                
+                dens = sum([self.normal(x_loc, self.index_into_compatible_with_xloc(self.yin_into_index(yin)), opt_sig**2) for yin in self.y_li])
+                #print "dens" + str(dens)
+                self.dens_li.append(dens)
+                self.Z += dens
             
-            dens = sum([self.normal(x_loc, self.index_into_compatible_with_xloc(self.yin_into_index(yin)), opt_sig**2) for yin in self.y_li])
-            #print "dens" + str(dens)
-            self.dens_li.append(dens)
-            self.Z += dens
-        
-        #empirical = [self.yin_into_index(yin) for yin in self.y_li ]
-        #print "empirical is" + str(empirical)
-        
-        #self.dens_li = numpy.array(self.dens_li) / self.Z
-        #self.dens_li = list(self.dens_li)
-        return [self.dens_li, self.Z]
+            #empirical = [self.yin_into_index(yin) for yin in self.y_li ]
+            #print "empirical is" + str(empirical)
+            
+            #self.dens_li = numpy.array(self.dens_li) / self.Z
+            #self.dens_li = list(self.dens_li)
+            return [self.dens_li, self.Z]
     
     def get_plot(self):
         return self.calculate_density()
