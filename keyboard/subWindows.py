@@ -464,6 +464,7 @@ class Pretraining(StartWindow):
                 print "I'm quitting and the density is" + str(li)
                 print "And the Z is " + str(z)
                 print "file closed"
+                self.file_handle.close()
             except IOError as (errno,strerror):
                 print "I/O error({0}): {1}".format(errno, strerror)
         
@@ -472,11 +473,11 @@ class Pretraining(StartWindow):
         #self.sister.bc.hsi.update_dens(self.sister.bc.hsi.time_rotate)
         use_num, user_id, time_rotate, prev_data = self.sister.bc.use_num, self.sister.bc.user_id, self.sister.bc.time_rotate, self.sister.bc.prev_data
         self.sister.bc.hsi = broderclocks.HourScoreIncs(use_num, user_id, time_rotate, prev_data)
-        print "is not read pickle 1? should be " + str(self.sister.bc.hsi.not_read_pickle) 
+        #print "is not read pickle 1? should be " + str(self.sister.bc.hsi.not_read_pickle) 
         #self.sister.bc = 
         print "this worked 1"
-        #self.sister.draw_histogram()
-        self.sister.bars = self.sister.bc.hsi.dens_li
+        self.sister.draw_histogram(bars=None)
+        #self.sister.bars = self.sister.bc.hsi.dens_li
         self.sister.mainWidgit.histogram.repaint()
         #self.sister.init_histogram()
         print "this worked 2"

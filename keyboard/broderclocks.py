@@ -86,7 +86,9 @@ class HourScoreIncs:
         if os.path.exists("data/preconfig.pickle") and self.not_read_pickle == 0:
             print "using the trained preconfig!"
             try:
+                #with open("data/preconfig.pickle", 'rb') as pickle_file:
                 temp_dens = pickle.load(open("data/preconfig.pickle", 'rb'))
+                #temp_dens = pickle.load(pickle_file)
                 self.dens_li = temp_dens[0]
                 print "I'm starting(reading) and the self.dens_li" + str(temp_dens[0])
                 self.Z = temp_dens[1]
