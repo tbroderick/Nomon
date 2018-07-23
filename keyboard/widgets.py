@@ -11,13 +11,14 @@ class ClockWidgit(QtGui.QWidget):
         super(ClockWidgit, self).__init__()
 
         self.text = text
-        self.start_angle = 0
+        self.start_angle = 0.
         self.parent = parent
         self.filler_clock = filler_clock  # filler clock is transparent, but saves space in layout for later use
         self.highlighted = False
         self.selected = False
         self.previous_angle = -360.  # used in pac-man clock to compare if hand passed noon (- to + angle)
         self.color_switch = False  # used in pac-man clock to alternate color fill
+        self.dummy_angle_offset = 0.
         self.initUI()
 
         try:
@@ -261,15 +262,18 @@ class ClockWidgit(QtGui.QWidget):
         clock_thickness = 1. / 6
 
         # calculate size of text from leftover space
-        font = clock_font
+        font = QtGui.QFont(clock_font)
 
-        if len(self.text) > 11:  # if word is too long to display, condense the font
-            reduce_factor = 1 - (len(self.text) - 10) / 40.
-            font.setStretch(max(63., 80 * reduce_factor))
-            font.setPointSize(clock_rad * reduce_factor * min(1., 1.2 * constraint_factor))
-        else:
-            font.setStretch(85)
-            font.setPointSize(clock_rad * min(1., 1.2 * constraint_factor))
+        # if len(self.text) > 11:  # if word is too long to display, condense the font
+        #     reduce_factor = 1 - (len(self.text) - 10) / 40.
+        #     font.setStretch(max(63., 80 * reduce_factor))
+        #     font.setPointSize(clock_rad * reduce_factor * min(1., 1.2 * constraint_factor))
+        # else:
+        #     font.setStretch(85)
+        font_size = clock_rad * min(1., 1.2 * constraint_factor)
+        font.setPointSize(font_size)
+        font.setStretch(85)
+
 
         if self.parent.layout == kconfig.qwerty_key_chars:
             if self.text in sum(kconfig.qwerty_key_chars, []):
@@ -281,7 +285,6 @@ class ClockWidgit(QtGui.QWidget):
             else:
                 font.setBold(False)
 
-
         qp.setFont(font)
 
         label = QtGui.QLabel(self.text)
@@ -289,7 +292,24 @@ class ClockWidgit(QtGui.QWidget):
         text_width = label.fontMetrics().boundingRect(label.text()).width()
         text_height = label.fontMetrics().boundingRect(label.text()).height()
 
-        if self.parent.alignment == 'cl':  # offset clock face and text according to text alignment setting
+        if text_width + clock_rad*2 > w:
+            font.setStretch(max(63., 85*float(w - clock_rad*2.2)/float(text_width)))
+            qp.setFont(font)
+            label = QtGui.QLabel(self.text)
+            label.setFont(font)
+            text_width = label.fontMetrics().boundingRect(label.text()).width()
+            text_height = label.fontMetrics().boundingRect(label.text()).height()
+
+            if text_width + clock_rad * 2 > w:
+                font.setPointSize(font.pointSize() * float(w - clock_rad * 2.2) / float(text_width))
+                qp.setFont(font)
+                label = QtGui.QLabel(self.text)
+                label.setFont(font)
+                text_width = label.fontMetrics().boundingRect(label.text()).width()
+                text_height = label.fontMetrics().boundingRect(label.text()).height()
+
+
+        if self.parent.alignment == 'cl':  # offset clock face and text according to text alignment setting.
             center_offset_x = w - clock_rad * 2
         elif self.parent.alignment[1] == 'c':
             center_offset_x = w / 2 - clock_rad

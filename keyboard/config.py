@@ -138,7 +138,7 @@ else:
     pac_man_reg_color = QtGui.QColor(0, 0, 0)
 
 ### Fonts ###
-base_font = 'consolas'
+base_font = 'helvetica'
 font_scale = pickle.load(open("user_preferences/font_scale.p", 'rb'))
 
 if font_scale == 'med':
@@ -149,8 +149,8 @@ elif font_scale == 'small':
     font_scale = 0.75
 splash_font = QtGui.QFont(base_font, 15*font_scale)
 
-welcome_main_font = QtGui.QFont('Consolas', 15*font_scale)
-welcome_sub_font = QtGui.QFont('Consolas', 12*font_scale)
+welcome_main_font = QtGui.QFont(base_font, 15*font_scale)
+welcome_sub_font = QtGui.QFont(base_font, 12*font_scale)
 clock_font = QtGui.QFont(base_font)
 clock_font.setBold(False)
 
