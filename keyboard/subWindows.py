@@ -598,6 +598,7 @@ class Pretraining(StartWindow):
         #self.sister.init_histogram()
         print "this worked 2"
         #print self.sister.bc.hsi.not_read_pickle
+        self.sister.pretrain_bars = list(self.sister.bars)
         self.close()
 
     def closeEvent(self, event):

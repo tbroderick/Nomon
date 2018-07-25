@@ -832,6 +832,11 @@ class Keyboard(MainWindow):
         
         pickle.dump([self.user_id, self.bc.click_time_list], self.click_handle, protocol=pickle.HIGHEST_PROTOCOL)
         self.click_handle.close()
+        try:
+            prev_barlist = pickle.load(open("barsdump.p", 'rb'))
+        except IOError as (errno, strerror):
+            prev_barlist = []
+        pickle.dump(prev_barlist+[[self.pretrain_bars, self.bars]], open("barsdump.p", 'wb'))
         print "click pickle closed properly!"
 
         if config.is_write_data:
@@ -899,7 +904,7 @@ def main():
 
     if kconfig.first_load:
         welcome = Pretraining(screen_res, ex)
-        pickle.dump(False, open("user_preferences/first_load.p", "wb"))
+        # pickle.dump(False, open("user_preferences/first_load.p", "wb"))
 
     sys.exit(app.exec_())
 
