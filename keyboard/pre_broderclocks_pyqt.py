@@ -4,6 +4,7 @@ import numpy
 import time
 import broderclocks
 import config
+import random
 from PyQt4 import QtGui, QtCore
 import math
 
@@ -23,7 +24,7 @@ class Pre_HourScoreIncs:
         #pure press time around noon(operated to be around noon but still not index), just stored after every press
         self.y_li = []
         #number of traning examples
-        self.n_training = 20
+        self.n_training = 10
         
         
         #not even sure if we need this
@@ -46,30 +47,35 @@ class Pre_HourScoreIncs:
     def calculate_density(self):
         #calculate density over all x locations and normalize them after
         #prop = 1.0 / self.n_training / self.optimal_bandwith()
-        self.empirical = [self.index_into_compatible_with_xloc(self.yin_into_index(yin)) for yin in self.y_li]
-        opt_sig = self.optimal_bandwith(self.empirical)
-        self.opt_sig = opt_sig
-        ##I think this line is the problem
-        for x in self.x_li:
-            x_loc = x
-            #print "is yinto index nan?" + str(self.yin_into_index(self.y_li[0]))
-            #print "is opt_sig squared nan?" + str(opt_sig**2)
-            #print "is x_loc nan?" + str(x_loc)
-            #print "is yin_into_index fucking up?" + str(self.yin_into_index(self.y_li[0]))
-            #print "is it being compatible with x?" + str(self.index_into_compatible_with_xloc(self.yin_into_index(self.y_li[0])))
-            #print "sum of normals " + str([self.normal(x_loc, self.index_into_compatible_with_xloc(self.yin_into_index(yin)), opt_sig**2) for yin in self.y_li]) 
+        if len(self.dens_li) == config.num_divs_click:
+            print "density already calculated; density needs to be reinitilazed if you want to recalculate"
+            return [self.dens_li, self.Z]
+        else:
+        
+            self.empirical = [self.index_into_compatible_with_xloc(self.yin_into_index(yin)) for yin in self.y_li]
+            opt_sig = self.optimal_bandwith(self.empirical)
+            self.opt_sig = opt_sig
+            ##I think this line is the problem
+            for x in self.x_li:
+                x_loc = x
+                #print "is yinto index nan?" + str(self.yin_into_index(self.y_li[0]))
+                #print "is opt_sig squared nan?" + str(opt_sig**2)
+                #print "is x_loc nan?" + str(x_loc)
+                #print "is yin_into_index fucking up?" + str(self.yin_into_index(self.y_li[0]))
+                #print "is it being compatible with x?" + str(self.index_into_compatible_with_xloc(self.yin_into_index(self.y_li[0])))
+                #print "sum of normals " + str([self.normal(x_loc, self.index_into_compatible_with_xloc(self.yin_into_index(yin)), opt_sig**2) for yin in self.y_li]) 
+                
+                dens = sum([self.normal(x_loc, self.index_into_compatible_with_xloc(self.yin_into_index(yin)), opt_sig**2) for yin in self.y_li])
+                #print "dens" + str(dens)
+                self.dens_li.append(dens)
+                self.Z += dens
             
-            dens = sum([self.normal(x_loc, self.index_into_compatible_with_xloc(self.yin_into_index(yin)), opt_sig**2) for yin in self.y_li])
-            #print "dens" + str(dens)
-            self.dens_li.append(dens)
-            self.Z += dens
-        
-        #empirical = [self.yin_into_index(yin) for yin in self.y_li ]
-        #print "empirical is" + str(empirical)
-        
-        #self.dens_li = numpy.array(self.dens_li) / self.Z
-        #self.dens_li = list(self.dens_li)
-        return [self.dens_li, self.Z]
+            #empirical = [self.yin_into_index(yin) for yin in self.y_li ]
+            #print "empirical is" + str(empirical)
+            
+            #self.dens_li = numpy.array(self.dens_li) / self.Z
+            #self.dens_li = list(self.dens_li)
+            return [self.dens_li, self.Z]
     
     def get_plot(self):
         return self.calculate_density()
@@ -90,7 +96,9 @@ class Pre_HourScoreIncs:
     def index_into_compatible_with_xloc(self, index):
         x_compat = index * self.time_rotate/config.num_divs_click - self.time_rotate/2.0
         return x_compat
-    
+
+    def quit(self):
+        print(self.y_li)
 class Pre_broderclocks:
     #Got rid of canvas
     def __init__(self, parent, file_handle, time_rotate, use_num, user_id, in_time, prev_data):
@@ -103,7 +111,6 @@ class Pre_broderclocks:
         self.latest_time = in_time
         self.hl = broderclocks.HourLocs(self.num_divs_time, self.parent.radius)
         self.cur_hour = 0
-
 
         ## scores
         self.hsi = Pre_HourScoreIncs(use_num, user_id, time_rotate, prev_data)
@@ -134,8 +141,18 @@ class Pre_broderclocks:
         v = self.hl.hour_locs[self.cur_hour]
         self.parent.v = v
         
+
+        
+        angle = math.atan2(v[1], v[0])
+        self.parent.mainWidgit.clock.angle = angle + math.pi*0.5
+        self.parent.mainWidgit.clock.repaint()
+
+        
         self.parent.update()
-            
+
+        for clock in self.parent.mainWidgit.dummy_clocks:
+            clock.angle = self.parent.mainWidgit.clock.angle + clock.dummy_angle_offset
+            clock.repaint()
 
         # refresh the canvas
         # self.canvas.update_idletasks()
@@ -160,7 +177,7 @@ class Pre_broderclocks:
     
     def init_round(self):
         #put the needle at noon -> increment will animate
-        self.cur_hour = 0
+        self.cur_hour = int(random.random()*24-12)
         #self.parent.gen_clock()
         self.parent.v = (0,self.parent.radius)
         self.latest_time = time.time()
