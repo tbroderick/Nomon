@@ -183,6 +183,7 @@ class Keyboard(MainWindow):
         self.wpm_data = config.Stack(config.wpm_history_length)
         self.wpm_time = 0
         self.clear_text = False
+        self.pretrain = False
 
         self.initUI()
 
@@ -191,7 +192,6 @@ class Keyboard(MainWindow):
                                             self.file_handle, self.words_on, self.words_off, kconfig.key_color,
                                             time.time(), use_num, user_id, self.time_rotate, prev_data)
         self.mainWidgit.changeValue(config.start_speed)
-
         self.wait_s = self.bc.get_wait()
         # get language model results
         self.gen_word_prior(False)
@@ -601,6 +601,8 @@ class Keyboard(MainWindow):
             if self.mainWidgit.clocks[index].text == kconfig.mybad_char:
                 undo = True
                 delete = False
+        if self.typed_versions[-1] == '' and len(self.typed_versions) > 1:
+            undo_text = 'Clear'
 
         if self.clear_text:
             self.typed_versions += ['']
@@ -670,6 +672,11 @@ class Keyboard(MainWindow):
                 self.num_presses += 1
                 self.file_handle.write("press " + str(time.time()) + " " + str(self.num_presses) + "\n")
             self.bc.select(time.time())
+        self.play()
+
+    def play(self):
+        sound_file = "icons/bell.wav"
+        QSound(sound_file).play()
 
     def highlight_winner(self, index):
 
@@ -909,6 +916,14 @@ class Keyboard(MainWindow):
     def launch_help(self):
         help_window = StartWindow(self.mainWidgit.screen_res, False)
         help_window.help_screen = True
+
+    def launch_retrain(self):
+        retrain_window = Pretraining(self.mainWidgit.screen_res, self)
+        retrain_window.screen_num = 3
+        retrain_window.mainWidgit.close()
+        retrain_window.mainWidgit = WelcomeScreen(retrain_window)
+        retrain_window.mainWidgit.initUI4()
+        retrain_window.setCentralWidget(retrain_window.mainWidgit)
 
 
 def main():
