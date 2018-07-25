@@ -94,6 +94,9 @@ class MainWindow(QtGui.QMainWindow):
         self.profanityFilterAction = QtGui.QAction('&Profanity Filter', self, checkable=True)
         self.profanityFilterAction.triggered.connect(self.profanityFilterEvent)
 
+        self.retrainAction = QtGui.QAction('&Retrain', self)
+        self.retrainAction.triggered.connect(self.retrainEvent)
+
 
         # Help Menu Actions
         helpAction = QtGui.QAction('&Help', self)
@@ -135,6 +138,7 @@ class MainWindow(QtGui.QMainWindow):
 
         toolsMenu = menubar.addMenu('&Tools')
         toolsMenu.addAction(self.profanityFilterAction)
+        toolsMenu.addAction(self.retrainAction)
 
         helpMenu = menubar.addMenu('&Help')
         helpMenu.addAction(helpAction)
@@ -171,7 +175,7 @@ class MainWindow(QtGui.QMainWindow):
         switch(self.autoTextalignAction, self.mainWidgit.text_alignment == 'auto')
 
         # check profanity
-        switch(self.profanityFilterAction, self.profanity_filter)
+        switch(self.profanityFilterAction, self.profanity_filter == kconfig.train_file_name_censored)
 
         # check font menu
         from config import font_scale
@@ -259,6 +263,8 @@ class MainWindow(QtGui.QMainWindow):
             if self.mainWidgit.text_alignment == 'auto':
                 self.clockTextAlign('auto', message=False)
                 self.check_filemenu()
+        else:
+            self.check_filemenu()
 
 
     def layoutChangeEvent(self, layout):
@@ -385,6 +391,9 @@ class MainWindow(QtGui.QMainWindow):
 
     def helpEvent(self):
         self.launch_help()
+
+    def retrainEvent(self):
+        self.launch_retrain()
 
 
 class MainKeyboardWidget(QtGui.QWidget):
@@ -622,7 +631,8 @@ class MainKeyboardWidget(QtGui.QWidget):
                                                          (key - len(kconfig.break_chars[0])) * 2 + 1)
 
                     # add sub grid to main keyboard grid
-                    self.keyboard_grid.addWidget(VerticalSeparator(), row * 2, key * 2 + 2)
+                    if key < 5:
+                        self.keyboard_grid.addWidget(VerticalSeparator(), row * 2, key * 2 + 2)
                     self.keyboard_grid.addWidget(HorizontalSeparator(), row * 2 + 1, key * 2 + 1)
 
                     clock_index += kconfig.N_pred + 1

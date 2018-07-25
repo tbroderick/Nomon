@@ -157,7 +157,7 @@ class HourScoreIncs:
             print "not read pickle"
             
         if os.path.exists("data/preconfig.pickle"):
-            print "preconfig exists"
+            print "preconfig exists :0"
             
 # =============================================================================
 #         if os.path.exists("data/preconfig.pickle") and self.not_read_pickle ==0:
@@ -373,6 +373,7 @@ class BroderClocks:
         self.cscores = []  # just initializing here; real values later
         for clock in self.clock_li:
             self.cscores.append(0)
+        self.prev_cscores = list(self.cscores)
 
         self.old_cscores = list(self.cscores)
         # array of spacings for high scorers
@@ -477,15 +478,16 @@ class BroderClocks:
         self.latest_time = time_in
 
         # update records
-        for clock in self.clocks_on:
-            # update time indices
-            self.cur_hours[clock] = (self.cur_hours[clock] + 1) % self.num_divs_time
-            # register in coordinates of hour hand
-            v = self.hl.hour_locs[self.cur_hours[clock]]
-            angle = math.atan2(v[1], v[0])
+        if not self.parent.pretrain:
+            for clock in self.clocks_on:
+                # update time indices
+                self.cur_hours[clock] = (self.cur_hours[clock] + 1) % self.num_divs_time
+                # register in coordinates of hour hand
+                v = self.hl.hour_locs[self.cur_hours[clock]]
+                angle = math.atan2(v[1], v[0])
 
-            self.parent.mainWidgit.clocks[clock].angle = angle + math.pi*0.5
-            self.parent.mainWidgit.clocks[clock].repaint()
+                self.parent.mainWidgit.clocks[clock].angle = angle + math.pi*0.5
+                self.parent.mainWidgit.clocks[clock].repaint()
 
 
         # refresh the canvas

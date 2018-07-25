@@ -4,6 +4,7 @@ import numpy
 import time
 import broderclocks
 import config
+import random
 from PyQt4 import QtGui, QtCore
 import math
 
@@ -23,7 +24,7 @@ class Pre_HourScoreIncs:
         #pure press time around noon(operated to be around noon but still not index), just stored after every press
         self.y_li = []
         #number of traning examples
-        self.n_training = 20
+        self.n_training = 10
         
         
         #not even sure if we need this
@@ -99,7 +100,9 @@ class Pre_HourScoreIncs:
     def index_into_compatible_with_xloc(self, index):
         x_compat = index * self.time_rotate/config.num_divs_click - self.time_rotate/2.0
         return x_compat
-    
+
+    def quit(self):
+        print(self.y_li)
 class Pre_broderclocks:
     #Got rid of canvas
     def __init__(self, parent, file_handle, time_rotate, use_num, user_id, in_time, prev_data):
@@ -150,7 +153,10 @@ class Pre_broderclocks:
 
         
         self.parent.update()
-            
+
+        for clock in self.parent.mainWidgit.dummy_clocks:
+            clock.angle = self.parent.mainWidgit.clock.angle + clock.dummy_angle_offset
+            clock.repaint()
 
         # refresh the canvas
         # self.canvas.update_idletasks()
@@ -175,7 +181,7 @@ class Pre_broderclocks:
     
     def init_round(self):
         #put the needle at noon -> increment will animate
-        self.cur_hour = 0
+        self.cur_hour = int(random.random()*24-12)
         #self.parent.gen_clock()
         self.parent.v = (0,self.parent.radius)
         self.latest_time = time.time()

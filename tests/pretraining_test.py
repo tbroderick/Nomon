@@ -17,8 +17,8 @@ phsi = Pre_HourScoreIncs(0,0,2,None)
 
 
 #Test 
-def test_optimal_bandwith1()
-
+def test_optimal_bandwith1():
+    pass
 
 #Test Pre_HourScoreIncs.normal() when x=mu=0.0, std=1.0
 def test_normal_1():
