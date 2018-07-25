@@ -34,6 +34,10 @@ class Pre_HourScoreIncs:
         self.dens_li = []
         self.opt_sig = 1
 
+
+    def set_ntraining(self, new_ntraining):
+        self.n_training = new_ntraining
+        
    #Calculate optimal bandwith for kernel density estimation
     def optimal_bandwith(self, things):
         return 1.06 * (self.n_training ** -0.2) * self.sample_std(things)

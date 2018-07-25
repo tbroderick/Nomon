@@ -26,6 +26,7 @@ import numpy
 import cPickle, pickle
 from mainWindow import *
 from subWindows import *
+import os
 
 if kconfig.target_evt == kconfig.joy_evt:
     import pygame
@@ -37,23 +38,52 @@ class Keyboard(MainWindow):
         super(Keyboard, self).__init__(screen_res)
 
         self.app = app
-
-        # check that number of arguments is valid
-        if len(sys.argv) < 3:  # replaced with a default 0 0
-            # print "Error: Too few (" + str(len(sys.argv)-1) + " < 2) arguments"
-            # print "Usage: python keyboard.py user-id use-number proposed-window-width proposed-window-height"
-            # sys.exit() #replaced quit() with this
-            # quit()
-            user_id = 0
-            use_num = 0
-        # read arguments
+        
+        self.usenum_file = "data/usenum.pickle"
+        if os.path.exists(self.usenum_file):
+            try:
+                self.usenum_handle = open(self.usenum_file, 'rb')
+                self.use_num = pickle.load(self.usenum_handle)
+                #Check again
+                self.use_num +=1
+                self.usenum_handle.close()
+                self.usenum_handle = open(self.usenum_file, 'wb')
+            except:
+                #when pickle file is empty
+                self.usenum_handle = open(self.usenum_file, 'wb')
+                self.use_num = 0
+            
+            
         else:
-            user_id = string.atoi(sys.argv[1])
-            use_num = string.atoi(sys.argv[2])
-        self.user_id = user_id
-        self.use_num = use_num
+            #load an incremented use_num
+            self.usenum_handle = open(self.usenum_file, 'wb')
+            self.use_num = 0
+        
+        print "use_num is " + str(self.use_num)
+        self.user_id = 0
+        
+        use_num = self.use_num
+        user_id = self.user_id
+        #This block of codes is not working 
+        # check that number of arguments is valid
+# =============================================================================
+#         if len(sys.argv) < 3:  # replaced with a default 0 0
+#             print "Error: Too few (" + str(len(sys.argv)-1) + " < 2) arguments"
+#             # print "Usage: python keyboard.py user-id use-number proposed-window-width proposed-window-height"
+#             # sys.exit() #replaced quit() with this
+#             # quit()
+#             user_id = 0
+#             use_num = 0
+#         # read arguments
+#         else:
+#             user_id = string.atoi(sys.argv[1])
+#             use_num = string.atoi(sys.argv[2])
+#         self.user_id = user_id
+#         self.use_num = use_num
+# =============================================================================
         # read extra arguments if they're there
         if len(sys.argv) > 3:
+            print "this actually can happen"
             prop_width = string.atoi(sys.argv[4])
         else:
             prop_width = kconfig.base_window_width
@@ -89,7 +119,9 @@ class Keyboard(MainWindow):
             # input file (if such exists) for histogram
             dump_file_in = kconfig.dump_pre + "clocks." + str(self.user_id) + "." + str(
                 self.use_num - 1) + kconfig.dump_suff
-            fid = open(dump_file_in, 'r')
+            if not os.path.exists(os.path.dirname(dump_file_in)):
+                os.makedirs(os.path.dirname(dump_file_in))
+            fid = open(dump_file_in, 'rb')
             in_data = cPickle.load(fid)
             fid.close()
 
@@ -183,6 +215,9 @@ class Keyboard(MainWindow):
             for col in range(0, self.N_keys_row[row]):
                 try_pred = kconfig.key_chars[row][col].isalpha()
 
+
+    #def gen_load_usenum(self):
+    #    self.usenum_handle = open(self.usenum_file, 'wb')
 
     def find_events(self):
         ## check everything in the queue of pygame events
@@ -826,6 +861,9 @@ class Keyboard(MainWindow):
         pickle.dump([self.user_id, self.bc.click_time_list], self.click_handle, protocol=pickle.HIGHEST_PROTOCOL)
         self.click_handle.close()
         print "click pickle closed properly!"
+        
+        pickle.dump(self.use_num, self.usenum_handle, protocol=pickle.HIGHEST_PROTOCOL)
+        self.usenum_handle.close()
 
         if config.is_write_data:
             data_file = "data/preconfig.pickle"
@@ -840,29 +878,30 @@ class Keyboard(MainWindow):
             except IOError as (errno,strerror):
                 print "I/O error({0}): {1}".format(errno, strerror)
         
-        # if not self.undefined:
-        #     ## close clocks
-        #     try:
-        #         self.bc
-        #     except AttributeError:
-        #         bc_data = []
-        #     else:
-        #         bc_data = self.bc.quit()
-        #         ## save settings
-        #         dump_file_out = kconfig.dump_pre + "clocks." + str(self.user_id) + "." + str(
-        #             self.use_num) + kconfig.dump_suff
-        #         fid = open(dump_file_out, 'w')
-        #         cPickle.dump([self.rotate_index, bc_data], fid)
-        #         fid.close()
-        #
-        #     ## close write file
-        #     if config.is_write_data:
-        #         try:
-        #             self.file_handle
-        #         except AttributeError:
-        #             pass
-        #         else:
-        #             self.file_handle.close()
+        if not self.undefined:
+            ## close clocks
+            try:
+                self.bc
+            except AttributeError:
+                bc_data = []
+            else:
+                bc_data = self.bc.quit()
+                ## save settings
+                print "So I am dumping files to dump"
+                dump_file_out = kconfig.dump_pre + "clocks." + str(self.user_id) + "." + str(
+                    self.use_num) + kconfig.dump_suff
+                fid = open(dump_file_out, 'w')
+                cPickle.dump([self.rotate_index, bc_data], fid)
+                fid.close()
+        
+            ## close write file
+            if config.is_write_data:
+                try:
+                    self.file_handle
+                except AttributeError:
+                    pass
+                else:
+                    self.file_handle.close()
 
         import sys
         sys.exit()
