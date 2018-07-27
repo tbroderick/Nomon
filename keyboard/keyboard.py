@@ -868,7 +868,7 @@ class Keyboard(MainWindow):
 
         if config.is_write_data:
             data_file = "data/preconfig.pickle"
-            file_handle = open(data_file, 'wb')
+            file_handle = PickleUtil(data_file)
             li = self.bc.hsi.dens_li
             z = self.bc.hsi.Z
             self.save_dict = {'li': li, 'z': z, 'opt_sig': self.pbc.hsi.opt_sig, 'y_li': self.pbc.hsi.y_li}

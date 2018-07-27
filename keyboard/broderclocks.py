@@ -85,7 +85,7 @@ class HourScoreIncs:
         self.prev_data_path = "data/preconfig.pickle"
         
     
-        self.prev_data_pickle = PickleUtil("data/preconfig.pickle")
+        self.prev_data_pickle = PickleUtil(self.prev_data_path)
         if self.prev_data_pickle.exists():
             self.not_read_pickle = 1
         
