@@ -6,9 +6,10 @@ import pre_broderclocks_pyqt
 import string
 import broderclocks
 from widgets import *
-import sys
+import sys, os
 import random
-
+sys.path.insert(0, os.path.realpath('../tests'))
+from pickle_util import *
 
 class StartWindow(QtGui.QMainWindow):
 
@@ -487,6 +488,7 @@ class Pretraining(StartWindow):
 
     def gen_handle(self):
         data_file = "data/preconfig.pickle"
+        self.pickle_handle = PickleUtil(data_file)
         self.file_handle = data_file
         
     
@@ -573,7 +575,10 @@ class Pretraining(StartWindow):
                 li = self.pbc.hsi.dens_li
                 print "The length of li is" + str(len(li))
                 z = self.pbc.hsi.Z
-                pickle.dump([li, z, self.pbc.hsi.opt_sig, self.pbc.hsi.y_li], open(self.file_handle, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
+                self.save_dict = {'li': li, 'z': z, 'opt_sig': self.pbc.hsi.opt_sig, 'y_li': self.pbc.hsi.y_li}
+                self.pickle_handle.safe_save(self.save_dict)
+                
+                #pickle.dump([li, z, self.pbc.hsi.opt_sig, self.pbc.hsi.y_li], open(self.file_handle, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
 
                 self.prev_data = [[self.pbc.hsi.y_li[0]], [self.pbc.hsi.opt_sig]]
                 self.use_num = 1
@@ -581,6 +586,7 @@ class Pretraining(StartWindow):
                 print "I'm quitting and the density is" + str(li)
                 print "And the Z is " + str(z)
                 print "file closed"
+                #self.file_handle.close()
             except IOError as (errno,strerror):
                 print "I/O error({0}): {1}".format(errno, strerror)
         

@@ -38,20 +38,50 @@ class Keyboard(MainWindow):
 
         self.app = app
 
-        # check that number of arguments is valid
-        if len(sys.argv) < 3:  # replaced with a default 0 0
-            # print "Error: Too few (" + str(len(sys.argv)-1) + " < 2) arguments"
-            # print "Usage: python keyboard.py user-id use-number proposed-window-width proposed-window-height"
-            # sys.exit() #replaced quit() with this
-            # quit()
-            user_id = 0
-            use_num = 0
-        # read arguments
+        self.usenum_file = "data/usenum.pickle"
+        if os.path.exists(self.usenum_file):
+            try:
+                self.usenum_handle = open(self.usenum_file, 'rb')
+                self.use_num = pickle.load(self.usenum_handle)
+                #Check again
+                self.use_num +=1
+                self.usenum_handle.close()
+                self.usenum_handle = open(self.usenum_file, 'wb')
+            except:
+                #when pickle file is empty
+                self.usenum_handle = open(self.usenum_file, 'wb')
+                self.use_num = 0
+            
+            
         else:
-            user_id = string.atoi(sys.argv[1])
-            use_num = string.atoi(sys.argv[2])
-        self.user_id = user_id
-        self.use_num = use_num
+            #load an incremented use_num
+            self.usenum_handle = open(self.usenum_file, 'wb')
+            self.use_num = 0
+        
+        print "use_num is " + str(self.use_num)
+        self.user_id = 0
+        
+        use_num = self.use_num
+        user_id = self.user_id
+
+
+        #This block of code does not work
+# =============================================================================
+#         # check that number of arguments is valid
+#         if len(sys.argv) < 3:  # replaced with a default 0 0
+#             # print "Error: Too few (" + str(len(sys.argv)-1) + " < 2) arguments"
+#             # print "Usage: python keyboard.py user-id use-number proposed-window-width proposed-window-height"
+#             # sys.exit() #replaced quit() with this
+#             # quit()
+#             user_id = 0
+#             use_num = 0
+#         # read arguments
+#         else:
+#             user_id = string.atoi(sys.argv[1])
+#             use_num = string.atoi(sys.argv[2])
+#         self.user_id = user_id
+#         self.use_num = use_num
+# =============================================================================
         # read extra arguments if they're there
         if len(sys.argv) > 3:
             prop_width = string.atoi(sys.argv[4])
@@ -312,7 +342,7 @@ class Keyboard(MainWindow):
     #Pickle file to save click time
     def gen_click_time_handle(self):
         click_data_file = "data/click_time_log" + str(self.user_id) + "." + str(self.use_num) + ".pickle"
-        self.click_handle = open( click_data_file,'w')
+        self.click_handle = open( click_data_file,'wb')
         
 
     def gen_scale(self):
@@ -828,16 +858,25 @@ class Keyboard(MainWindow):
     
     
     def quit(self, event=None):
+        
+        
+        
         #Save click time log 
         
         pickle.dump([self.user_id, self.bc.click_time_list], self.click_handle, protocol=pickle.HIGHEST_PROTOCOL)
         self.click_handle.close()
+        
+        pickle.dump(self.use_num, self.usenum_handle, protocol=pickle.HIGHEST_PROTOCOL)
+        self.usenum_handle.close()
+        
         try:
             prev_barlist = pickle.load(open("barsdump.p", 'rb'))
         except IOError as (errno, strerror):
             prev_barlist = []
-        pickle.dump(prev_barlist+[[self.pretrain_bars, self.bars]], open("barsdump.p", 'wb'))
+        temp = open("barsdump.p", 'wb')
+        pickle.dump(prev_barlist+[[self.pretrain_bars, self.bars]], temp)
         print "click pickle closed properly!"
+        temp.close()
 
         if config.is_write_data:
             data_file = "data/preconfig.pickle"
@@ -849,32 +888,36 @@ class Keyboard(MainWindow):
                 print "I'm quitting and the density is" + str(li)
                 print "And the Z is " + str(z)
                 print "file closed"
+                file_handle.close()
             except IOError as (errno,strerror):
                 print "I/O error({0}): {1}".format(errno, strerror)
         
-        # if not self.undefined:
-        #     ## close clocks
-        #     try:
-        #         self.bc
-        #     except AttributeError:
-        #         bc_data = []
-        #     else:
-        #         bc_data = self.bc.quit()
-        #         ## save settings
-        #         dump_file_out = kconfig.dump_pre + "clocks." + str(self.user_id) + "." + str(
-        #             self.use_num) + kconfig.dump_suff
-        #         fid = open(dump_file_out, 'w')
-        #         cPickle.dump([self.rotate_index, bc_data], fid)
-        #         fid.close()
-        #
-        #     ## close write file
-        #     if config.is_write_data:
-        #         try:
-        #             self.file_handle
-        #         except AttributeError:
-        #             pass
-        #         else:
-        #             self.file_handle.close()
+        
+        #Do NOT UNCOMMENT THESE
+        
+        if not self.undefined:
+            ## close clocks
+            try:
+                self.bc
+            except AttributeError:
+                bc_data = []
+            else:
+                bc_data = self.bc.quit()
+                ## save settings
+                dump_file_out = kconfig.dump_pre + "clocks." + str(self.user_id) + "." + str(
+                    self.use_num) + kconfig.dump_suff
+                fid = open(dump_file_out, 'w')
+                cPickle.dump([self.rotate_index, bc_data], fid)
+                fid.close()
+    
+            ## close write file
+            if config.is_write_data:
+                try:
+                    self.file_handle
+                except AttributeError:
+                    pass
+                else:
+                    self.file_handle.close()
 
         import sys
         sys.exit()
