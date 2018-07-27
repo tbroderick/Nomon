@@ -20,8 +20,8 @@ class StartWindow(QtGui.QMainWindow):
 
         self.screen_res = screen_res
 
-        self.clock_type = pickle.load(open("user_preferences/clock_preference.p", "rb"))
-        self.high_contrast = pickle.load(open("user_preferences/high_contrast.p", "rb"))
+        self.clock_type = PickleUtil("user_preferences/clock_preference.p").safe_load()
+        self.high_contrast = PickleUtil("user_preferences/high_contrast.p").safe_load()
         self.splash = splash
         self.help_screen = False  # if triggered under help menu adjust number of follow up screens
         self.screen_num = 0  # start at first screen if welcome screen

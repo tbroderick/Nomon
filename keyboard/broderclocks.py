@@ -304,17 +304,18 @@ class BroderClocks:
         #If user id is the same, load the click_time_list in the saved file
         #Otherwise load empty list
         #Variables to dump/save in click_time_log.pickle
-        if os.path.exists("data/click_time_log" + str(user_id) + "." + str(use_num) + ".pickle"):
-            with open("data/click_time_log" + str(user_id) + "." + str(use_num) + ".pickle", 'rb') as temp_handle:
-                try:
-                    temp_saved_list = pickle.load(temp_handle)
-                    #saved user id is the 0th element
-                    if temp_saved_list[0] == user_id:
-                        self.click_time_list =temp_saved_list[1]
-                except:
-                    self.click_time_list = []
-        else:    
+        click_data_file = "data/click_time_log" + str(user_id) + "." + str(use_num) + ".pickle"
+        self.click_handle = PickleUtil(click_data_file)
+        
+        load_click = self.click_handle.safe_load()
+        
+        if load_click == None:
+            if load_click['user id'] == user_id:
+                self.click_time_list = load_click['click time list']
+            else: self.click_time_list = []
+        else:
             self.click_time_list = []
+            
         self.rot_change_list = [(0,self.time_rotate)]    
         
         ### initialize ###

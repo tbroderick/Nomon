@@ -136,7 +136,8 @@ winner_time = 2000
 # data file prefix
 file_pre = "data/clocks."
 # data file suffix
-file_suff = ".txt"
+#file_suff = ".txt"
+file_stuff = ".pickle"
 # train file name
 # TESTING:train_file_name = "../corpus/ANC-token-proc-small.txt"
 train_file_name_default = "corpus/merged_ce-0.2.txt"  # removed "../" from beginning
@@ -152,7 +153,8 @@ phrase_suff = ".txt"
 ## saving settings
 # where to save
 dump_pre = "save/settings."
-dump_suff = ".dump"
+#dump_suff = ".dump"
+dump_stuff = ".pickle"
 # max time for a round
 max_round_sec = 14 * 60
 # whether or not to have pause (and how long: milliseconds)
