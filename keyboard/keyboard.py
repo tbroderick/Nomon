@@ -871,7 +871,9 @@ class Keyboard(MainWindow):
             file_handle = PickleUtil(data_file)
             li = self.bc.hsi.dens_li
             z = self.bc.hsi.Z
-            self.save_dict = {'li': li, 'z': z, 'opt_sig': self.pbc.hsi.opt_sig, 'y_li': self.pbc.hsi.y_li}
+            
+            ##SO HERE IT IS PBC BUT IT SHOULD BE LIKE BC
+            self.save_dict = {'li': li, 'z': z, 'opt_sig': self.bc.hsi.opt_sig, 'y_li': self.bc.hsi.y_li}
             file_handle.safe_save(self.save_dict)
             print "I'm quitting and the density is" + str(li)
             print "And the Z is " + str(z)
