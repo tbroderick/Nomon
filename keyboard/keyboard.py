@@ -891,7 +891,7 @@ class Keyboard(MainWindow):
                 bc_data = self.bc.quit()
                 ## save settings
                 dump_file_out = kconfig.dump_pre + "clocks." + str(self.user_id) + "." + str(
-                    self.use_num) + kconfig.dump_suff
+                    self.use_num) + kconfig.dump_stuff
                 dump_pickle = PickleUtil(dump_file_out)
                 dump_pickle.safe_save({'rotate index': self.rotate_index, 'bc data': bc_data})
                 
@@ -907,6 +907,7 @@ class Keyboard(MainWindow):
 
         import sys
         sys.exit()
+        #self.deleteLater()
 
     def launch_help(self):
         help_window = StartWindow(self.mainWidgit.screen_res, False)
