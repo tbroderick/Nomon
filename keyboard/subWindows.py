@@ -468,6 +468,8 @@ class Pretraining(StartWindow):
         else:
             self.file_handle = None
         
+        #which is 20
+        #self.total_presses = self.pbc.hsi.n_training
         self.num_stop_training = 10
         self.total_presses = 10
         
@@ -477,7 +479,6 @@ class Pretraining(StartWindow):
         
         self.pbc = pre_broderclocks_pyqt.Pre_broderclocks(self, self.file_handle, self.time_rotate, self.use_num, self.user_id, time.time(), self.prev_data)
         self.wait_s = self.pbc.get_wait()
-        self.num_stop_training = self.pbc.hsi.n_training
         
         
         #self.pbc.hsi.n_training #which is 20
