@@ -254,8 +254,11 @@ class HourScoreIncs:
 
     # return the click score for a particular press time
     def get_score_inc(self, yin):
-        index = int(config.num_divs_click * (yin / self.time_rotate + 0.5)) % config.num_divs_click
-        return numpy.log(self.dens_li[index] / self.Z)
+        if self.Z >0 :
+            index = int(config.num_divs_click * (yin / self.time_rotate + 0.5)) % config.num_divs_click
+            return numpy.log(self.dens_li[index] / self.Z)
+        else:
+            return 0
 
     def reverse_index_gsi(self, log_dens_val):
         dens_val = numpy.e ** log_dens_val
