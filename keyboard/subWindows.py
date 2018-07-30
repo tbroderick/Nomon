@@ -10,6 +10,7 @@ import sys, os
 import random
 sys.path.insert(0, os.path.realpath('../tests'))
 from pickle_util import *
+import math
 
 class StartWindow(QtGui.QMainWindow):
 
