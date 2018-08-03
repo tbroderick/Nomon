@@ -310,7 +310,7 @@ class BroderClocks:
     # clocks_off: clocks not in use (initially, for the first round)
     # clock_score_prior: prior for the clock scores
     # circle_off_color: color for the clocks when they are not in use (to blend into the bg)
-    def __init__(self, parent, centers, win_diffs, radius, file_handle, clocks_on, clocks_off, circle_off_color,
+    def __init__(self, parent, centers, win_diffs, radius, clocks_on, clocks_off, circle_off_color,
                  in_time, use_num, user_id, time_rotate, prev_data):
         ### process the inputs ###
         ## copy
@@ -319,7 +319,6 @@ class BroderClocks:
         self.centers = centers
         self.win_diffs = win_diffs
         self.radius = radius
-        self.file_handle = file_handle
         self.clocks_on = clocks_on
         self.clocks_off = clocks_off
         self.circle_off_color = circle_off_color
@@ -337,6 +336,8 @@ class BroderClocks:
 
         self.use_num, self.user_id, self.time_rotate, self.prev_data = use_num, user_id, time_rotate, prev_data
         self.last_press_time = 0
+
+        self.draw_times = config.Stack(500)
         
         #If user id is the same, load the click_time_list in the saved file
         #Otherwise load empty list
@@ -352,7 +353,7 @@ class BroderClocks:
                     self.click_time_list = []
         else:    
             self.click_time_list = []
-        self.rot_change_list = [(0,self.time_rotate)]    
+        self.rot_change_list = [(0, self.time_rotate)]
         
         ### initialize ###
         # time
@@ -479,6 +480,7 @@ class BroderClocks:
 
         # update records
         if not self.parent.pretrain:
+            draw_time = time.time()
             for clock in self.clocks_on:
                 # update time indices
                 self.cur_hours[clock] = (self.cur_hours[clock] + 1) % self.num_divs_time
@@ -488,6 +490,10 @@ class BroderClocks:
 
                 self.parent.mainWidgit.clocks[clock].angle = angle + math.pi*0.5
                 self.parent.mainWidgit.clocks[clock].repaint()
+            draw_time = (time.time()-draw_time)
+            self.draw_times+draw_time
+            if len(self.draw_times) == self.draw_times.max_size:
+                print(sum(self.draw_times) / len(self.draw_times))
 
 
         # refresh the canvas

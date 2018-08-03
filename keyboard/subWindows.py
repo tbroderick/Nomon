@@ -409,7 +409,7 @@ class PretrainScreen(QtGui.QWidget):
 
     def redrawClocks(self):
         for clock in self.dummy_clocks:
-            clock.text = "not me"
+            clock.setText("not me")
             clock.selected = False
             clock.highlighted = (random.random() < random.random())
             clock.dummy_angle_offset = random.random() * math.pi*-1
@@ -419,7 +419,7 @@ class PretrainScreen(QtGui.QWidget):
         selected_clock = random.randint(0, 63)
         self.dummy_clocks[selected_clock].dummy_angle_offset = 0
         self.dummy_clocks[selected_clock].selected = True
-        self.dummy_clocks[selected_clock].text = "Click Me!"
+        self.dummy_clocks[selected_clock].setText("Click Me!")
         self.dummy_clocks[selected_clock].repaint()
 
 
@@ -468,8 +468,6 @@ class Pretraining(StartWindow):
         else:
             self.file_handle = None
         
-        #which is 20
-        #self.total_presses = self.pbc.hsi.n_training
         self.num_stop_training = 10
         self.total_presses = 10
         
@@ -479,6 +477,7 @@ class Pretraining(StartWindow):
         
         self.pbc = pre_broderclocks_pyqt.Pre_broderclocks(self, self.file_handle, self.time_rotate, self.use_num, self.user_id, time.time(), self.prev_data)
         self.wait_s = self.pbc.get_wait()
+        self.num_stop_training = self.pbc.hsi.n_training
         
         
         #self.pbc.hsi.n_training #which is 20
@@ -599,7 +598,7 @@ class Pretraining(StartWindow):
         #self.sister.init_histogram()
         print "this worked 2"
         #print self.sister.bc.hsi.not_read_pickle
-        self.sister.pretrain_bars = list(self.sister.bars)
+        self.sister.pretrain_bars = self.sister.bars
         self.close()
 
     def closeEvent(self, event):

@@ -14,7 +14,7 @@ class Pre_HourScoreIncs:
         # rotation period
         self.time_rotate = time_rotate
         # index over histogram bins
-        self.index_li = range(0,config.num_divs_click)
+        self.index_li = range(0, config.num_divs_click)
         # location of histogram bins
         self.x_li = []
         for index in self.index_li:
@@ -35,10 +35,6 @@ class Pre_HourScoreIncs:
         self.dens_li = []
         self.opt_sig = 1
 
-
-    def set_ntraining(self, new_ntraining):
-        self.n_training = new_ntraining
-        
    #Calculate optimal bandwith for kernel density estimation
     def optimal_bandwith(self, things):
         return 1.06 * (self.n_training ** -0.2) * self.sample_std(things)
