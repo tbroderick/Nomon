@@ -134,14 +134,14 @@ class Keyboard(MainWindow):
         ## set up file handle for printing useful stuff
         self.undefined = False
 
-        if config.is_write_data:
-            self.gen_handle()
-            self.num_presses = 0
-            self.file_handle.write(
-                "params " + str(config.period_li[config.default_rotate_ind]) + " " + str(config.theta0) + "\n")
-            self.file_handle.write("start " + str(time.time()) + "\n")
-        else:
-            self.file_handle = None
+        # if config.is_write_data:
+        #     self.gen_handle()
+        #     self.num_presses = 0
+        #     self.file_handle.write(
+        #         "params " + str(config.period_li[config.default_rotate_ind]) + " " + str(config.theta0) + "\n")
+        #     self.file_handle.write("start " + str(time.time()) + "\n")
+        # else:
+        #     self.file_handle = None
         ## set up canvas for displaying stuff
         # self.gen_canvas()
         self.gen_scale()
@@ -189,7 +189,7 @@ class Keyboard(MainWindow):
 
         ## set up broderclocks
         self.bc = broderclocks.BroderClocks(self, self.clock_centers, self.win_diffs, kconfig.clock_rad,
-                                            self.file_handle, self.words_on, self.words_off, kconfig.key_color,
+                                            self.words_on, self.words_off, kconfig.key_color,
                                             time.time(), use_num, user_id, self.time_rotate, prev_data)
         self.mainWidgit.changeValue(config.start_speed)
         self.wait_s = self.bc.get_wait()
@@ -338,12 +338,6 @@ class Keyboard(MainWindow):
         # height for bottom two
         self.height_bot = 3 * self.key_height
 
-    def gen_handle(self):
-        # file handle
-        data_file = kconfig.file_pre + str(self.user_id) + "." + str(self.use_num) + kconfig.file_suff
-        self.file_handle = open(data_file, 'w')
-
-
     #Pickle file to save click time
     def gen_click_time_handle(self):
         click_data_file = "data/click_time_log" + str(self.user_id) + "." + str(self.use_num) + ".pickle"
@@ -378,7 +372,7 @@ class Keyboard(MainWindow):
         self.wait_s = self.bc.get_wait()
 
         # note period change in log file
-        self.file_handle.write("speed " + str(time.time()) + " " + str(old_rotate) + " " + str(self.time_rotate) + "\n")
+        # self.file_handle.write("speed " + str(time.time()) + " " + str(old_rotate) + " " + str(self.time_rotate) + "\n")
 
         # update the histogram
         self.draw_histogram()
@@ -668,12 +662,8 @@ class Keyboard(MainWindow):
             self.wpm_time = time.time()
 
         if not self.in_pause:
-            if config.is_write_data:
-                self.num_presses += 1
-                self.file_handle.write("press " + str(time.time()) + " " + str(self.num_presses) + "\n")
             self.bc.select(time.time())
         self.play()
-
     def play(self):
         sound_file = "icons/bell.wav"
         QSound(sound_file).play()
@@ -846,9 +836,9 @@ class Keyboard(MainWindow):
         #     self.talk_winner(talk_string)
 
         # write output
-        if config.is_write_data:
-            self.file_handle.write("choice " + str(time.time()) + " " + str(is_undo) + " " + str(
-                is_equalize) + " \"" + self.typed + "\"\n")
+        # if config.is_write_data:
+        #     self.file_handle.write("choice " + str(time.time()) + " " + str(is_undo) + " " + str(
+        #         is_equalize) + " \"" + self.typed + "\"\n")
 
         return self.words_on, self.words_off, self.word_score_prior, is_undo, is_equalize
 
@@ -867,11 +857,11 @@ class Keyboard(MainWindow):
         
         pickle.dump([self.user_id, self.bc.click_time_list], self.click_handle, protocol=pickle.HIGHEST_PROTOCOL)
         self.click_handle.close()
-        try:
-            prev_barlist = pickle.load(open("barsdump.p", 'rb'))
-        except IOError as (errno, strerror):
-            prev_barlist = []
-        pickle.dump(prev_barlist+[[self.pretrain_bars, self.bars]], open("barsdump.p", 'wb'))
+        # try:
+        #     prev_barlist = pickle.load(open("barsdump_old.p", 'rb'))
+        # except IOError as (errno, strerror):
+        #     prev_barlist = []
+        # pickle.dump(prev_barlist+[[self.pretrain_bars, self.bars]], open("barsdump_old.p", 'wb'))
         print "click pickle closed properly!"
         
         pickle.dump(self.use_num, self.usenum_handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -902,18 +892,18 @@ class Keyboard(MainWindow):
                 print "So I am dumping files to dump"
                 dump_file_out = kconfig.dump_pre + "clocks." + str(self.user_id) + "." + str(
                     self.use_num) + kconfig.dump_suff
-                fid = open(dump_file_out, 'w')
+                fid = open(dump_file_out, 'wb')
                 cPickle.dump([self.rotate_index, bc_data], fid)
                 fid.close()
         
             ## close write file
-            if config.is_write_data:
-                try:
-                    self.file_handle
-                except AttributeError:
-                    pass
-                else:
-                    self.file_handle.close()
+            # if config.is_write_data:
+            #     try:
+            #         self.file_handle
+            #     except AttributeError:
+            #         pass
+            #     else:
+            #         self.file_handle.close()
 
         import sys
         sys.exit()
