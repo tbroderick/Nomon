@@ -852,6 +852,7 @@ class Keyboard(MainWindow):
 
     
     def closeEvent(self, event):
+        print "CLOSING THRU CLOSEEVENT"
         self.quit(event)
         #self.deleteLater()
     
