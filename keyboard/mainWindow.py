@@ -27,7 +27,8 @@ class MainWindow(QtGui.QMainWindow):
         exitAction = QtGui.QAction('&Exit', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application')
-        exitAction.triggered.connect(QtGui.qApp.quit)
+        #exitAction.triggered.connect(QtGui.qApp.quit)
+        exitAction.triggered.connect(self.closeEvent)
 
         # Clock Menu Actions
         self.highContrastAction = QtGui.QAction('&High Contrast Mode', self, checkable=True)
