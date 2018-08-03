@@ -528,6 +528,11 @@ class Pretraining(StartWindow):
                 self.mainWidgit.start_button.setFocus()
 
                 self.mainWidgit.start_button.show()
+                
+                if self.num_press > self.total_presses:
+                    self.start_button_func()
+                
+           
             
         if self.deactivate_press:
             self.on_finish()
