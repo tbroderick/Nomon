@@ -309,10 +309,14 @@ class BroderClocks:
         
         load_click = self.click_handle.safe_load()
         
-        if load_click == None:
-            if load_click['user id'] == user_id:
-                self.click_time_list = load_click['click time list']
-            else: self.click_time_list = []
+        if load_click != None:
+            try:
+                if load_click.has_key('user id'):
+                    if load_click['user id'] == user_id:
+                        self.click_time_list = load_click['click time list']
+                else: self.click_time_list = []
+            except:
+                self.click_time_list = []
         else:
             self.click_time_list = []
             
@@ -565,6 +569,10 @@ class BroderClocks:
             else:
                 self.clock_history[0][n_press].append(0)
             i_all += 1
+        print "SELF.CLOCKS_ON is " + str(self.clocks_on) 
+        
+        print "SELF.CLOCK_HISTORY[0][last] is " + str(self.clock_history[0][-1]) 
+
 
     # compares indices based on their cumulative score
     def compare_score(self, xind, yind):
@@ -586,9 +594,6 @@ class BroderClocks:
         else:
             return False
 
-    def get_prior_magnitude(self):
-        mag = self.hsi.get_magnitude()
-        return mag
 
     def init_round(self, is_win, is_start, clock_score_prior):
         if (is_win or is_start):  # if won, restart everything

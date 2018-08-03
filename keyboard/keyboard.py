@@ -244,7 +244,10 @@ class Keyboard(MainWindow):
 
             self.N_keys_row.append(n_keys)
             self.N_keys += n_keys
-
+        
+        print "NKEYS is " + str(self.N_keys)
+        print "And N_alpha_keys is " + str(self.N_alpha_keys)
+        
         # width difference when include letter
         word_clock_offset = 7 * kconfig.clock_rad
         rect_offset = word_clock_offset - kconfig.clock_rad
@@ -472,6 +475,9 @@ class Keyboard(MainWindow):
                     words += [word]
         self.word_list = words
         self.typed_versions = ['']
+        
+        print "THe self.words_on are " + str(self.words_on)
+        print "Self.word list is " + str(self.word_list)
 
     def raise_words(self):
         pass
