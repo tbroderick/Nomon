@@ -411,7 +411,7 @@ class PretrainScreen(QtGui.QWidget):
 
     def redrawClocks(self):
         for clock in self.dummy_clocks:
-            clock.text = "not me"
+            clock.setText("not me")
             clock.selected = False
             clock.highlighted = (random.random() < random.random())
             clock.dummy_angle_offset = random.random() * math.pi*-1
@@ -421,7 +421,7 @@ class PretrainScreen(QtGui.QWidget):
         selected_clock = random.randint(0, 63)
         self.dummy_clocks[selected_clock].dummy_angle_offset = 0
         self.dummy_clocks[selected_clock].selected = True
-        self.dummy_clocks[selected_clock].text = "Click Me!"
+        self.dummy_clocks[selected_clock].setText("Click Me!")
         self.dummy_clocks[selected_clock].repaint()
 
 
@@ -610,7 +610,7 @@ class Pretraining(StartWindow):
         #self.sister.init_histogram()
         print "this worked 2"
         #print self.sister.bc.hsi.not_read_pickle
-        self.sister.pretrain_bars = list(self.sister.bars)
+        self.sister.pretrain_bars = self.sister.bars
         self.close()
 
     def closeEvent(self, event):

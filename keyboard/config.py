@@ -37,7 +37,7 @@ period_li = [0,  # place holder
              1.46, 1.62, 1.80, 2.00, 2.22,
              2.47, 2.74, 3.05]
 period_li = [i*1.5 for i in period_li]
-start_speed = pickle.load(open(os.path.join(current_folder, "user_preferences/start_speed.p"), 'rb'))
+start_speed = pickle.load(open("user_preferences/start_speed.p", 'rb'))
 scale_min = 1
 scale_max = len(period_li) - 1
 default_rotate_ind = 19  # 19 # (22,) 19, 16, 13, 10, 7
@@ -74,7 +74,7 @@ class Stack(list):
 ### Colors ###
 # Background Color
 bg_color_highlt = "#ddf6dd"
-high_contrast = pickle.load(open(os.path.join(current_folder, "user_preferences/high_contrast.p"), 'rb'))
+high_contrast = pickle.load(open("user_preferences/high_contrast.p", 'rb'))
 if high_contrast:
 
     # clock colors
@@ -142,7 +142,7 @@ else:
 
 ### Fonts ###
 base_font = 'helvetica'
-font_scale = pickle.load(open(os.path.join(current_folder, "user_preferences/font_scale.p"), 'rb'))
+font_scale = pickle.load(open("user_preferences/font_scale.p", 'rb'))
 
 if font_scale == 'med':
     font_scale = 1

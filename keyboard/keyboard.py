@@ -26,6 +26,8 @@ import numpy
 import cPickle, pickle
 from mainWindow import *
 from subWindows import *
+import os
+
 sys.path.insert(0, os.path.realpath('../tests'))
 from pickle_util import *
 
@@ -53,12 +55,12 @@ class Keyboard(MainWindow):
         use_num = self.use_num
         user_id = self.user_id
 
-
-        #This block of code does not work
+        #This block of codes is not working 
+        # check that number of arguments is valid
 # =============================================================================
-#         # check that number of arguments is valid
 #         if len(sys.argv) < 3:  # replaced with a default 0 0
-#             # print "Error: Too few (" + str(len(sys.argv)-1) + " < 2) arguments"
+#             print "Error: Too few (" + str(len(sys.argv)-1) + " < 2) arguments"
+
 #             # print "Usage: python keyboard.py user-id use-number proposed-window-width proposed-window-height"
 #             # sys.exit() #replaced quit() with this
 #             # quit()
@@ -73,6 +75,7 @@ class Keyboard(MainWindow):
 # =============================================================================
         # read extra arguments if they're there
         if len(sys.argv) > 3:
+            print "this actually can happen"
             prop_width = string.atoi(sys.argv[4])
         else:
             prop_width = kconfig.base_window_width
@@ -113,7 +116,7 @@ class Keyboard(MainWindow):
                 os.makedirs(os.path.dirname(dump_file_in))
             dump_pickle = PickleUtil(dump_file_in)
             in_data = dump_pickle.safe_load()
-            
+
 
             # period
             self.rotate_index = in_data[0]
@@ -127,7 +130,7 @@ class Keyboard(MainWindow):
         if config.is_write_data:
             self.gen_handle()
             self.num_presses = 0
-            
+
             self.file_handle_dict['params'].append([config.period_li[config.default_rotate_ind], config.theta0])
             self.file_handle_dict['start'].append(time.time())
         else:
@@ -179,7 +182,7 @@ class Keyboard(MainWindow):
 
         ## set up broderclocks
         self.bc = broderclocks.BroderClocks(self, self.clock_centers, self.win_diffs, kconfig.clock_rad,
-                                            self.file_handle, self.words_on, self.words_off, kconfig.key_color,
+                                            self.words_on, self.words_off, kconfig.key_color,
                                             time.time(), use_num, user_id, self.time_rotate, prev_data)
         self.mainWidgit.changeValue(config.start_speed)
         self.wait_s = self.bc.get_wait()
@@ -205,6 +208,9 @@ class Keyboard(MainWindow):
             for col in range(0, self.N_keys_row[row]):
                 try_pred = kconfig.key_chars[row][col].isalpha()
 
+
+    #def gen_load_usenum(self):
+    #    self.usenum_handle = open(self.usenum_file, 'wb')
 
     def find_events(self):
         ## check everything in the queue of pygame events
@@ -667,7 +673,6 @@ class Keyboard(MainWindow):
                 self.file_handle_dict['press'].append([time.time(), self.num_presses])
             self.bc.select(time.time())
         self.play()
-
     def play(self):
         sound_file = "icons/bell.wav"
         QSound(sound_file).play()
@@ -842,7 +847,6 @@ class Keyboard(MainWindow):
         # write output
         if config.is_write_data:
             self.file_handle_dict['choice'].append([time.time(), is_undo, is_equalize, self.typed])
-            
 
         return self.words_on, self.words_off, self.word_score_prior, is_undo, is_equalize
 
@@ -867,7 +871,7 @@ class Keyboard(MainWindow):
         if prev_barlist == None:
             prev_barlist = []
 
-        
+
 
         self.pretrain_bars = self.bc.hsi.dens_li
         bars_pickle.safe_save(prev_barlist+[[self.pretrain_bars, self.bars]])
@@ -911,7 +915,6 @@ class Keyboard(MainWindow):
                 except AttributeError:
                     pass
                 
-
         import sys
         sys.exit()
         #self.deleteLater()

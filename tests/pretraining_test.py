@@ -10,7 +10,35 @@ import os, sys
 sys.path.append(os.path.realpath('../keyboard'))
 sys.path.append(os.path.realpath('../keyboard/user_preferences'))
 from pre_broderclocks_pyqt import *
+<<<<<<< HEAD
+from nose.tools import assert_equals, assertAlmostEqual
+
+##Tests on Pre_HourScoreIncs
+phsi = Pre_HourScoreIncs(0,0,2,None)
+
+
+#Test 
+def test_optimal_bandwith1():
+    pass
+
+#Test Pre_HourScoreIncs.normal() when x=mu=0.0, std=1.0
+def test_normal_1():
+    print "Test for normal when x=mu"
+    assertAlmostEqual(phsi.normal(0,0,1),0.39894228)
+    
+#Test Pre_HourScoreIncs.normal() when x=2.0, mu=0.0, std=2.0
+def test_normal_2():
+    print "Test for normal when x=mu+1std"
+    assertAlmostEqual(phsi.normal(2,0,4),0.12098536)
+
+#Test Pre_HourScoreIncs.normal() when x=2.0, mu=0.0, std=2.0
+def test_normal_3():
+    print "Test for normal when x=mu-std"
+    assertAlmostEqual(phsi.normal(-2,0,4),0.12098536)
+    
+=======
 from nose.tools import assert_equals, assert_almost_equal
+>>>>>>> refs/remotes/origin/workBranch
 
 ##Tests on Pre_HourScoreIncs
 phsi = Pre_HourScoreIncs(0,0,2,None)

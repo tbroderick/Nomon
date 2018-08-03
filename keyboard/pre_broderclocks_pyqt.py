@@ -14,7 +14,7 @@ class Pre_HourScoreIncs:
         # rotation period
         self.time_rotate = time_rotate
         # index over histogram bins
-        self.index_li = range(0,config.num_divs_click)
+        self.index_li = range(0, config.num_divs_click)
         # location of histogram bins
         self.x_li = []
         for index in self.index_li:
