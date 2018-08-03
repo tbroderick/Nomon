@@ -54,12 +54,14 @@ class ClockUtil:
     def __init__(self, parent, inference):
         #parent is the widget
         self.parent = parent
+        self.clock_li = clock_li
         self.inference = inference
-        self.cur_hours = []
-        pass
+        self.cur_hours = [0.0]*len(self.clock_li)
+    
+        
     
     #cur_hours 
-    def set_hourlocs(self):
+    def set_curhours(self):
         
         
     def change_period(self):
