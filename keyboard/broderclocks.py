@@ -93,7 +93,32 @@ class HourScoreIncs:
         load_dict = self.prev_data_pickle.safe_load()
         
         #pickle file is empty, corrupt, does not exist
-        if load_dict == None:
+        if load_dict != None:
+            try:
+                self.dens_li = load_dict['li']
+                print "I'm starting(reading) and the self.dens_li" + str(load_dict['li'])
+                self.Z =  load_dict['z']
+                self.ksigma0 = load_dict['opt_sig']
+                print "Also the self.ksimga0" + str(load_dict['opt_sig'])
+                self.ksigma = self.ksigma0
+                self.y_li_from_pre = load_dict['y_li']
+                
+            except: 
+                self.Z = 0
+                self.dens_li = []
+                for x in self.x_li:
+                    diff = x - config.mu0
+    
+                    dens = numpy.exp(-1/(2*config.sigma0_sq) * diff*diff)
+                    dens /= numpy.sqrt(2*numpy.pi*config.sigma0_sq)
+                    dens *= self.n_ksigma
+                    self.dens_li.append(dens)
+                    self.Z += dens
+                self.ksigma0 = 1.06*config.sigma0 / (self.n_ksigma**0.2)
+                self.ksigma = self.ksigma0
+            
+        #pickle file exists and can be loaded
+        else:
             self.Z = 0
             self.dens_li = []
             for x in self.x_li:
@@ -106,16 +131,6 @@ class HourScoreIncs:
                 self.Z += dens
             self.ksigma0 = 1.06*config.sigma0 / (self.n_ksigma**0.2)
             self.ksigma = self.ksigma0
-            
-        #pickle file exists and can be loaded
-        else:
-            self.dens_li = load_dict['li']
-            print "I'm starting(reading) and the self.dens_li" + str(load_dict['li'])
-            self.Z =  load_dict['z']
-            self.ksigma0 = load_dict['opt_sig']
-            print "Also the self.ksimga0" + str(load_dict['opt_sig'])
-            self.ksigma = self.ksigma0
-            self.y_li_from_pre = load_dict['y_li']
         
 
 
