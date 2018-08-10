@@ -540,10 +540,10 @@ class Pretraining(StartWindow):
 
                 self.mainWidgit.start_button.show()
                 
-                if self.num_presses > self.total_presses:
+                if self.num_press > self.total_presses:
                     self.start_button_func()
-                
-           
+
+
             
         if self.deactivate_press:
             self.on_finish()
@@ -621,7 +621,7 @@ class Pretraining(StartWindow):
         #self.sister.init_histogram()
         print "this worked 2"
         #print self.sister.bc.hsi.not_read_pickle
-        self.sister.pretrain_bars = self.sister.bars
+        self.sister.pretrain_bars = list(self.sister.bars)
         self.close()
 
     def closeEvent(self, event):

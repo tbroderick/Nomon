@@ -501,8 +501,7 @@ class BroderClocks:
         last_gap_time = (time_in - self.last_press_time) % self.time_rotate
         self.save_click_time(last_gap_time, ind_in_histo)
         self.last_press_time = time_in
-        if self.parent.is_write_data:
-            print "click time was recorded!"
+        print "click time was recorded!"
 
         # proceed based on whether there was a winner
         if (self.is_winner()):

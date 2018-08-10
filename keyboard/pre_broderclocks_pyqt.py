@@ -14,7 +14,7 @@ class Pre_HourScoreIncs:
         # rotation period
         self.time_rotate = time_rotate
         # index over histogram bins
-        self.index_li = range(0, config.num_divs_click)
+        self.index_li = range(0,config.num_divs_click)
         # location of histogram bins
         self.x_li = []
         for index in self.index_li:
@@ -47,7 +47,7 @@ class Pre_HourScoreIncs:
     def calculate_density(self):
         #calculate density over all x locations and normalize them after
         #prop = 1.0 / self.n_training / self.optimal_bandwith()
-        if self.n_training == len(self.y_li):
+        if len(self.dens_li) == config.num_divs_click:
             print "density already calculated; density needs to be reinitilazed if you want to recalculate"
             return [self.dens_li, self.Z]
         else:

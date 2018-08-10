@@ -152,7 +152,7 @@ class Keyboard(MainWindow):
         ## set up "talked" text
         self.talk_file = "talk.txt"
         ## set up dictionary tree
-        train_handle = open(kconfig.train_file_name, 'r')
+        train_handle = open(self.train_file_name, 'r')
         self.dt = dtree.DTree(train_handle, self)
         train_handle.close()
         # check for speech
@@ -862,10 +862,10 @@ class Keyboard(MainWindow):
     
     
     def quit(self, event=None):
-        #Save click time log 
+        #Save click time log
         self.click_handle.safe_save({'user id': self.user_id, 'click time list': self.bc.click_time_list})
         self.usenum_handle.safe_save(self.use_num)
-        
+
         bars_pickle = PickleUtil("data/barsdump.pickle")
         prev_barlist = bars_pickle.safe_load()
         if prev_barlist == None:
