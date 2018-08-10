@@ -47,7 +47,7 @@ class Pre_HourScoreIncs:
     def calculate_density(self):
         #calculate density over all x locations and normalize them after
         #prop = 1.0 / self.n_training / self.optimal_bandwith()
-        if len(self.dens_li) == config.num_divs_click:
+        if self.n_training == len(self.y_li):
             print "density already calculated; density needs to be reinitilazed if you want to recalculate"
             return [self.dens_li, self.Z]
         else:

@@ -19,7 +19,6 @@
 # <http://www.gnu.org/licenses/>.
 ######################################
 from __future__ import division
-import Tkinter
 import config
 import numpy
 import time
@@ -325,9 +324,8 @@ class BroderClocks:
         #Variables to dump/save in click_time_log.pickle
         click_data_file = "data/click_time_log" + str(user_id) + "." + str(use_num) + ".pickle"
         self.click_handle = PickleUtil(click_data_file)
-        
+
         load_click = self.click_handle.safe_load()
-        
         if load_click != None:
             try:
                 if load_click.has_key('user id'):
@@ -340,6 +338,7 @@ class BroderClocks:
             self.click_time_list = []
 
         self.rot_change_list = [(0, self.time_rotate)]
+
 
         ### initialize ###
         # time
@@ -423,7 +422,7 @@ class BroderClocks:
         self.bits_per_select = numpy.log(len(self.clocks_on)) / numpy.log(2)
         self.num_bits += self.bits_per_select
         t = time.time()
-        # if config.is_write_data:
+        # if self.parent.is_write_data:
         #	loc_rate = self.bits_per_select / (t - self.last_win_time)
         #	bit_rate = self.num_bits / (t - self.start_time)
         #	self.file_handle.write("bits " + str(bit_rate) + " " + str(loc_rate) + "\n")
@@ -502,7 +501,8 @@ class BroderClocks:
         last_gap_time = (time_in - self.last_press_time) % self.time_rotate
         self.save_click_time(last_gap_time, ind_in_histo)
         self.last_press_time = time_in
-        print "click time was recorded!"
+        if self.parent.is_write_data:
+            print "click time was recorded!"
 
         # proceed based on whether there was a winner
         if (self.is_winner()):
