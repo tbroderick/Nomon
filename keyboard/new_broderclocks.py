@@ -28,12 +28,9 @@ class New_BroderClocks:
         self.is_win = self.clock_inf.is_winner()
         self.is_start = False
                 
-        self.user_id = 0
-        self.use_num = 0
+
         #SPECIFIC FILE NAMES
         #SAVING AND LOADING
-        self.prev_data_path = "data/preconfig.pickle"
-        self.click_data_path = "data/click_time_log" + str(self.user_id) + "." + str(self.use_num) + ".pickle"
         self.get_all_data()
     
         self.latest_time = time.time()
@@ -46,25 +43,38 @@ class New_BroderClocks:
         return self.clock_inf.kde.dens_li
     
     def get_all_data(self):
-        self.get_prev_data()
+        self.get_user_id()
         self.get_click_data()
+        self.get_prev_data()
+    
+    def get_user_id(self):
+        self.last_id_path = "data/last_id.pickle"
+        self.parent.user_id = PickleUtil(self.last_id_path).safe_load()
+        if self.parent.user_id ==None:
+            self.parent.user_id = 0
+        
     
     #get kde data from past use
     def get_prev_data(self):
+        self.prev_data_path = "data/preconfig_user_id"+ str(self.parent.user_id)+ ".pickle"
+        print "USER ID is" + str(self.parent.user_id)
         load_dict = PickleUtil(self.prev_data_path).safe_load()
         if load_dict != None:
             self.clock_inf.kde.get_past_dens_li(load_dict)
     
     def get_click_data(self):
+        
+        self.click_data_path = "data/click_time_log_user_id" + str(self.parent.user_id) + ".pickle"
+
         load_click = PickleUtil(self.click_data_path).safe_load()
         if load_click != None:
             try:
                 if load_click.has_key('user id') and load_click.has_key('use_num') and load_click.has_key('rotate index'):
                     if load_click['user id'] == self.parent.user_id:
                         self.click_time_list = load_click['click time list']
-                        self.parent.use_num = load_click['use_num']
+                        self.parent.use_num = load_click['use_num']  +1
                         self.parent.rotate_index = load_click['rotate index']
-                    return
+                        return
             except:
                 pass
         self.click_time_list = []
@@ -83,8 +93,19 @@ class New_BroderClocks:
     
     #ALL THE SAVES AND DUMPS THEY DO WHEN THEY QUIT KEYBOARD SHOULD BE HERE TOO
     def save_when_quit(self):
-        PickleUtil(self.click_data_path).safe_save({'user id': self.parent.user_id, 'use_num': self.parent.use_num ,'click time list': self.click_time_list, 'rotate index': self.parent.rotate_index})
-        PickleUtil(self.prev_data_path).safe_save({'li': self.clock_inf.kde.dens_li, 'z': self.clock_inf.kde.Z, 'opt_sig': self.clock_inf.kde.ksigma, 'y_li': self.clock_inf.kde.y_li})
+        
+        if self.parent.consent and config.is_write_data:
+            self.prev_data_path = "data/preconfig_user_id"+ str(self.parent.user_id)+ ".pickle"
+            self.click_data_path = "data/click_time_log_user_id" + str(self.parent.user_id) + ".pickle"
+            self.last_id_path = "data/last_id.pickle"
+            self.params_data_path = "data/params_data_user_id" + str(self.parent.user_id) + "use_num" + str(self.parent.use_num) +".pickle"
+            PickleUtil(self.click_data_path).safe_save({'user id': self.parent.user_id, 'use_num': self.parent.use_num ,'click time list': self.click_time_list, 'rotate index': self.parent.rotate_index})
+            PickleUtil(self.prev_data_path).safe_save({'li': self.clock_inf.kde.dens_li, 'z': self.clock_inf.kde.Z, 'opt_sig': self.clock_inf.kde.ksigma, 'y_li': self.clock_inf.kde.y_li, 'yksigma':self.clock_inf.kde.y_ksigma})
+            PickleUtil(self.last_id_path).safe_save(self.parent.user_id)
+            PickleUtil(self.params_data_path).safe_save(self.parent.params_handle_dict)
+        else:
+            self.save_when_quit_noconsent()
+                
     
     def quit_bc(self):
         self.save_when_quit()

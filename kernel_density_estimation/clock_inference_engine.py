@@ -80,6 +80,7 @@ class kernel_density_estimation:
                 #THIS LINE ?????????
                 #self.y_li_from_pre = dens_dict['y_li']
                 self.y_li = dens_dict['y_li']
+                self.y_ksigma = dens_dict['yksigma']
                 print "IS THIS LINE THE PROBLEM?"
             except:
                 pass

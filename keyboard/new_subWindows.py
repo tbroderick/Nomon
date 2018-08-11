@@ -433,6 +433,8 @@ class Pretraining(StartWindow):
         self.started = 0
         self.training_ended = 0
         self.consent = True
+        
+        self.retrain = False
 
 
     def re_init(self):
@@ -488,6 +490,8 @@ class Pretraining(StartWindow):
 
                 self.mainWidgit.start_button.show()
                 self.deactivate_press = True
+                                    
+                    
                 
             elif self.num_presses > self.total_presses:
                 print "finished calculating density"
@@ -545,8 +549,19 @@ class Pretraining(StartWindow):
         self.training_ended = 1
         
         try:
-            self.save()
-            self.load_saved_density_keyboard()
+            if self.retrain == False:
+                self.save()
+                self.load_saved_density_keyboard()
+            elif self.retrain == True and self.pbc.clock_inf.calc_density_called == True:
+                self.sister.bc.save_when_quit()
+                
+                self.sister.use_num = 0
+                self.sister.user_id += 1
+                self.save()
+                self.load_saved_density_keyboard()
+                
+            else:
+                pass
         
         except:
             print "THERE was an error in saving pretraining data"

@@ -133,6 +133,7 @@ class pretraining_inference:
         self.parent = parent
         self.time_rotate = self.parent.time_rotate
         self.kde = kernel_density_estimation(self.time_rotate)
+        self.calc_density_called = False
         
         self.n_training = self.parent.total_presses
         
@@ -164,7 +165,7 @@ class pretraining_inference:
                 self.kde.Z += dens
                 count += 1
             
-
+            self.calc_density_called = True
             return [self.kde.dens_li, self.kde.Z]
         
 class pre_broderclocks:
@@ -172,7 +173,7 @@ class pre_broderclocks:
     def __init__(self, parent):
         self.parent = parent
         self.clock_inf = pretraining_inference(self.parent, self)
-        self.pretrain_data_path = "data/preconfig.pickle"  
+        
         self.time_rotate = self.parent.time_rotate
         self.num_divs_time = int(numpy.ceil(self.time_rotate / config.ideal_wait_s))
         self.latest_time = time.time()
@@ -212,7 +213,9 @@ class pre_broderclocks:
     
     #NEED TO FIX HERE LATER DEPENDING ON WHETHER PRETRAIN AGAIN WAS PRESSED OR NOT
     def save_when_quit(self):
-        PickleUtil(self.pretrain_data_path).safe_save({'li': self.clock_inf.kde.dens_li, 'z': self.clock_inf.kde.Z, 'opt_sig': self.clock_inf.kde.ksigma, 'y_li': self.clock_inf.kde.y_li})
+        if self.clock_inf.calc_density_called == True:
+            self.pretrain_data_path =  "data/preconfig_user_id"+ str(self.parent.sister.user_id)+ ".pickle" 
+            PickleUtil(self.pretrain_data_path).safe_save({'li': self.clock_inf.kde.dens_li, 'z': self.clock_inf.kde.Z, 'opt_sig': self.clock_inf.kde.ksigma, 'y_li': [], 'yksigma':self.clock_inf.kde.y_ksigma})
         
     def quit_pbc(self):
         self.save_when_quit()
