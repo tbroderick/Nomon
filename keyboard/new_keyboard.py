@@ -45,7 +45,7 @@ class Keyboard(MainWindow):
 
         self.app = app
         
-        
+        #just for initialization
         self.use_num = 0
         
         print "use_num is " + str(self.use_num)
@@ -79,34 +79,20 @@ class Keyboard(MainWindow):
         ## determine keyboard positions
         self.init_locs()
         ## get old data if there is such
-        ####Need to see if this line works 
-        if self.use_num > 0:
-            # input file (if such exists) for histogram
-            dump_file_in = kconfig.dump_pre + "clocks." + str(self.user_id) + "." + str(
-                self.use_num - 1) + kconfig.dump_suff
-            if not os.path.exists(os.path.dirname(dump_file_in)):
-                os.makedirs(os.path.dirname(dump_file_in))
-            dump_pickle = PickleUtil(dump_file_in)
-            in_data = dump_pickle.safe_load()
-
-
-            # period
-            self.rotate_index = in_data[0]
-            prev_data = in_data[1]
-        else:
-            self.rotate_index = config.default_rotate_ind
-            prev_data = []
+        #Just for default. Loaded again when bc initalizes
+        self.rotate_index = config.default_rotate_ind
         ## set up file handle for printing useful stuff
         self.undefined = False
 
         if config.is_write_data:
-            self.gen_handle()
+            self.params_handle_dict= {'speed': [], 'params': [], 'start': [], 'press': [], 'choice':[]}  
             self.num_presses = 0
 
-            self.file_handle_dict['params'].append([config.period_li[config.default_rotate_ind], config.theta0])
-            self.file_handle_dict['start'].append(time.time())
+            self.params_handle_dict['params'].append([config.period_li[config.default_rotate_ind], config.theta0])
+            self.params_handle_dict['start'].append(time.time())
         else:
-            self.file_handle = None
+            #self.params_handle = None
+            pass
         ## set up canvas for displaying stuff
         # self.gen_canvas()
         self.gen_scale()
@@ -175,7 +161,6 @@ class Keyboard(MainWindow):
 
         
         self.consent = True
-        self.gen_click_time_handle()
         ### animate ###
         self.on_timer()
 
@@ -306,16 +291,9 @@ class Keyboard(MainWindow):
 
     def gen_handle(self):
         # file handle
-        data_file = kconfig.file_pre + str(self.user_id) + "." + str(self.use_num) + kconfig.file_stuff
-        self.file_handle = PickleUtil(data_file)
-        self.file_handle_dict= {'speed': [], 'params': [], 'start': [], 'press': [], 'choice':[]}
-
-
-    #Pickle file to save click time
-    def gen_click_time_handle(self):
-        click_data_file = "data/click_time_log" + str(self.user_id) + "." + str(self.use_num) + ".pickle"
-        self.click_handle = PickleUtil(click_data_file)
-        
+        #data_file = kconfig.file_pre + str(self.user_id) + "." + str(self.use_num) + kconfig.file_stuff
+        #self.params_handle = PickleUtil(data_file)
+        self.params_handle_dict= {'speed': [], 'params': [], 'start': [], 'press': [], 'choice':[]}       
 
     def gen_scale(self):
         scale_length = self.w_canvas / 2  # (len(kconfig.key_chars[0])-1)*kconfig.word_w
@@ -344,7 +322,7 @@ class Keyboard(MainWindow):
         self.bc.clock_inf.clockutil.change_period(self.time_rotate)
 
         # note period change in log file
-        self.file_handle_dict['speed'].append([time.time(), old_rotate, self.time_rotate])
+        self.params_handle_dict['speed'].append([time.time(), old_rotate, self.time_rotate])
 
         # update the histogram
         self.draw_histogram()
@@ -631,7 +609,7 @@ class Keyboard(MainWindow):
         if not self.in_pause:
             if config.is_write_data:
                 self.num_presses += 1
-                self.file_handle_dict['press'].append([time.time(), self.num_presses])
+                self.params_handle_dict['press'].append([time.time(), self.num_presses])
             self.bc.select()
         self.play()
         
@@ -788,7 +766,7 @@ class Keyboard(MainWindow):
 
         # write output
         if config.is_write_data:
-            self.file_handle_dict['choice'].append([time.time(), is_undo, is_equalize, self.typed])
+            self.params_handle_dict['choice'].append([time.time(), is_undo, is_equalize, self.typed])
 
         return self.words_on, self.words_off, self.word_score_prior, is_undo, is_equalize
 
@@ -804,12 +782,8 @@ class Keyboard(MainWindow):
     
     
     def quit(self, event=None):
-        if self.consent and config.is_write_data:
-            self.bc.quit_bc()
-        else:
-            self.bc.save_when_quit_noconsent()
-        
-        
+        self.bc.quit_bc()
+
         self.close()
         
         
@@ -828,7 +802,8 @@ class Keyboard(MainWindow):
         retrain_window.mainWidgit = WelcomeScreen(retrain_window)
         retrain_window.mainWidgit.initUI4()
         retrain_window.setCentralWidget(retrain_window.mainWidgit)
-
+        
+        retrain_window.retrain = True
 
 def main():
     print "****************************\n****************************\n[Loading...]"
@@ -842,7 +817,7 @@ def main():
 
     if kconfig.first_load:
         welcome = Pretraining(screen_res, ex)
-        # pickle.dump(False, open("user_preferences/first_load.p", "wb"))
+        PickleUtil("user_preferences/first_load.p").safe_save(False)
 
     sys.exit(app.exec_())
 
