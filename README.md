@@ -10,7 +10,7 @@ Relevant papers about Nomon include:
 - Broderick, T and MacKay, DJC. Fast and flexible selection with a single switch. *PLoS ONE* 4(10), e7481. [link](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0007481)
 - Broderick, T. Nomon: Efficient communication with a single switch. *Technical Report* (extension of Master's Thesis). Cavendish Laboratory, University of Cambridge. [ps](http://www.inference.org.uk/nomon/files/nomon_tech_report.ps) [pdf](http://www.inference.org.uk/nomon/files/nomon_tech_report.pdf)
 
-This is a [video](https://www.youtube.com/watch?v=qktEuZW92qY&fmt=22)
+This is a [video]()
  of the past version of Nomon as described in the papers above.
 
 The software is licensed under the [MIT license](https://opensource.org/licenses/MIT), so you are free to use it for whatever purpose you choose.
@@ -43,3 +43,9 @@ Troubleshooting
 **IOError: [Errno13] Permission denied**
 
 You have Nomon installed in the Program Files directory. You can resolve this issue permanently by reinstalling Nomon in a different dirctory (such as C:\Nomon), or you can run Nomon as Administrator (see instructions on how to do this in "Running Nomon").
+====================
+How to Use Nomon 
+
+
+
+

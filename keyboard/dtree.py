@@ -139,6 +139,16 @@ class DTree:
         self.dt = dtree()
         ## fill tree in
         self.fill_tree()
+        
+        
+# =============================================================================
+#     def set_parent(self, parent):
+#         self.parent = parent
+#         self.fill_tree()
+#         
+#     def remove_parent(self):
+#         self.parent = None
+# =============================================================================
 
     def fill_tree(self):
         n_line = 0
@@ -212,6 +222,30 @@ def main():
     file_handle.close()
     out_handle.close()
 
+# =============================================================================
+# import threading
+# 
+# class DTreeDict:
+#     pass
+# 
+# class DtreeThread(threading.Thread):
+#     def __init__(self, threadID, threadingDict, load):
+#         threading.Thread.__init__(self)
+#         self.threadID = threadID
+#         self.threadingDict = threadingDict
+#         #If True, load if False, save
+#         self.load = load
+#         
+#     def run(self):
+#         if self.load:
+#             
+#             
+#             
+#             
+#         else:
+# =============================================================================
+            
+        
 
 if __name__ == "__main__":
     main()

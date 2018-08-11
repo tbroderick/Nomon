@@ -18,18 +18,21 @@
 #    along with Nomon Keyboard.  If not, see <http://www.gnu.org/licenses/>.
 ######################################
 
-import broderclocks
 import dtree
 import time
 import numpy
 
 import cPickle, pickle
 from mainWindow import *
-from subWindows import *
+from new_subWindows import *
 import os, copy
-
-sys.path.insert(0, os.path.realpath('../tests'))
 from pickle_util import *
+
+
+import sys,os
+sys.path.insert(0, os.path.realpath('../kernel_density_estimation'))
+from new_broderclocks import *
+
 
 if kconfig.target_evt == kconfig.joy_evt:
     import pygame
@@ -41,48 +44,17 @@ class Keyboard(MainWindow):
         super(Keyboard, self).__init__(screen_res)
 
         self.app = app
-
-        self.usenum_file = "data/usenum.pickle"
-        self.usenum_handle = PickleUtil(self.usenum_file)
-        self.use_num = self.usenum_handle.safe_load()
         
-        if self.use_num == None:
-            self.use_num = 0
+        
+        self.use_num = 0
         
         print "use_num is " + str(self.use_num)
         self.user_id = 0
         
-        use_num = self.use_num
-        user_id = self.user_id
+        
 
-        #This block of codes is not working 
-        # check that number of arguments is valid
-# =============================================================================
-#         if len(sys.argv) < 3:  # replaced with a default 0 0
-#             print "Error: Too few (" + str(len(sys.argv)-1) + " < 2) arguments"
-
-#             # print "Usage: python keyboard.py user-id use-number proposed-window-width proposed-window-height"
-#             # sys.exit() #replaced quit() with this
-#             # quit()
-#             user_id = 0
-#             use_num = 0
-#         # read arguments
-#         else:
-#             user_id = string.atoi(sys.argv[1])
-#             use_num = string.atoi(sys.argv[2])
-#         self.user_id = user_id
-#         self.use_num = use_num
-# =============================================================================
-        # read extra arguments if they're there
-        if len(sys.argv) > 3:
-            print "this actually can happen"
-            prop_width = string.atoi(sys.argv[4])
-        else:
-            prop_width = kconfig.base_window_width
-        if len(sys.argv) > 4:
-            prop_height = string.atoi(sys.argv[3])
-        else:
-            prop_height = kconfig.base_window_height
+        prop_width = kconfig.base_window_width
+        prop_height = kconfig.base_window_height
         self.set_sizes(prop_height, prop_width)
 
         ### initialize ###
@@ -153,18 +125,6 @@ class Keyboard(MainWindow):
         self.talk_file = "talk.txt"
         ## set up dictionary tree
         
-# =============================================================================
-#         dtree_pickle = PickleUtil("data/dtree.pickle")
-#         load_dtree = dtree_pickle.safe_load()
-#         if load_dtree!=None:
-#             self.dt = load_dtree
-#             self.dt.set_parent(self)
-#         else:
-#             train_handle = open(kconfig.train_file_name, 'r')
-#             self.dt = dtree.DTree(train_handle)
-#             self.dt.set_parent(self)
-#             dtree_pickle.safe_save(copy.deepcopy(self.dt).remove_parent())
-# =============================================================================
             
         train_handle = open(kconfig.train_file_name, 'r')
         self.dt = dtree.DTree(train_handle, self)    
@@ -172,19 +132,9 @@ class Keyboard(MainWindow):
         train_handle.close()
         # check for speech
         talk_fid = open(self.talk_file, 'w')
-        ##	talk_fid.write(".. Festival is ready ?")
-        ##	talk_fid.close()
-        ##	out = os.system("/usr/bin/festival --tts talk.txt")
-        ##	if out == 32512:
-        ##		self.has_festival = False
-        ##	else:
-        ##		self.has_festival = True
-        # write keys
-        # self.init_keys()
         # write words
         self.init_words()
 
-        self.bc_init = False
         self.bars = kconfig.bars
         self.previous_undo_text = ''
         self.previous_winner=0
@@ -196,14 +146,26 @@ class Keyboard(MainWindow):
         self.initUI()
 
         ## set up broderclocks
-        self.bc = broderclocks.BroderClocks(self, self.clock_centers, self.win_diffs, kconfig.clock_rad,
-                                            self.words_on, self.words_off, kconfig.key_color,
-                                            time.time(), use_num, user_id, self.time_rotate, prev_data)
-        self.mainWidgit.changeValue(config.start_speed)
-        self.wait_s = self.bc.get_wait()
+# =============================================================================
+#         self.bc = broderclocks.BroderClocks(self, self.clock_centers, self.win_diffs, kconfig.clock_rad,
+#                                             self.words_on, self.words_off, kconfig.key_color,
+#                                             time.time(), use_num, user_id, self.time_rotate, prev_data)
+#         self.mainWidgit.changeValue(config.start_speed)
+# =============================================================================
+        
         # get language model results
         self.gen_word_prior(False)
-        self.bc.init_follow_up(self.word_score_prior)
+        
+        
+
+        # which ones to try predicting on
+        try_pred = []
+        for row in range(0, self.N_rows):
+            for col in range(0, self.N_keys_row[row]):
+                try_pred = kconfig.key_chars[row][col].isalpha()
+        
+        self.bc = New_BroderClocks(self)
+        self.bc.init_follow_up(self.word_score_prior)   
         # write key text
         self.init_key_text()
         # draw histogram
@@ -212,17 +174,10 @@ class Keyboard(MainWindow):
         self.raise_words()
 
         
-        
+        self.consent = True
         self.gen_click_time_handle()
         ### animate ###
         self.on_timer()
-
-        # which ones to try predicting on
-        try_pred = []
-        for row in range(0, self.N_rows):
-            for col in range(0, self.N_keys_row[row]):
-                try_pred = kconfig.key_chars[row][col].isalpha()
-
 
     #def gen_load_usenum(self):
     #    self.usenum_handle = open(self.usenum_file, 'wb')
@@ -366,7 +321,7 @@ class Keyboard(MainWindow):
         scale_length = self.w_canvas / 2  # (len(kconfig.key_chars[0])-1)*kconfig.word_w
         tick_int = int((len(config.period_li) - 1) * kconfig.word_pt * 3 / (1.0 * scale_length)) + 1
         self.time_rotate = config.period_li[self.rotate_index]
-
+        
     def toggle_pause_button(self, value):
         self.pause_set = value
         self.mainWidgit.sldLabel.setFocus()
@@ -386,8 +341,7 @@ class Keyboard(MainWindow):
         self.rotate_index = config.scale_max - speed_index + 1
         old_rotate = self.time_rotate
         self.time_rotate = config.period_li[self.rotate_index]
-        self.bc.change_period(self.time_rotate)
-        self.wait_s = self.bc.get_wait()
+        self.bc.clock_inf.clockutil.change_period(self.time_rotate)
 
         # note period change in log file
         self.file_handle_dict['speed'].append([time.time(), old_rotate, self.time_rotate])
@@ -412,13 +366,6 @@ class Keyboard(MainWindow):
         kconfig.word_font = ("Helvetica", kconfig.word_pt)
         kconfig.type_font = ("Helvetica", kconfig.type_pt)
 
-    def inc_speed(self, evt):
-        index = self.scale.get()
-        self.scale.set(min(config.scale_max, index + 1))
-
-    def dec_speed(self, evt):
-        index = self.scale.get()
-        self.scale.set(max(config.scale_min, index - 1))
 
     def init_keys(self):
         for key in range(0, self.N_keys):
@@ -665,17 +612,16 @@ class Keyboard(MainWindow):
         if self.wpm_time != 0:
             if time.time()-self.wpm_time > 15:  # reset wrd prior and click history after inactivity
                 self.wpm_time = 0
-                self.bc.clock_history = [[]]
+                self.bc.clock_inf.clock_history = [[]]
                 self.bc.is_undo = True
-                self.bc.init_round(True, False, self.bc.prev_cscores)
+                self.bc.init_round(True, False, self.bc.clock_inf.prev_cscores)
                 self.wpm_time = 0
 
         if self.focusWidget() == self.mainWidgit.text_box:
             self.mainWidgit.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
-        if self.bc_init:
-            if not self.in_pause:
-                start_t = time.time()
-                self.bc.increment(start_t)
+        if not self.in_pause:
+            start_t = time.time()
+            self.bc.clock_inf.clockutil.increment(self.words_on)
 
     def on_press(self):
         # self.canvas.focus_set()
@@ -686,8 +632,9 @@ class Keyboard(MainWindow):
             if config.is_write_data:
                 self.num_presses += 1
                 self.file_handle_dict['press'].append([time.time(), self.num_presses])
-            self.bc.select(time.time())
+            self.bc.select()
         self.play()
+        
     def play(self):
         sound_file = "icons/bell.wav"
         QSound(sound_file).play()
@@ -716,31 +663,11 @@ class Keyboard(MainWindow):
             return string.lowercase[letter_num]
 
 
-    def end_winner(self, index):
-        self.canvas.itemconfigure(self.subkey_id[index], fill=kconfig.key_color)
 
     def talk_winner(self, talk_string):
         pass
 
-    ##	if self.has_festival:
-    ##		if(talk_string == 'a'):
-    ##			talk_string = 'ay'
-    ##		elif(talk_string == 'the'):
-    ##			talk_string = 'thee'
-    ##		elif(talk_string == 'of'):
-    ##			talk_string = 'of'
-    ##		elif(talk_string == 'on'):
-    ##			talk_string = 'on'
-    ##		elif(talk_string == 'or'):
-    ##			talk_string = 'oar'
-    ##		elif(talk_string == 'to'):
-    ##			talk_string = 'two'
-    ##
-    ##		talk_fid = open(self.talk_file,'w')
-    ##		talk_fid.write(".. " + talk_string + " ?")
-    ##		talk_fid.close()
-    ##		os.spawnv(os.P_NOWAIT,'C:/festival/festival.exe',['festival','--tts',self.talk_file]) #"/usr/bin/festival" "c:/festival/festival.exe"
-
+   
     def make_choice(self, index):
         is_undo = False
         is_equalize = False
@@ -877,62 +804,18 @@ class Keyboard(MainWindow):
     
     
     def quit(self, event=None):
-        #Save click time log 
-        self.click_handle.safe_save({'user id': self.user_id, 'click time list': self.bc.click_time_list})
-        self.usenum_handle.safe_save(self.use_num)
+        if self.consent and config.is_write_data:
+            self.bc.quit_bc()
+        else:
+            self.bc.save_when_quit_noconsent()
         
-        bars_pickle = PickleUtil("data/barsdump.pickle")
-        prev_barlist = bars_pickle.safe_load()
-        if prev_barlist == None:
-            prev_barlist = []
-
-
-
-        self.pretrain_bars = self.bc.hsi.dens_li
-        bars_pickle.safe_save(prev_barlist+[[self.pretrain_bars, self.bars]])
-        print "click pickle closed properly!"
-
-        if config.is_write_data:
-            data_file = "data/preconfig.pickle"
-            file_handle = PickleUtil(data_file)
-            li = self.bc.hsi.dens_li
-            z = self.bc.hsi.Z
-            
-            ##SO HERE IT IS PBC BUT IT SHOULD BE LIKE BC
-            self.save_dict = {'li': li, 'z': z, 'opt_sig': self.bc.hsi.opt_sig, 'y_li': self.bc.hsi.y_li}
-            file_handle.safe_save(self.save_dict)
-            print "I'm quitting and the density is" + str(li)
-            print "And the Z is " + str(z)
-            print "file closed"
-                  
-        #Do NOT UNCOMMENT THESE
         
-        if not self.undefined:
-            ## close clocks
-            try:
-                self.bc
-            except AttributeError:
-                bc_data = []
-            else:
-                bc_data = self.bc.quit()
-                ## save settings
-                dump_file_out = kconfig.dump_pre + "clocks." + str(self.user_id) + "." + str(
-                    self.use_num) + kconfig.dump_stuff
-                dump_pickle = PickleUtil(dump_file_out)
-                dump_pickle.safe_save({'rotate index': self.rotate_index, 'bc data': bc_data})
+        self.close()
+        
+        
                 
-    
-            ## close write file
-            #Save file_handle_dict to file_handle
-            if config.is_write_data:
-                try:
-                    self.file_handle.safe_save(self.file_handle_dict)
-                except AttributeError:
-                    pass
-                
-        import sys
-        sys.exit()
-        #self.deleteLater()
+        #import sys
+        #sys.exit()
 
     def launch_help(self):
         help_window = StartWindow(self.mainWidgit.screen_res, False)

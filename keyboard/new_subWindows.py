@@ -2,15 +2,15 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QSound
 import config
 import pickle, time
-import pre_broderclocks_pyqt
 import string
-import broderclocks
 from widgets import *
-import sys, os
-import random
-sys.path.insert(0, os.path.realpath('../tests'))
+
 from pickle_util import *
 import math, numpy
+
+import sys,os
+sys.path.insert(0, os.path.realpath('../kernel_density_estimation'))
+from pretraining_inference import *
 
 class StartWindow(QtGui.QMainWindow):
 
@@ -82,10 +82,13 @@ class StartWindow(QtGui.QMainWindow):
                         self.mainWidgit = WelcomeScreen(self)
                         self.mainWidgit.initUI4()
                         self.setCentralWidget(self.mainWidgit)
+                #I think here
                 elif self.screen_num == 4:
                     self.mainWidgit.close()
-                    self.mainWidgit = PretrainScreen(self)
-                    self.mainWidgit.initUI()
+                    self.re_init()
+                    #self.mainWidgit = PretrainScreen(self)
+                    #self.mainWidgit.initUI()
+                    #self.pbc = pre_broderclocks(self)
                     self.setCentralWidget(self.mainWidgit)
                     self.setGeometry(self.sister.geometry())
                 else:
@@ -353,12 +356,8 @@ class PretrainScreen(QtGui.QWidget):
         self.sub_label_1.setFont(welcome_sub_font)
 
         self.start_button = QtGui.QPushButton("Start Training!")
-        self.start_button.pressed.connect(self.start_button_func)
+        self.start_button.pressed.connect(self.start_buttton_func)
 
-        # self.speed_slider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
-        # self.speed_slider.setRange(config.scale_min, config.scale_max)
-        # self.speed_slider.setValue(config.start_speed)
-        # self.speed_slider.valueChanged[int].connect(self.changeValue)
 
         vbox.addWidget(self.main_label, 1)
         vbox.addStretch(1)
@@ -377,21 +376,10 @@ class PretrainScreen(QtGui.QWidget):
 
         self.setLayout(vbox)
 
-    # def changeValue(self, value):  # Change clock speed
-    #     speed_index = int(value)
-    #     self.parent.sister.mainWidgit.speed_slider.setValue(value)
-    #     pickle.dump(speed_index, open("user_preferences/start_speed.p", 'wb'))
-    #     # period (as stored in config.py)
-    #     self.parent.rotate_index = config.scale_max - speed_index + 1
-    #     self.parent.time_rotate = config.period_li[self.parent.rotate_index]
-    #     self.parent.pbc = pre_broderclocks_pyqt.Pre_broderclocks(self.parent, self.parent.file_handle, self.parent.time_rotate, self.parent.use_num, self.parent.user_id, time.time(), self.parent.prev_data)
-    #     self.parent.wait_s = self.parent.pbc.get_wait()
-    #     self.parent.num_stop_training = self.parent.pbc.hsi.n_training
-
+    
     def generateDummyClocks(self):
         self.dummy_clocks = [ClockWidgit("not me", self) for i in range(64)]
-        self.redrawClocks()
-
+        
     def layoutClocks(self):
         index = 0
         for row in range(4):
@@ -409,36 +397,9 @@ class PretrainScreen(QtGui.QWidget):
                     self.key_grid.addWidget(VerticalSeparator(), row * 4, col * 4, 5, 1)
         self.key_grid.addWidget(HorizontalSeparator(), row * 5+1, 0, 1, 13)
 
-    def redrawClocks(self):
-        for clock in self.dummy_clocks:
-            clock.setText("not me")
-            clock.selected = False
-            clock.highlighted = (random.random() < random.random())
-            clock.dummy_angle_offset = random.random() * math.pi*-1
-            angle = self.clock.angle + clock.dummy_angle_offset
-            clock.angle = angle
-            clock.repaint()
-        #selected_clock = random.randint(0, 63)
-        selected_clock = 0
-        
-        self.selected_clock = selected_clock
-        #self.dummy_clocks[selected_clock].dummy_angle_offset = 0
-        self.dummy_clocks[selected_clock].angle = math.pi
-        print_angle = self.dummy_clocks[selected_clock].angle
-        #self.parent.pbc.angle_into_cur_hour(self.dummy_clocks[selected_clock].angle )
-        print "THE STARTING ANGLE OF SELECTED CLOCK IS " + str(print_angle)
-        print "DOES THIS SOUND RIGHT?"
-        print "IN COORDINATES THE STARTING POINT IS " + str((numpy.cos(print_angle), numpy.sin(print_angle)))
-        try:
-            self.parent.pbc.init_round()
-        except:
-            pass
-        self.dummy_clocks[selected_clock].selected = True
-        self.dummy_clocks[selected_clock].setText("Click Me!")
-        self.dummy_clocks[selected_clock].repaint()
 
 
-    def start_button_func(self):
+    def start_buttton_func(self):
         if self.parent.num_presses >= self.parent.total_presses:
             self.parent.on_finish()
         else:
@@ -449,69 +410,55 @@ class Pretraining(StartWindow):
 
     def __init__(self, screen_res, sister):
         super(Pretraining, self).__init__(screen_res, False)
-        self.training_ended = 0
-        self.num_presses = 0
         self.sister = sister
         self.sister.pretrain = True
-
-        #Used to be in keyboard_pre.py
-        if len(sys.argv) < 3:
-             self.user_id = 0
-             self.use_num = 0
-            # read arguments
-        else:
-            user_id = string.atoi(sys.argv[1])
-            use_num = string.atoi(sys.argv[2])
-            self.user_id = user_id
-            self.use_num = use_num
         
         
-        self.in_pause = False
-        self.time_rotate = self.sister.time_rotate
-        
-        
-        self.prev_data = None
         self.num_presses = 0
-        
-        
-        
-        if config.is_write_data:
-            print "yeah writing data!"
-            self.gen_handle()
-            self.num_presses = 0
-
-        else:
-            self.file_handle = None
-        
-        self.num_stop_training = 10
         self.total_presses = 10
         
+        #just for initialization
+        self.pbc = None
         self.mainWidgit = PretrainScreen(self)
         self.mainWidgit.initUI()
         self.radius = self.mainWidgit.clock.radius
-        
-        self.pbc = pre_broderclocks_pyqt.Pre_broderclocks(self, self.file_handle, self.time_rotate, self.use_num, self.user_id, time.time(), self.prev_data)
-        self.wait_s = self.pbc.get_wait()
-        self.num_stop_training = self.pbc.hsi.n_training
+        self.time_rotate = self.sister.time_rotate
         
         
-        #self.pbc.hsi.n_training #which is 20
+        self.pbc = pre_broderclocks(self)
+       
+        self.in_pause = False
         self.deactivate_press = False
         #whether training has actually started
         self.started = 0
+        self.training_ended = 0
+        self.consent = True
 
-    def gen_handle(self):
-        data_file = "data/preconfig.pickle"
-        self.pickle_handle = PickleUtil(data_file)
-        self.file_handle = data_file
+
+    def re_init(self):
+        self.sister.pretrain = True
         
-    
-# =============================================================================
-#     def keyPressEventRedef(self, e):
-#         if e.key() == QtCore.Qt.Key_Space:
-#             self.on_press()
-#         self.play()
-# =============================================================================
+        
+        self.num_presses = 0
+        self.total_presses = 10
+        
+        #just for initialization
+        self.pbc = None
+        self.mainWidgit = PretrainScreen(self)
+        self.mainWidgit.initUI()
+        self.radius = self.mainWidgit.clock.radius
+        self.time_rotate = self.sister.time_rotate
+        
+        
+        self.pbc = pre_broderclocks(self)
+       
+        self.in_pause = False
+        self.deactivate_press = False
+        #whether training has actually started
+        self.started = 0
+        self.training_ended = 0
+        self.consent = True
+
     
     def play(self):
         sound_file = "icons/bell.wav"
@@ -527,23 +474,32 @@ class Pretraining(StartWindow):
             #Log press time
             if (not self.in_pause) and self.deactivate_press == False:
                 #if config.is_write_data:
-                self.pbc.select(time.time())
-                self.mainWidgit.redrawClocks()
+                self.pbc.select()
 
 
-            if self.num_presses >= self.total_presses:
+            if self.num_presses == self.total_presses:
                 print "finished calculating density"
 
-                self.pbc.hsi.calculate_density()
+                self.pbc.clock_inf.calculate_density()
                 self.mainWidgit.main_label.setText("Training has finished!")
 
                 self.mainWidgit.start_button.setText("Start Nomon")
                 self.mainWidgit.start_button.setFocus()
 
                 self.mainWidgit.start_button.show()
+                self.deactivate_press = True
                 
-                if self.num_presses > self.total_presses:
-                    self.mainWidgit.start_button_func()
+            elif self.num_presses > self.total_presses:
+                print "finished calculating density"
+                self.mainWidgit.main_label.setText("Training has finished!")
+
+                self.mainWidgit.start_button.setText("Start Nomon")
+                self.mainWidgit.start_button.setFocus()
+
+                self.mainWidgit.start_button.show()
+                self.start_button_func()
+                self.deactivate_press = True
+                
                 
            
             
@@ -552,18 +508,12 @@ class Pretraining(StartWindow):
         self.on_start()
         self.play()
 
-    def on_increment(self, angle):
-        self.mainWidgit.clock.angle = angle
-        self.mainWidgit.clock.repaint()
-
     def on_start(self):
         self.mainWidgit.main_label.setFocus()  # focus on not toggle-able widget to allow keypress event
         if not self.mainWidgit.start_pretrain:
             self.mainWidgit.start_pretrain = True
      
         if self.started == 0:
-            #self.start_text.setText("Click when the hour hand hits the red noon hand! \n clicks remaining = " + str(self.total_presses - self.num_presses) )
-            #self.start_button.hide()
             self.train_timer = QtCore.QTimer()
             self.train_timer.timeout.connect(self.on_timer)
             self.train_timer.start(config.ideal_wait_s*1000)
@@ -571,63 +521,48 @@ class Pretraining(StartWindow):
             self.mainWidgit.start_button.hide()
             
     def on_timer(self):
-        if not self.in_pause and self.num_presses < self.total_presses:
-            #self.setFocus()
-            start_t = time.time()
-            self.pbc.increment(start_t)
-            #self.start_text.setText("Click when the hour hand hits the red noon hand! \n clicks remaining = " + str(self.num_stop_training - self.num_presses))
-            #self.mainWidgit.clock.angle = 
-            #self.mainWidgit.clock.repaint()
+        if not(self.in_pause) and not(self.deactivate_press) and self.num_presses < self.total_presses:
+            self.pbc.clock_inf.clockutil.increment()
+            
         
         elif self.num_presses == self.total_presses:
 
             #print "Training Ended"
             self.deactivate_press = True
 
+    def load_saved_density_keyboard(self):
+        
+        self.sister.bc.get_prev_data()
+        
+    def save(self):
+        if self.consent and config.is_write_data:
+            self.pbc.quit_pbc()
+        else:
+            pass
+
     def on_finish(self):
         print "quitting"
         self.training_ended = 1
-        self.prev_data = self.sister.bc.prev_data
-        self.use_num = self.sister.bc.use_num
-        if config.is_write_data:
-            try:
-                li = self.pbc.hsi.dens_li
-                print "The length of li is" + str(len(li))
-                z = self.pbc.hsi.Z
-                self.save_dict = {'li': li, 'z': z, 'opt_sig': self.pbc.hsi.opt_sig, 'y_li': self.pbc.hsi.y_li}
-                self.pickle_handle.safe_save(self.save_dict)
-                
-                #pickle.dump([li, z, self.pbc.hsi.opt_sig, self.pbc.hsi.y_li], open(self.file_handle, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
-
-                self.prev_data = [[self.pbc.hsi.y_li[0]], [self.pbc.hsi.opt_sig]]
-                self.use_num = 1
-
-                print "I'm quitting and the density is" + str(li)
-                print "And the Z is " + str(z)
-                print "file closed"
-                #self.file_handle.close()
-            except IOError as (errno,strerror):
-                print "I/O error({0}): {1}".format(errno, strerror)
         
-        print "this worked"
-        self.sister.bc.hsi.not_read_pickle = 0
-        #self.sister.bc.hsi.update_dens(self.sister.bc.hsi.time_rotate)
-        use_num, user_id, time_rotate, prev_data = self.use_num, self.sister.bc.user_id, self.sister.bc.time_rotate, self.prev_data
-        self.sister.bc.hsi = broderclocks.HourScoreIncs(use_num, user_id, time_rotate, prev_data)
-        #print "is not read pickle 1? should be " + str(self.sister.bc.hsi.not_read_pickle) 
-        #self.sister.bc = 
-        print "this worked 1"
+        try:
+            self.save()
+            self.load_saved_density_keyboard()
+        
+        except:
+            print "THERE was an error in saving pretraining data"
+        
+        
+        self.sister.pretrain = False
         self.sister.draw_histogram(bars=None)
-        #self.sister.bars = self.sister.bc.hsi.dens_li
         self.sister.mainWidgit.histogram.repaint()
-        #self.sister.init_histogram()
-        print "this worked 2"
-        #print self.sister.bc.hsi.not_read_pickle
-        self.sister.pretrain_bars = self.sister.bars
+        self.sister.mainWidgit.text_box.setStyleSheet("background-color:;")
+        self.sister.mainWidgit.in_focus = True
+        
         self.close()
 
+    #Is this used at all?
     def closeEvent(self, event):
-        self.sister.pretrain = False
+        self.on_finish()
         event.accept()
 
 

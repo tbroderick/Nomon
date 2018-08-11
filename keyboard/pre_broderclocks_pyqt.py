@@ -121,6 +121,8 @@ class Pre_broderclocks:
         self.num_press = 0
         #Do I need this?
         #self.old_scores 
+        self.init_round()
+        
     
     def quit(self):
         return self.hsi.quit()
@@ -133,29 +135,37 @@ class Pre_broderclocks:
         self.latest_time = time_in
 
         
-        # update time indices
-        self.cur_hour = (self.cur_hour + 1) % self.num_divs_time
-        # register in coordinates of hour hand
-        x = self.parent.x
-        y = self.parent.y
-        v = self.hl.hour_locs[self.cur_hour]
-        self.parent.v = v
-        
-
-        
-        angle = math.atan2(v[1], v[0])
-        self.parent.mainWidgit.clock.angle = angle + math.pi*0.5
-        self.parent.mainWidgit.clock.repaint()
-
-        
-        self.parent.update()
-
-        for clock in self.parent.mainWidgit.dummy_clocks:
-            clock.angle = self.parent.mainWidgit.clock.angle + clock.dummy_angle_offset
-            clock.repaint()
-
+# =============================================================================
+#         # update time indices
+#         self.cur_hour = (self.cur_hour + 1) % self.num_divs_time
+#         # register in coordinates of hour hand
+#         x = self.parent.x
+#         y = self.parent.y
+#         v = self.hl.hour_locs[self.cur_hour]
+#         self.parent.v = v
+#         
+# 
+#         
+#         angle = math.atan2(v[1], v[0])
+#         self.parent.mainWidgit.clock.angle = angle + math.pi*0.5
+#         self.parent.mainWidgit.clock.repaint()
+# 
+#         
+#         self.parent.update()
+# 
+#         for clock in self.parent.mainWidgit.dummy_clocks:
+#             clock.angle = self.parent.mainWidgit.clock.angle + clock.dummy_angle_offset
+#             clock.repaint()
+# 
+# =============================================================================
         # refresh the canvas
         # self.canvas.update_idletasks()
+        
+    #DOESNT MATTER WHERE YOU ROUND TO BECAUSE ANGLE RANDOM ANYWAYS
+    def angle_into_cur_hour(self, angle):
+        angle_decimal = angle / (2 * math.pi)
+        self.cur_hour = int(angle_decimal * self.num_divs_time)
+        return self.cur_hour
         
     def select(self, time_in):
         # store the time of this last key press
@@ -177,7 +187,15 @@ class Pre_broderclocks:
     
     def init_round(self):
         #put the needle at noon -> increment will animate
-        self.cur_hour = int(random.random()*24-12)
+        #self.cur_hour = int(random.random()*24-12)
+        #self.cur_hour = self.angle_into_cur_hour(self.parent.)
+        print "length of hourlocs is " + str(len(self.hl.hour_locs))
+        self.cur_hour = 0
+        v = self.hl.hour_locs[self.cur_hour]
+        angle = math.atan2(v[1],v[0]) + (math.pi/2)
+        print "IS THE ANGLE close to  pi?" + str(angle)
+        #print "The LOCATION of the minute hand is at" + str(self.hl.hour_locs[self.cur_hour])
+        #print "Self.hlhourlocs LOOKS LIKE" + str(self.hl.hour_locs)
         #self.parent.gen_clock()
         self.parent.v = (0,self.parent.radius)
         self.latest_time = time.time()
