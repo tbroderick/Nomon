@@ -462,6 +462,7 @@ class BroderClocks:
 
     # usually called after a timer increment in the parent program
     def increment(self, time_in):
+        print "ACTUALLY BEING INCREMENTED"
         self.latest_time = time_in
 
         # update records
