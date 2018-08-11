@@ -47,7 +47,7 @@ class Pre_HourScoreIncs:
     def calculate_density(self):
         #calculate density over all x locations and normalize them after
         #prop = 1.0 / self.n_training / self.optimal_bandwith()
-        if len(self.dens_li) == config.num_divs_click:
+        if self.n_training < len(self.y_li):
             print "density already calculated; density needs to be reinitilazed if you want to recalculate"
             return [self.dens_li, self.Z]
         else:
@@ -56,6 +56,7 @@ class Pre_HourScoreIncs:
             opt_sig = self.optimal_bandwith(self.empirical)
             self.opt_sig = opt_sig
             ##I think this line is the problem
+            count = 0
             for x in self.x_li:
                 x_loc = x
                 #print "is yinto index nan?" + str(self.yin_into_index(self.y_li[0]))
@@ -67,8 +68,9 @@ class Pre_HourScoreIncs:
                 
                 dens = sum([self.normal(x_loc, self.index_into_compatible_with_xloc(self.yin_into_index(yin)), opt_sig**2) for yin in self.y_li])
                 #print "dens" + str(dens)
-                self.dens_li.append(dens)
+                self.dens_li[count] = dens
                 self.Z += dens
+                count+=1
             
             #empirical = [self.yin_into_index(yin) for yin in self.y_li ]
             #print "empirical is" + str(empirical)
@@ -111,6 +113,7 @@ class Pre_broderclocks:
         self.latest_time = in_time
         self.hl = broderclocks.HourLocs(self.num_divs_time, self.parent.radius)
         self.cur_hour = 0
+        self.cur_hours = [0.0] * len(self.hl.hour_locs)
 
         ## scores
         self.hsi = Pre_HourScoreIncs(use_num, user_id, time_rotate, prev_data)
@@ -128,31 +131,27 @@ class Pre_broderclocks:
     def get_wait(self):
         return self.wait_s
     
+    
+    def repaint_one_clock(self, clock_index, angle):        
+        self.parent.mainWidgit.dummy_clocks[clock_index].angle = angle + math.pi*0.5
+        self.parent.mainWidgit.dummy_clocks[clock_index].repaint()
+        
     # usually called after a timer increment in the parent program
     def increment(self, time_in):
-        self.latest_time = time_in
-
-        
-        # update time indices
-        self.cur_hour = (self.cur_hour + 1) % self.num_divs_time
-        # register in coordinates of hour hand
-        x = self.parent.x
-        y = self.parent.y
-        v = self.hl.hour_locs[self.cur_hour]
-        self.parent.v = v
-        
-
-        
-        angle = math.atan2(v[1], v[0])
-        self.parent.mainWidgit.clock.angle = angle + math.pi*0.5
-        self.parent.mainWidgit.clock.repaint()
-
-        
-        self.parent.update()
-
+        count = 0
         for clock in self.parent.mainWidgit.dummy_clocks:
-            clock.angle = self.parent.mainWidgit.clock.angle + clock.dummy_angle_offset
-            clock.repaint()
+            self.cur_hours[count] = (self.cur_hours[count] + 1) % self.num_divs_time
+            if count == self.selected_clock:
+                self.cur_hour = (self.cur_hour +1)  % self.num_divs_time
+                self.cur_hours[count] =self.cur_hour
+                self.latest_time = time.time()
+            #clock.angle = self.parent.mainWidgit.clock.angle + clock.dummy_angle_offset
+            # register in coordinates of hour hand
+            v = self.hl.hour_locs[self.cur_hours[count]]
+            angle = math.atan2(v[1], v[0])
+            self.repaint_one_clock(count, angle)
+            count +=1
+        
 
         # refresh the canvas
         # self.canvas.update_idletasks()
@@ -166,7 +165,10 @@ class Pre_broderclocks:
             #I think we have no offset? But NEED TO CHECK
             ##NEEDS CHECKING
             #config.frac_period used nowhere but let's just do it cause they do it in the original code
-            click_time = self.cur_hour*self.time_rotate*1.0/self.num_divs_time + time_diff_in - self.time_rotate*config.frac_period
+            percent = self.cur_hour/len(self.hl.hour_locs) 
+            index = int((percent *  len(self.hsi.dens_li)) % len(self.hsi.dens_li)) 
+            click_time = self.hsi.x_li[index] + time_diff_in
+                        
             print "y_li will be appended by" + str(click_time)
             self.hsi.y_li.append(click_time)
             print "y_li is now" + str(self.hsi.y_li)
@@ -176,10 +178,7 @@ class Pre_broderclocks:
         self.init_round()
     
     def init_round(self):
-        #put the needle at noon -> increment will animate
-        self.cur_hour = int(random.random()*24-12)
-        #self.parent.gen_clock()
-        self.parent.v = (0,self.parent.radius)
+        self.parent.mainWidgit.redrawClocks()
         self.latest_time = time.time()
     
         
