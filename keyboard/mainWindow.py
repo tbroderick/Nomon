@@ -341,6 +341,7 @@ class MainWindow(QtGui.QMainWindow):
             for clock in self.mainWidgit.clocks:
                 clock.setMaximumHeight(clock.maxSize)
                 clock.setMinimumSize(clock.minSize, clock.minSize)
+                
 
     def profanityFilterEvent(self):
         profanity_status = (pickle.load(open('user_preferences/profanity_filter_preference.p', 'rb')) ==
