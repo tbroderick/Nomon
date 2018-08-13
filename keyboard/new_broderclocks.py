@@ -6,14 +6,16 @@ Created on Thu Aug  2 16:00:14 2018
 @author: TiffMin
 """
 from __future__ import division
-from clock_inference_engine import *
-from clock_util import *
+
 import time
 
 import sys,os
-sys.path.insert(0, os.path.realpath('../keyboard'))
 from pickle_util import PickleUtil
 import config, kconfig
+
+sys.path.insert(0, os.path.realpath('../kernel_density_estimation'))
+from clock_inference_engine import *
+from clock_util import *
 
 
 

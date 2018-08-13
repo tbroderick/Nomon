@@ -30,8 +30,9 @@ from pickle_util import *
 
 
 import sys,os
-sys.path.insert(0, os.path.realpath('../kernel_density_estimation'))
+#sys.path.insert(0, os.path.realpath('../kernel_density_estimation'))
 from new_broderclocks import *
+import config, kconfig
 
 
 if kconfig.target_evt == kconfig.joy_evt:
