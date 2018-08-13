@@ -16,6 +16,7 @@ class ClockWidgit(QtGui.QWidget):
         self.parent = parent
         self.filler_clock = filler_clock  # filler clock is transparent, but saves space in layout for later use
         self.highlighted = False
+        self.background = False
         self.selected = False
         self.previous_angle = -360.  # used in pac-man clock to compare if hand passed noon (- to + angle)
         self.color_switch = False  # used in pac-man clock to alternate color fill
@@ -42,7 +43,6 @@ class ClockWidgit(QtGui.QWidget):
         self.setMinimumSize(self.minSize, self.minSize)
         self.setMaximumHeight(self.maxSize)
         self.setBaseSize(self.minSize, self.minSize)
-
         self.angle = 0
 
     def setText(self, text):
@@ -328,6 +328,9 @@ class ClockWidgit(QtGui.QWidget):
                     text_width = label.fontMetrics().boundingRect(label.text()).width()
                     text_height = label.fontMetrics().boundingRect(label.text()).height()
 
+        if self.background:
+            brush = QtGui.QBrush(QtGui.QColor(175, 255, 175))
+            qp.fillRect(0, 0, self.w, self.h, brush)
         # draw clock face
         pen = QtGui.QPen()
         if self.selected:

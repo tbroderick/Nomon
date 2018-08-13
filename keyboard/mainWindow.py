@@ -23,6 +23,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setCentralWidget(self.mainWidgit)
         self.clockTextAlign('auto', message=False)
 
+
         # File Menu Actions
         restartAction = QtGui.QAction('&Restart', self)
         restartAction.setShortcut('Ctrl+R')
@@ -96,12 +97,17 @@ class MainWindow(QtGui.QMainWindow):
 
         self.qwertyLayoutAction = QtGui.QAction('&QWERTY', self, checkable=True)
         self.qwertyLayoutAction.triggered.connect(lambda: self.layoutChangeEvent('qwerty'))
+
+
         # Tools Menu Actions
         self.profanityFilterAction = QtGui.QAction('&Profanity Filter', self, checkable=True)
         self.profanityFilterAction.triggered.connect(self.profanityFilterEvent)
 
         self.retrainAction = QtGui.QAction('&Retrain', self)
         self.retrainAction.triggered.connect(self.retrainEvent)
+
+        self.logDataAction = QtGui.QAction('&Data Logging', self, checkable=True)
+        self.logDataAction.triggered.connect(self.logDataEvent)
 
 
         # Help Menu Actions
@@ -116,7 +122,7 @@ class MainWindow(QtGui.QMainWindow):
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(exitAction)
-        fileMenu.addAction(restartAction)
+        # fileMenu.addAction(restartAction)
 
         viewMenu = menubar.addMenu('&View')
         viewMenu.addAction(self.highContrastAction)
@@ -145,6 +151,7 @@ class MainWindow(QtGui.QMainWindow):
 
         toolsMenu = menubar.addMenu('&Tools')
         toolsMenu.addAction(self.profanityFilterAction)
+        toolsMenu.addAction(self.logDataAction)
         toolsMenu.addAction(self.retrainAction)
 
         helpMenu = menubar.addMenu('&Help')
@@ -184,6 +191,9 @@ class MainWindow(QtGui.QMainWindow):
         # check profanity
         switch(self.profanityFilterAction, self.pf_preference == 'on')
 
+        # check log data
+        switch(self.logDataAction, self.is_write_data)
+
         # check font menu
         switch(self.smallFontAction, self.font_scale == 0)
         switch(self.medFontAction, self.font_scale == 1)
@@ -203,9 +213,9 @@ class MainWindow(QtGui.QMainWindow):
             size = 1
         elif size == 'large':
             size = 2
-        self.font_size = size
-        self.up_handel.safe_save([self.clock_type, size, self.high_contrast, self.layout_preference, self.pf_preference, self.start_speed,
-                                  self.is_write_data])
+        self.font_scale = size
+        self.up_handel.safe_save([self.clock_type, size, self.high_contrast, self.layout_preference, self.pf_preference,
+                                  self.start_speed, self.is_write_data])
 
         self.mainWidgit.sldLabel.setFont(top_bar_font[size])
         self.mainWidgit.speed_slider_label.setFont(top_bar_font[size])
@@ -389,22 +399,19 @@ class MainWindow(QtGui.QMainWindow):
             self.up_handel.safe_save(
                 [self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference,
                  self.start_speed, False])
+            self.is_write_data = False
         elif reply == QtGui.QMessageBox.Yes:
             self.up_handel.safe_save(
                 [self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference,
                  self.start_speed, True])
             self.is_write_data = True
+        self.check_filemenu()
 
     def profanityFilterEvent(self):
         profanity_status = self.pf_preference
-        if profanity_status:
-            profanity_status = "ON"
-        else:
-            profanity_status = "OFF"
-
         messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Toggle Profanity Filter", "The profanity filter is "
                                                                                              "currently <b>"
-                                       + profanity_status + "</b>. Please select your desired setting below. ")
+                                       + self.pf_preference.upper() + "</b>. Please select your desired setting below. ")
         messageBox.addButton(QtGui.QPushButton('On'), QtGui.QMessageBox.YesRole)
         messageBox.addButton(QtGui.QPushButton('Off'), QtGui.QMessageBox.NoRole)
         messageBox.setIconPixmap(QtGui.QPixmap(os.path.join('icons/block.png')))
@@ -418,17 +425,19 @@ class MainWindow(QtGui.QMainWindow):
             self.up_handel.safe_save(
                 [self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, 'off', self.start_speed,
                  self.is_write_data])
-            train_handle = open(kconfig.train_file_name_default, 'r')
-            self.pause_animation = True
-            self.dt = dtree.DTree(train_handle, self)
+            if profanity_status == 'on':
+                train_handle = open(kconfig.train_file_name_default, 'r')
+                self.pause_animation = True
+                self.dt = dtree.DTree(train_handle, self)
             self.pf_preference = 'off'
         elif reply == 0:
             self.up_handel.safe_save(
                 [self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, 'on', self.start_speed,
                  self.is_write_data])
-            train_handle = open(kconfig.train_file_name_censored, 'r')
-            self.pause_animation = True
-            self.dt = dtree.DTree(train_handle, self)
+            if profanity_status == 'off':
+                train_handle = open(kconfig.train_file_name_censored, 'r')
+                self.pause_animation = True
+                self.dt = dtree.DTree(train_handle, self)
             self.pf_preference = 'on'
         self.check_filemenu()
 

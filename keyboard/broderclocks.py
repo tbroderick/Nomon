@@ -95,10 +95,10 @@ class HourScoreIncs:
         if load_dict != None:
             try:
                 self.dens_li = load_dict['li']
-                print "I'm starting(reading) and the self.dens_li" + str(load_dict['li'])
+                # print "I'm starting(reading) and the self.dens_li" + str(load_dict['li'])
                 self.Z =  load_dict['z']
                 self.ksigma0 = load_dict['opt_sig']
-                print "Also the self.ksimga0" + str(load_dict['opt_sig'])
+                # print "Also the self.ksimga0" + str(load_dict['opt_sig'])
                 self.ksigma = self.ksigma0
                 self.y_li_from_pre = load_dict['y_li']
                 
@@ -477,8 +477,8 @@ class BroderClocks:
                 self.parent.mainWidgit.clocks[clock].repaint()
             draw_time = (time.time()-draw_time)
             self.draw_times+draw_time
-            if len(self.draw_times) == self.draw_times.max_size:
-                print(sum(self.draw_times) / len(self.draw_times))
+            # if len(self.draw_times) == self.draw_times.max_size:
+            #     print(sum(self.draw_times) / len(self.draw_times))
 
 
         # refresh the canvas
@@ -501,8 +501,6 @@ class BroderClocks:
         last_gap_time = (time_in - self.last_press_time) % self.time_rotate
         self.save_click_time(last_gap_time, ind_in_histo)
         self.last_press_time = time_in
-        print "click time was recorded!"
-
         # proceed based on whether there was a winner
         if (self.is_winner()):
             # record winner
@@ -592,9 +590,6 @@ class BroderClocks:
             else:
                 self.clock_history[0][n_press].append(0)
             i_all += 1
-        print "SELF.CLOCKS_ON is " + str(self.clocks_on) 
-        
-        print "SELF.CLOCK_HISTORY[0][last] is " + str(self.clock_history[0][-1]) 
 
 
     # compares indices based on their cumulative score

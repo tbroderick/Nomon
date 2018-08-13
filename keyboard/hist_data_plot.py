@@ -1,5 +1,5 @@
 from __future__ import print_function
-import pickle
+from pickle_util import *
 import math
 
 
@@ -16,10 +16,9 @@ def std_dev(data_set):
         sq_sum += ((index-mean)**2)*data_set[index]
     return math.sqrt(sq_sum/(sum(data_set)-1))
 
-
-datas = [pickle.load(open("C:/Users/nickb/PycharmProjects/Nomon/keyboard/barsdump_default.p", 'rb'))+
-         pickle.load(open("C:/Users/nickb/PycharmProjects/Nomon/keyboard/barsdump.p", 'rb')),
-         pickle.load(open("C:/Users/nickb/PycharmProjects/Nomon/keyboard/barsdump_old.p", 'rb'))]
+bars_pickle = PickleUtil("data/barsdump.pickle")
+barlist = bars_pickle.safe_load()
+datas = [barlist]
 for data in datas:
     data_size=len(data)
     act_avg = data[0][1]
@@ -30,7 +29,6 @@ for data in datas:
         pred_avg = [pred_avg[i] + set[0][i] for i in range(length)]
 
     data = [[pred_avg, act_avg]]
-
     for set in data:
 
         pretrain = set[0][35:55]
