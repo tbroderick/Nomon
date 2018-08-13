@@ -47,6 +47,8 @@ alpha_key_chars = [['a', 'b', 'c', 'd', 'e'],
 
                    ]
 
+key_chars = alpha_key_chars
+
 ## qwerty
 qwerty_key_chars = [['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
                     ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
