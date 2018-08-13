@@ -419,27 +419,7 @@ class PretrainScreen(QtGui.QWidget):
                     self.key_grid.addWidget(VerticalSeparator(), row * 4, col * 4, 5, 1)
         self.key_grid.addWidget(HorizontalSeparator(), row * 5+1, 0, 1, 13)
 
-    def redrawClocks(self):
-        self.selected_clock = random.randint(0, 63)
-        count =0
-        for clock in self.dummy_clocks:
-            clock.setText("not me")
-            clock.selected = False
-            clock.highlighted = (random.random() < random.random())
-            self.pbc.cur_hours[count] = random.choice(range(len(self.pbc.hl.hour_locs)))
-            v = self.pbc.hl.hour_locs[self.pbc.cur_hours[count]]
-            clock.angle = math.atan2(v[1], v[0]) + math.pi*0.5
-            if count == self.selected_clock:
-                self.pbc.cur_hour = random.choice(range(len(self.pbc.hl.hour_locs)))
-                self.pbc.cur_hours[count] = self.pbc.cur_hour
-                v = self.pbc.hl.hour_locs[self.pbc.cur_hours[count]]
-                clock.angle = math.atan2(v[1], v[0]) + math.pi*0.5
-                clock.selected = True
-                clock.setText("Click Me!")
-            clock.repaint()
-            count +=1
-        self.pbc.latest_time = time.time()
-
+    
 
     def redrawClocks(self):
         for clock in self.dummy_clocks:
