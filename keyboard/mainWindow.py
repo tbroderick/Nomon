@@ -239,33 +239,15 @@ class MainWindow(QtGui.QMainWindow):
     def highContrastEvent(self):
 
         if self.high_contrast:
-            hc_status = "ON"
+            hc_status = False
         else:
-            hc_status = "OFF"
-        messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Toggle Profanity Filter", "High Contrast Mode is "
-                                                                                             "currently <b>"
-                                       + hc_status + "</b>. Please select your desired setting below. ")
-        messageBox.addButton(QtGui.QPushButton('On'), QtGui.QMessageBox.YesRole)
-        messageBox.addButton(QtGui.QPushButton('Off'), QtGui.QMessageBox.NoRole)
+            hc_status = True
 
-
-        messageBox.setDefaultButton(QtGui.QMessageBox.No)
-        messageBox.setWindowIcon(self.icon)
-
-        reply = messageBox.exec_()
-        if reply == 1:
-            self.up_handel.safe_save(
-                [self.clock_type, self.font_scale, False, self.layout_preference, self.pf_preference, self.start_speed,
-                 self.is_write_data])
-            self.high_contrast = False
-            self.mainWidgit.color_index = 0
-        elif reply == 0:
-            self.up_handel.safe_save(
-                [self.clock_type, self.font_scale, True, self.layout_preference, self.pf_preference, self.start_speed,
-                 self.is_write_data])
-            self.high_contrast = True
-            self.mainWidgit.color_index = 1
-        self.check_filemenu()
+        self.up_handel.safe_save(
+            [self.clock_type, self.font_scale, hc_status, self.layout_preference, self.pf_preference, self.start_speed,
+             self.is_write_data])
+        self.high_contrast = hc_status
+        self.mainWidgit.color_index = hc_status
 
     def clockChangeEvent(self, design):
         messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Change Clock Design", "This will change the clocks "
@@ -277,24 +259,20 @@ class MainWindow(QtGui.QMainWindow):
         messageBox.setIconPixmap(QtGui.QPixmap(os.path.join("icons/", design + '.png')))
         messageBox.setWindowIcon(self.icon)
 
-        reply = messageBox.exec_()
-        if reply == QtGui.QMessageBox.Ok:
-            self.clock_type = design
-            self.up_handel.safe_save([design, self.font_scale, self.high_contrast, self.layout_preference,
-                                      self.pf_preference, self.start_speed, self.is_write_data])
-            self.check_filemenu()
-            self.mainWidgit.wpm_label.setText("Selections/Min: "+"----")
-            self.wpm_data = config.Stack(config.wpm_history_length)
-            self.wpm_time = 0
+        self.clock_type = design
+        self.up_handel.safe_save([design, self.font_scale, self.high_contrast, self.layout_preference,
+                                  self.pf_preference, self.start_speed, self.is_write_data])
+        self.check_filemenu()
+        self.mainWidgit.wpm_label.setText("Selections/Min: "+"----")
+        self.wpm_data = config.Stack(config.wpm_history_length)
+        self.wpm_time = 0
 
-            if self.mainWidgit.text_alignment == 'auto':
-                self.clockTextAlign('auto', message=False)
-                self.check_filemenu()
-
-            for clock in self.clocks:
-                clock.calcClockSize()
-        else:
+        if self.mainWidgit.text_alignment == 'auto':
+            self.clockTextAlign('auto', message=False)
             self.check_filemenu()
+
+        for clock in self.mainWidgit.clocks:
+            clock.calcClockSize()
 
     def layoutChangeEvent(self, layout):
         messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Change Keyboard Layout", "This will change the clock "
@@ -350,19 +328,15 @@ class MainWindow(QtGui.QMainWindow):
                                            + alignment_name + "</b>  of the clocks",
                                            QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
         self.alignment = alignment
+
+        self.mainWidgit.alignment = alignment
+        self.resizeClocks()
         if message:
-            messageBox.setDefaultButton(QtGui.QMessageBox.Cancel)
-            messageBox.setWindowIcon(self.icon)
+            self.check_filemenu()
+            for clock in self.mainWidgit.clocks:
+                clock.calcClockSize()
 
-            reply = messageBox.exec_()
-            if reply == QtGui.QMessageBox.Ok:
-                self.mainWidgit.alignment = alignment
-                self.resizeClocks()
-                self.check_filemenu()
 
-        else:
-            self.mainWidgit.alignment = alignment
-            self.resizeClocks()
 
     def resizeClocks(self):
         if self.alignment[0] == 'b' or self.mainWidgit.alignment[0] == 't':
@@ -409,7 +383,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def profanityFilterEvent(self):
         profanity_status = self.pf_preference
-        messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Toggle Profanity Filter", "The profanity filter is "
+        messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Profanity Filter Settings", "The profanity filter is "
                                                                                              "currently <b>"
                                        + self.pf_preference.upper() + "</b>. Please select your desired setting below. ")
         messageBox.addButton(QtGui.QPushButton('On'), QtGui.QMessageBox.YesRole)
@@ -621,7 +595,10 @@ class MainKeyboardWidget(QtGui.QWidget):
     def changeValue(self, value):  # Change clock speed
         self.sldLabel.setText(str(self.speed_slider.value()))
         self.parent.change_speed(value)
-        pickle.dump(value, open("user_preferences/start_speed.p", 'wb'))
+        self.parent.start_speed = value
+        self.up_handel = PickleUtil("user_preferences/user_preferences.p")
+        self.up_handel.safe_save([self.parent.clock_type, self.parent.font_scale, self.parent.high_contrast, self.parent.layout_preference,
+                                  self.parent.pf_preference, self.parent.start_speed, self.parent.is_write_data])
 
     def getWords(self, char):  # Reformat word list into blueprint for GUI construction
         i = 0

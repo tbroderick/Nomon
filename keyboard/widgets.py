@@ -290,43 +290,40 @@ class ClockWidgit(QtGui.QWidget):
         # calculate size of text from leftover space
         if self.redraw_text:
             self.text_font = QtGui.QFont(clock_font)
-
-            font_size = self.radius * min(1., 1.2 * self.constraint_factor)
-            self.text_font.setPointSize(font_size)
+            self.text_font.setPixelSize(self.h)
             self.text_font.setStretch(85)
-
-            if self.parent.layout == kconfig.qwerty_key_chars:
-                if self.text in sum(kconfig.qwerty_key_chars, []):
-                    self.text_font.setBold(True)
-                    self.text_font.setPointSize(min(20 * self.parent.size_factor, self.text_font.pointSize() * 1.5 * self.parent.size_factor))
-                elif self.parent.parent.clock_type == 'bar':
-                    self.text_font.setBold(True)
-                    self.text_fontsetPointSize(min(15 * self.parent.size_factor, self.text_font.pointSize() * 0.7 * self.parent.size_factor))
-                else:
-                    self.text_font.setBold(False)
-
             qp.setFont(self.text_font)
 
             label = QtGui.QLabel(self.text)
             label.setFont(self.text_font)
             text_width = label.fontMetrics().boundingRect(label.text()).width()
-            text_height = label.fontMetrics().boundingRect(label.text()).height()
 
-            if text_width + self.radius*2 > self.w:
-                self.text_font.setStretch(max(63., 85*float(self.w - self.radius*2.2)/float(text_width)))
-                qp.setFont(self.text_font)
-                label = QtGui.QLabel(self.text)
-                label.setFont(self.text_font)
-                text_width = label.fontMetrics().boundingRect(label.text()).width()
-                text_height = label.fontMetrics().boundingRect(label.text()).height()
+            if self.parent.parent.clock_type != "bar":
+                width = self.w - 2.1*self.radius
+            else:
+                width = self.w*0.7
 
-                if text_width + self.radius * 2 > self.w:
-                    self.text_font.setPointSize(self.text_font.pointSize() * float(self.w - self.radius * 2.2) / float(text_width))
-                    qp.setFont(self.text_font)
+            size_factor = float(text_width)/float(width)
+
+            if size_factor > 1:
+                if size_factor < 1.3:
+                    self.text_font.setStretch(int(85./size_factor))
+
                     label = QtGui.QLabel(self.text)
                     label.setFont(self.text_font)
                     text_width = label.fontMetrics().boundingRect(label.text()).width()
-                    text_height = label.fontMetrics().boundingRect(label.text()).height()
+                elif size_factor > 1.3:
+                    self.text_font.setStretch(65)
+                    label = QtGui.QLabel(self.text)
+                    label.setFont(self.text_font)
+                    text_width = label.fontMetrics().boundingRect(label.text()).width()
+
+                    size_factor = float(text_width) / float(width)
+                    self.text_font.setPixelSize(int(float(self.h)/size_factor))
+
+                    label = QtGui.QLabel(self.text)
+                    label.setFont(self.text_font)
+                    text_width = label.fontMetrics().boundingRect(label.text()).width()
 
         if self.background:
             brush = QtGui.QBrush(QtGui.QColor(175, 255, 175))
