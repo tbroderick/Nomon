@@ -21,6 +21,9 @@
 import numpy
 from PyQt4 import QtGui
 import pickle
+import os, sys
+#sys.path.insert(0, os.path.realpath('user_preferences'))
+current_folder= os.path.dirname(os.path.abspath(__file__))
 
 ### Configuration settings for the BroderClocks module ###
 

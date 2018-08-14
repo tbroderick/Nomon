@@ -6,9 +6,11 @@ import pre_broderclocks_pyqt
 import string
 import broderclocks
 from widgets import *
-import sys
+import sys, os
 import random
-
+sys.path.insert(0, os.path.realpath('../tests'))
+from pickle_util import *
+import math
 
 class StartWindow(QtGui.QMainWindow):
 
@@ -19,8 +21,8 @@ class StartWindow(QtGui.QMainWindow):
 
         self.screen_res = screen_res
 
-        self.clock_type = pickle.load(open("user_preferences/clock_preference.p", "rb"))
-        self.high_contrast = pickle.load(open("user_preferences/high_contrast.p", "rb"))
+        self.clock_type = PickleUtil("user_preferences/clock_preference.p").safe_load()
+        self.high_contrast = PickleUtil("user_preferences/high_contrast.p").safe_load()
         self.splash = splash
         self.help_screen = False  # if triggered under help menu adjust number of follow up screens
         self.screen_num = 0  # start at first screen if welcome screen
@@ -409,7 +411,7 @@ class PretrainScreen(QtGui.QWidget):
 
     def redrawClocks(self):
         for clock in self.dummy_clocks:
-            clock.text = "not me"
+            clock.setText("not me")
             clock.selected = False
             clock.highlighted = (random.random() < random.random())
             clock.dummy_angle_offset = random.random() * math.pi*-1
@@ -419,7 +421,7 @@ class PretrainScreen(QtGui.QWidget):
         selected_clock = random.randint(0, 63)
         self.dummy_clocks[selected_clock].dummy_angle_offset = 0
         self.dummy_clocks[selected_clock].selected = True
-        self.dummy_clocks[selected_clock].text = "Click Me!"
+        self.dummy_clocks[selected_clock].setText("Click Me!")
         self.dummy_clocks[selected_clock].repaint()
 
 
@@ -468,8 +470,6 @@ class Pretraining(StartWindow):
         else:
             self.file_handle = None
         
-        #which is 20
-        #self.total_presses = self.pbc.hsi.n_training
         self.num_stop_training = 10
         self.total_presses = 10
         
@@ -479,6 +479,7 @@ class Pretraining(StartWindow):
         
         self.pbc = pre_broderclocks_pyqt.Pre_broderclocks(self, self.file_handle, self.time_rotate, self.use_num, self.user_id, time.time(), self.prev_data)
         self.wait_s = self.pbc.get_wait()
+        self.num_stop_training = self.pbc.hsi.n_training
         
         
         #self.pbc.hsi.n_training #which is 20
@@ -488,6 +489,7 @@ class Pretraining(StartWindow):
 
     def gen_handle(self):
         data_file = "data/preconfig.pickle"
+        self.pickle_handle = PickleUtil(data_file)
         self.file_handle = data_file
         
     
@@ -526,6 +528,11 @@ class Pretraining(StartWindow):
                 self.mainWidgit.start_button.setFocus()
 
                 self.mainWidgit.start_button.show()
+                
+                if self.num_press > self.total_presses:
+                    self.start_button_func()
+                
+           
             
         if self.deactivate_press:
             self.on_finish()
@@ -574,7 +581,10 @@ class Pretraining(StartWindow):
                 li = self.pbc.hsi.dens_li
                 print "The length of li is" + str(len(li))
                 z = self.pbc.hsi.Z
-                pickle.dump([li, z, self.pbc.hsi.opt_sig, self.pbc.hsi.y_li], open(self.file_handle, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
+                self.save_dict = {'li': li, 'z': z, 'opt_sig': self.pbc.hsi.opt_sig, 'y_li': self.pbc.hsi.y_li}
+                self.pickle_handle.safe_save(self.save_dict)
+                
+                #pickle.dump([li, z, self.pbc.hsi.opt_sig, self.pbc.hsi.y_li], open(self.file_handle, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
 
                 self.prev_data = [[self.pbc.hsi.y_li[0]], [self.pbc.hsi.opt_sig]]
                 self.use_num = 1
@@ -582,6 +592,7 @@ class Pretraining(StartWindow):
                 print "I'm quitting and the density is" + str(li)
                 print "And the Z is " + str(z)
                 print "file closed"
+                #self.file_handle.close()
             except IOError as (errno,strerror):
                 print "I/O error({0}): {1}".format(errno, strerror)
         
@@ -599,6 +610,7 @@ class Pretraining(StartWindow):
         #self.sister.init_histogram()
         print "this worked 2"
         #print self.sister.bc.hsi.not_read_pickle
+        self.sister.pretrain_bars = self.sister.bars
         self.close()
 
     def closeEvent(self, event):
