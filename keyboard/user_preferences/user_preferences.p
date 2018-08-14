@@ -1,0 +1,12 @@
+(lp0
+S'default'
+p1
+aI1
+aI00
+aS'alpha'
+p2
+aS'off'
+p3
+aI12
+aI00
+a.
