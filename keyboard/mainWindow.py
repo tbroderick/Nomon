@@ -27,7 +27,8 @@ class MainWindow(QtGui.QMainWindow):
         exitAction = QtGui.QAction('&Exit', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application')
-        exitAction.triggered.connect(QtGui.qApp.quit)
+        #exitAction.triggered.connect(QtGui.qApp.quit)
+        exitAction.triggered.connect(self.closeEvent)
 
         # Clock Menu Actions
         self.highContrastAction = QtGui.QAction('&High Contrast Mode', self, checkable=True)
@@ -562,14 +563,14 @@ class MainKeyboardWidget(QtGui.QWidget):
                 words = self.getWords(text.lower())
                 for word in words:
                     self.clocks[index].filler_clock = False
-                    self.clocks[index].text = word
+                    self.clocks[index].setText(word)
                     index += 1
                 for i in range(len(words), 3):
-                    self.clocks[index].text = ''
+                    self.clocks[index].setText('')
                     self.clocks[index].filler_clock = True
                     self.clocks[index].repaint()
                     index += 1
-                self.clocks[index].text = text
+                self.clocks[index].setText(text)
                 index += 1
 
     def layoutClocks(self):  # called after self.generateClocks, arranges clocks in grid

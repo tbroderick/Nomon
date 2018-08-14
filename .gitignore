@@ -1,9 +1,0 @@
-*._*
-*.bak
-*.db
-*.dump
-*.pyc
-*.DS_Store
-*.zip
-keyboard/build
-keyboard/data
