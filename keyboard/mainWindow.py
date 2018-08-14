@@ -2,7 +2,11 @@ import sys
 import os
 import string
 import config
+import time
+import dtree
 import pickle
+from pickle_util import *
+
 from widgets import *
 
 
@@ -11,23 +15,26 @@ class MainWindow(QtGui.QMainWindow):
         super(MainWindow, self).__init__()
 
         self.screen_res = screen_res
-        self.clock_type = pickle.load(open("user_preferences/clock_preference.p", "rb"))
+        # Load User Preferences
 
     def initUI(self):
-        self.mainWidgit = MainKeyboardWidget(self, kconfig.key_chars, self.screen_res)
+        self.mainWidgit = MainKeyboardWidget(self, self.key_chars, self.screen_res)
         self.mainWidgit.initUI()
         self.setCentralWidget(self.mainWidgit)
-        self.high_contrast = pickle.load(open("user_preferences/high_contrast.p", "rb"))
-        self.profanity_filter = pickle.load(open("user_preferences/profanity_filter_preference.p", "rb"))
-
-
         self.clockTextAlign('auto', message=False)
 
+
         # File Menu Actions
+        restartAction = QtGui.QAction('&Restart', self)
+        restartAction.setShortcut('Ctrl+R')
+        restartAction.setStatusTip('Restart application')
+        restartAction.triggered.connect(self.restartEvent)
+
         exitAction = QtGui.QAction('&Exit', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application')
-        exitAction.triggered.connect(QtGui.qApp.quit)
+        # exitAction.triggered.connect(QtGui.qApp.quit)
+        exitAction.triggered.connect(self.closeEvent)
 
         # Clock Menu Actions
         self.highContrastAction = QtGui.QAction('&High Contrast Mode', self, checkable=True)
@@ -90,12 +97,17 @@ class MainWindow(QtGui.QMainWindow):
 
         self.qwertyLayoutAction = QtGui.QAction('&QWERTY', self, checkable=True)
         self.qwertyLayoutAction.triggered.connect(lambda: self.layoutChangeEvent('qwerty'))
+
+
         # Tools Menu Actions
         self.profanityFilterAction = QtGui.QAction('&Profanity Filter', self, checkable=True)
         self.profanityFilterAction.triggered.connect(self.profanityFilterEvent)
 
         self.retrainAction = QtGui.QAction('&Retrain', self)
         self.retrainAction.triggered.connect(self.retrainEvent)
+
+        self.logDataAction = QtGui.QAction('&Data Logging', self, checkable=True)
+        self.logDataAction.triggered.connect(self.logDataEvent)
 
 
         # Help Menu Actions
@@ -110,6 +122,7 @@ class MainWindow(QtGui.QMainWindow):
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(exitAction)
+        # fileMenu.addAction(restartAction)
 
         viewMenu = menubar.addMenu('&View')
         viewMenu.addAction(self.highContrastAction)
@@ -138,6 +151,7 @@ class MainWindow(QtGui.QMainWindow):
 
         toolsMenu = menubar.addMenu('&Tools')
         toolsMenu.addAction(self.profanityFilterAction)
+        toolsMenu.addAction(self.logDataAction)
         toolsMenu.addAction(self.retrainAction)
 
         helpMenu = menubar.addMenu('&Help')
@@ -175,13 +189,15 @@ class MainWindow(QtGui.QMainWindow):
         switch(self.autoTextalignAction, self.mainWidgit.text_alignment == 'auto')
 
         # check profanity
-        switch(self.profanityFilterAction, self.profanity_filter == kconfig.train_file_name_censored)
+        switch(self.profanityFilterAction, self.pf_preference == 'on')
+
+        # check log data
+        switch(self.logDataAction, self.is_write_data)
 
         # check font menu
-        from config import font_scale
-        switch(self.smallFontAction, font_scale == 0.75)
-        switch(self.medFontAction, font_scale == 1.)
-        switch(self.largeFontAction, font_scale == 1.5)
+        switch(self.smallFontAction, self.font_scale == 0)
+        switch(self.medFontAction, self.font_scale == 1)
+        switch(self.largeFontAction, self.font_scale == 2)
 
         # check high contrast
         switch(self.highContrastAction, self.high_contrast)
@@ -191,19 +207,24 @@ class MainWindow(QtGui.QMainWindow):
         switch(self.qwertyLayoutAction, self.mainWidgit.layout == kconfig.qwerty_key_chars)
 
     def changeFontSize(self, size):
-        pickle.dump(size, open("user_preferences/font_scale.p", "wb"))
+        if size == 'small':
+            size = 0
+        elif size == 'med':
+            size = 1
+        elif size == 'large':
+            size = 2
+        self.font_scale = size
+        self.up_handel.safe_save([self.clock_type, size, self.high_contrast, self.layout_preference, self.pf_preference,
+                                  self.start_speed, self.is_write_data])
 
-        reload(config)
-        from config import top_bar_font
-        from config import text_box_font
-
-        self.mainWidgit.sldLabel.setFont(top_bar_font)
-        self.mainWidgit.speed_slider_label.setFont(top_bar_font)
-        self.mainWidgit.wpm_label.setFont(top_bar_font)
-        self.mainWidgit.cb_talk.setFont(top_bar_font)
-        self.mainWidgit.cb_learn.setFont(top_bar_font)
-        self.mainWidgit.cb_pause.setFont(top_bar_font)
-        self.mainWidgit.text_box.setFont(text_box_font)
+        self.mainWidgit.sldLabel.setFont(top_bar_font[size])
+        self.mainWidgit.speed_slider_label.setFont(top_bar_font[size])
+        self.mainWidgit.wpm_label.setFont(top_bar_font[size])
+        self.mainWidgit.cb_talk.setFont(top_bar_font[size])
+        self.mainWidgit.cb_learn.setFont(top_bar_font[size])
+        self.mainWidgit.cb_pause.setFont(top_bar_font[size])
+        self.mainWidgit.cb_sound.setFont(top_bar_font[size])
+        self.mainWidgit.text_box.setFont(text_box_font[size])
 
         self.mainWidgit.wpm_label.repaint()
         self.mainWidgit.cb_talk.repaint()
@@ -218,28 +239,15 @@ class MainWindow(QtGui.QMainWindow):
     def highContrastEvent(self):
 
         if self.high_contrast:
-            hc_status = "ON"
+            hc_status = False
         else:
-            hc_status = "OFF"
-        messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Toggle Profanity Filter", "High Contrast Mode is "
-                                                                                             "currently <b>"
-                                       + hc_status + "</b>. Please select your desired setting below. "
-                                                     "<b>NOTICE:</b> Changes will not take effect until "
-                                                     "Nomon is restarted.")
-        messageBox.addButton(QtGui.QPushButton('On'), QtGui.QMessageBox.YesRole)
-        messageBox.addButton(QtGui.QPushButton('Off'), QtGui.QMessageBox.NoRole)
+            hc_status = True
 
-
-        messageBox.setDefaultButton(QtGui.QMessageBox.No)
-        messageBox.setWindowIcon(self.icon)
-
-        reply = messageBox.exec_()
-        if reply == 1:
-            pickle.dump(False, open("user_preferences/high_contrast.p", "wb"))
-        elif reply == 0:
-            pickle.dump(True, open("user_preferences/high_contrast.p", "wb"))
-        self.check_filemenu()
-
+        self.up_handel.safe_save(
+            [self.clock_type, self.font_scale, hc_status, self.layout_preference, self.pf_preference, self.start_speed,
+             self.is_write_data])
+        self.high_contrast = hc_status
+        self.mainWidgit.color_index = hc_status
 
     def clockChangeEvent(self, design):
         messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Change Clock Design", "This will change the clocks "
@@ -251,21 +259,20 @@ class MainWindow(QtGui.QMainWindow):
         messageBox.setIconPixmap(QtGui.QPixmap(os.path.join("icons/", design + '.png')))
         messageBox.setWindowIcon(self.icon)
 
-        reply = messageBox.exec_()
-        if reply == QtGui.QMessageBox.Ok:
-            self.clock_type = design
-            pickle.dump(design, open("user_preferences/clock_preference.p", "wb"))
-            self.check_filemenu()
-            self.mainWidgit.wpm_label.setText("Selections/Min: "+"----")
-            self.wpm_data = config.Stack(config.wpm_history_length)
-            self.wpm_time = 0
+        self.clock_type = design
+        self.up_handel.safe_save([design, self.font_scale, self.high_contrast, self.layout_preference,
+                                  self.pf_preference, self.start_speed, self.is_write_data])
+        self.check_filemenu()
+        self.mainWidgit.wpm_label.setText("Selections/Min: "+"----")
+        self.wpm_data = config.Stack(config.wpm_history_length)
+        self.wpm_time = 0
 
-            if self.mainWidgit.text_alignment == 'auto':
-                self.clockTextAlign('auto', message=False)
-                self.check_filemenu()
-        else:
+        if self.mainWidgit.text_alignment == 'auto':
+            self.clockTextAlign('auto', message=False)
             self.check_filemenu()
 
+        for clock in self.mainWidgit.clocks:
+            clock.calcClockSize()
 
     def layoutChangeEvent(self, layout):
         messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Change Keyboard Layout", "This will change the clock "
@@ -279,12 +286,16 @@ class MainWindow(QtGui.QMainWindow):
 
         reply = messageBox.exec_()
         if reply == QtGui.QMessageBox.Ok:
+            self.up_handel = PickleUtil("user_preferences/user_preferences.p")
             if layout == 'alphabetical':
-                pickle.dump(kconfig.alpha_key_chars, open("user_preferences/layout_preference.p", "wb"))
-            elif layout == 'qwerty':
-                pickle.dump(kconfig.qwerty_key_chars, open("user_preferences/layout_preference.p", "wb"))
-            self.check_filemenu()
+                self.up_handel.safe_save([self.clock_type, self.font_scale, self.high_contrast, 'alpha',
+                                          self.pf_preference, self.start_speed, self.is_write_data])
 
+            elif layout == 'qwerty':
+                self.up_handel.safe_save([self.clock_type, self.font_scale, self.high_contrast, 'qwerty',
+                                          self.pf_preference, self.start_speed, self.is_write_data])
+
+            self.check_filemenu()
 
     def clockTextAlign(self, alignment, message=True):
         if alignment == "auto":
@@ -317,19 +328,15 @@ class MainWindow(QtGui.QMainWindow):
                                            + alignment_name + "</b>  of the clocks",
                                            QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
         self.alignment = alignment
+
+        self.mainWidgit.alignment = alignment
+        self.resizeClocks()
         if message:
-            messageBox.setDefaultButton(QtGui.QMessageBox.Cancel)
-            messageBox.setWindowIcon(self.icon)
+            self.check_filemenu()
+            for clock in self.mainWidgit.clocks:
+                clock.calcClockSize()
 
-            reply = messageBox.exec_()
-            if reply == QtGui.QMessageBox.Ok:
-                self.mainWidgit.alignment = alignment
-                self.resizeClocks()
-                self.check_filemenu()
 
-        else:
-            self.mainWidgit.alignment = alignment
-            self.resizeClocks()
 
     def resizeClocks(self):
         if self.alignment[0] == 'b' or self.mainWidgit.alignment[0] == 't':
@@ -341,19 +348,44 @@ class MainWindow(QtGui.QMainWindow):
                 clock.setMaximumHeight(clock.maxSize)
                 clock.setMinimumSize(clock.minSize, clock.minSize)
 
-    def profanityFilterEvent(self):
-        profanity_status = (pickle.load(open('user_preferences/profanity_filter_preference.p', 'rb')) ==
-                            kconfig.train_file_name_censored)
-        if profanity_status:
-            profanity_status = "ON"
-        else:
-            profanity_status = "OFF"
+    def logDataEvent(self):
+        messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Data Logging Consent", "We would like to save "
+                                                                                          "some data regarding your "
+                                                                                          "clicking time relative to "
+                                                                                          "Noon to help us improve "
+                                                                                          "Nomon. All data collected is"
+                                                                                          " anonymous and only your "
+                                                                                          "click times will be saved. "
+                                                                                          "<b> Do you consent to "
+                                                                                          "allowing us to log click "
+                                                                                          "timing data locally?</b>"
+                                                                                          " (Note: you can change your"
+                                                                                          " preference anytime in the "
+                                                                                          "Tools menu).")
+        messageBox.addButton(QtGui.QMessageBox.Yes)
+        messageBox.addButton(QtGui.QMessageBox.No)
+        messageBox.setDefaultButton(QtGui.QMessageBox.No)
+        messageBox.setWindowIcon(self.icon)
 
-        messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Toggle Profanity Filter", "The profanity filter is "
+        reply = messageBox.exec_()
+        self.up_handel = PickleUtil("user_preferences/user_preferences.p")
+        if reply == QtGui.QMessageBox.No:
+            self.up_handel.safe_save(
+                [self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference,
+                 self.start_speed, False])
+            self.is_write_data = False
+        elif reply == QtGui.QMessageBox.Yes:
+            self.up_handel.safe_save(
+                [self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference,
+                 self.start_speed, True])
+            self.is_write_data = True
+        self.check_filemenu()
+
+    def profanityFilterEvent(self):
+        profanity_status = self.pf_preference
+        messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Profanity Filter Settings", "The profanity filter is "
                                                                                              "currently <b>"
-                                       + profanity_status + "</b>. Please select your desired setting below. "
-                                                            "<b>NOTICE:</b> Changes will not take effect until "
-                                                            "Nomon is restarted.")
+                                       + self.pf_preference.upper() + "</b>. Please select your desired setting below. ")
         messageBox.addButton(QtGui.QPushButton('On'), QtGui.QMessageBox.YesRole)
         messageBox.addButton(QtGui.QPushButton('Off'), QtGui.QMessageBox.NoRole)
         messageBox.setIconPixmap(QtGui.QPixmap(os.path.join('icons/block.png')))
@@ -362,10 +394,25 @@ class MainWindow(QtGui.QMainWindow):
         messageBox.setWindowIcon(self.icon)
 
         reply = messageBox.exec_()
+        self.up_handel = PickleUtil("user_preferences/user_preferences.p")
         if reply == 1:
-            pickle.dump(kconfig.train_file_name_default, open('user_preferences/profanity_filter_preference.p', 'wb'))
+            self.up_handel.safe_save(
+                [self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, 'off', self.start_speed,
+                 self.is_write_data])
+            if profanity_status == 'on':
+                train_handle = open(kconfig.train_file_name_default, 'r')
+                self.pause_animation = True
+                self.dt = dtree.DTree(train_handle, self)
+            self.pf_preference = 'off'
         elif reply == 0:
-            pickle.dump(kconfig.train_file_name_censored, open('user_preferences/profanity_filter_preference.p', 'wb'))
+            self.up_handel.safe_save(
+                [self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, 'on', self.start_speed,
+                 self.is_write_data])
+            if profanity_status == 'off':
+                train_handle = open(kconfig.train_file_name_censored, 'r')
+                self.pause_animation = True
+                self.dt = dtree.DTree(train_handle, self)
+            self.pf_preference = 'on'
         self.check_filemenu()
 
 
@@ -396,6 +443,7 @@ class MainWindow(QtGui.QMainWindow):
         self.launch_retrain()
 
 
+
 class MainKeyboardWidget(QtGui.QWidget):
 
     def __init__(self, parent, layout, screen_res):
@@ -407,41 +455,47 @@ class MainKeyboardWidget(QtGui.QWidget):
         self.screen_res = screen_res
         self.size_factor = min(self.screen_res) / 1080.
         self.text_alignment = 'auto'
+        self.alignment = 'cr'
+        self.in_focus = True
+        self.color_index = self.parent.high_contrast
 
     def initUI(self):
 
         # generate slider for clock rotation speed
         self.speed_slider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         self.speed_slider.setRange(config.scale_min, config.scale_max)
-        self.speed_slider.setValue(config.start_speed)
+        self.speed_slider.setValue(self.parent.start_speed)
         self.speed_slider_label = QtGui.QLabel('Clock Rotation Speed:')
 
-        self.speed_slider_label.setFont(top_bar_font)
+        self.speed_slider_label.setFont(top_bar_font[self.parent.font_scale])
         self.sldLabel = QtGui.QLabel(str(self.speed_slider.value()))
-        self.sldLabel.setFont(top_bar_font)
+        self.sldLabel.setFont(top_bar_font[self.parent.font_scale])
 
         # wpm label
         self.wpm_label = QtGui.QLabel("Selections/Min: "+"----")
-        self.wpm_label.setFont(top_bar_font)
+        self.wpm_label.setFont(top_bar_font[self.parent.font_scale])
 
 
         # generate learn, speak, talk checkboxes
         self.cb_talk = QtGui.QCheckBox('Talk', self)
         self.cb_learn = QtGui.QCheckBox('Learn', self)
         self.cb_pause = QtGui.QCheckBox('Pause', self)
+        self.cb_sound = QtGui.QCheckBox('Sound', self)
         self.cb_talk.toggle()
-        self.cb_talk.setFont(top_bar_font)
+        self.cb_talk.setFont(top_bar_font[self.parent.font_scale])
         self.cb_learn.toggle()
-        self.cb_learn.setFont(top_bar_font)
+        self.cb_learn.setFont(top_bar_font[self.parent.font_scale])
         self.cb_pause.toggle()
-        self.cb_pause.setFont(top_bar_font)
+        self.cb_pause.setFont(top_bar_font[self.parent.font_scale])
+        self.cb_sound.toggle()
+        self.cb_sound.setFont(top_bar_font[self.parent.font_scale])
 
         # generate clocks from layout
         self.generateClocks()
 
         self.text_box = QtGui.QTextEdit("", self)
 
-        self.text_box.setFont(text_box_font)
+        self.text_box.setFont(text_box_font[self.parent.font_scale])
         self.text_box.setMinimumSize(300, 100)
         self.text_box.setReadOnly(True)
 
@@ -453,6 +507,7 @@ class MainKeyboardWidget(QtGui.QWidget):
             self.cb_learn.toggled[bool].connect(self.parent.toggle_learn_button)
             self.cb_pause.toggled[bool].connect(self.parent.toggle_pause_button)
             self.cb_talk.toggled[bool].connect(self.parent.toggle_talk_button)
+            self.cb_sound.toggled[bool].connect(self.parent.toggle_sound_button)
 
         # layout slider and checkboxes
         top_hbox = QtGui.QHBoxLayout()
@@ -466,6 +521,7 @@ class MainKeyboardWidget(QtGui.QWidget):
         top_hbox.addWidget(self.cb_talk, 1)
         top_hbox.addWidget(self.cb_learn, 1)
         top_hbox.addWidget(self.cb_pause, 1)
+        top_hbox.addWidget(self.cb_sound, 1)
         top_hbox.addStretch(1)
 
         # stack layouts vertically
@@ -475,17 +531,18 @@ class MainKeyboardWidget(QtGui.QWidget):
         self.vbox.addStretch(1)
         self.vbox.addWidget(HorizontalSeparator())
 
-        splitter1 = QtGui.QSplitter(QtCore.Qt.Horizontal)
-        splitter1.addWidget(self.text_box)
-        splitter1.addWidget(self.histogram)
-        splitter1.setSizes([1, 1])
+        self.splitter1 = QtGui.QSplitter(QtCore.Qt.Horizontal)
+        self.splitter1.addWidget(self.text_box)
+        self.splitter1.addWidget(self.histogram)
+        self.splitter1.setSizes([1, 1])
         self.histogram.setMaximumHeight(160 * self.size_factor)
         self.text_box.setMaximumHeight(160 * self.size_factor)
 
         self.vbox.addSpacing(5)
-        self.vbox.addWidget(splitter1, 4)
+        self.vbox.addWidget(self.splitter1, 4)
         self.layoutClocks()
         self.setLayout(self.vbox)
+
 
         if __name__ != '__main__':  # remove inheritance dependent timers for sole GUI run
             self.frame_timer = QtCore.QTimer()
@@ -522,10 +579,26 @@ class MainKeyboardWidget(QtGui.QWidget):
                                   "to noon on the clocks. The thinner the distribution, \n"
                                   "the more precisely Nomon thinks you are clicking.")
 
+    def paintEvent(self, e):
+        if self.parent.pretrain or self.parent.pause_animation:
+            qp = QtGui.QPainter()
+            qp.begin(self)
+            brush = qp.brush()
+            brush.setColor(QtGui.QColor(0, 0, 0, 10))
+            qp.setBrush(brush)
+            qp.fillRect(0,0,self.geometry().width(),self.geometry().height(),QtGui.QColor(220,220,220))
+            qp.end()
+            self.text_box.setStyleSheet("background-color:#e6e6e6;")
+            self.splitter1.setStyleSheet("background-color:#e0e0e0;")
+            self.in_focus = False
+
     def changeValue(self, value):  # Change clock speed
         self.sldLabel.setText(str(self.speed_slider.value()))
         self.parent.change_speed(value)
-        pickle.dump(value, open("user_preferences/start_speed.p", 'wb'))
+        self.parent.start_speed = value
+        self.up_handel = PickleUtil("user_preferences/user_preferences.p")
+        self.up_handel.safe_save([self.parent.clock_type, self.parent.font_scale, self.parent.high_contrast, self.parent.layout_preference,
+                                  self.parent.pf_preference, self.parent.start_speed, self.parent.is_write_data])
 
     def getWords(self, char):  # Reformat word list into blueprint for GUI construction
         i = 0
@@ -562,15 +635,17 @@ class MainKeyboardWidget(QtGui.QWidget):
                 words = self.getWords(text.lower())
                 for word in words:
                     self.clocks[index].filler_clock = False
-                    self.clocks[index].text = word
+                    self.clocks[index].setText(word)
                     index += 1
                 for i in range(len(words), 3):
-                    self.clocks[index].text = ''
+                    self.clocks[index].setText('')
                     self.clocks[index].filler_clock = True
                     self.clocks[index].repaint()
                     index += 1
-                self.clocks[index].text = text
+                self.clocks[index].setText(text)
                 index += 1
+        for clock in self.clocks:
+            clock.calcClockSize()
 
     def layoutClocks(self):  # called after self.generateClocks, arranges clocks in grid
 
@@ -698,29 +773,34 @@ class MainKeyboardWidget(QtGui.QWidget):
                     clock_index += kconfig.N_pred + 1
                 self.keyboard_grid.setRowStretch(row * 2, 2)
 
-        self.vbox.insertLayout(3, self.keyboard_grid, 6)  # add keyboard grid to place in main layout
+        self.vbox.insertLayout(3, self.keyboard_grid, 25)  # add keyboard grid to place in main layout
 
 
 def main():  # set up 'dummy' keyboard instance to allow for pure GUI layout debugging
-    app = QtGui.QApplication(sys.argv)
-    screen_res = (app.desktop().screenGeometry().width(), app.desktop().screenGeometry().height())
-    ex = MainWindow(screen_res)
-    word_list = open('word_list.txt', 'r')
-    words = word_list.read()
-    words = words.split()
-    word_list.close()
-    ex.word_list = []
-    for letter in string.ascii_lowercase:
-        i = 0
-        for word in words:
-            if word[0] == letter and i < kconfig.N_pred:
-                i += 1
-                ex.word_list += [word]
-    ex.prefix = ''
-    ex.bars = kconfig.bars
-    ex.previous_undo_text = ''
-    ex.initUI()
-    sys.exit(app.exec_())
+
+    currentExitCode = MainWindow.EXIT_CODE_REBOOT
+    while currentExitCode == MainWindow.EXIT_CODE_REBOOT:
+        app = QtGui.QApplication(sys.argv)
+        screen_res = (app.desktop().screenGeometry().width(), app.desktop().screenGeometry().height())
+        ex = MainWindow(screen_res)
+        word_list = open('word_list.txt', 'r')
+        words = word_list.read()
+        words = words.split()
+        word_list.close()
+        ex.word_list = []
+        for letter in string.ascii_lowercase:
+            i = 0
+            for word in words:
+                if word[0] == letter and i < kconfig.N_pred:
+                    i += 1
+                    ex.word_list += [word]
+        ex.prefix = ''
+        ex.bars = kconfig.bars
+        ex.previous_undo_text = ''
+        ex.initUI()
+
+        currentExitCode = app.exec_()
+        app = None  # delete the QApplication object
 
 
 if __name__ == '__main__':

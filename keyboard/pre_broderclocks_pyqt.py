@@ -14,7 +14,7 @@ class Pre_HourScoreIncs:
         # rotation period
         self.time_rotate = time_rotate
         # index over histogram bins
-        self.index_li = range(0,config.num_divs_click)
+        self.index_li = range(0, config.num_divs_click)
         # location of histogram bins
         self.x_li = []
         for index in self.index_li:
@@ -99,6 +99,8 @@ class Pre_HourScoreIncs:
 
     def quit(self):
         print(self.y_li)
+
+
 class Pre_broderclocks:
     #Got rid of canvas
     def __init__(self, parent, file_handle, time_rotate, use_num, user_id, in_time, prev_data):
@@ -132,7 +134,8 @@ class Pre_broderclocks:
     def increment(self, time_in):
         self.latest_time = time_in
 
-        
+        if self.parent.mainWidgit.highlight_clock:
+            self.parent.mainWidgit.highlight()
         # update time indices
         self.cur_hour = (self.cur_hour + 1) % self.num_divs_time
         # register in coordinates of hour hand
@@ -177,7 +180,7 @@ class Pre_broderclocks:
     
     def init_round(self):
         #put the needle at noon -> increment will animate
-        self.cur_hour = int(random.random()*24-12)
+        self.cur_hour = 0
         #self.parent.gen_clock()
         self.parent.v = (0,self.parent.radius)
         self.latest_time = time.time()

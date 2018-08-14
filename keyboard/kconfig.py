@@ -47,13 +47,14 @@ alpha_key_chars = [['a', 'b', 'c', 'd', 'e'],
 
                    ]
 
+key_chars = alpha_key_chars
+
 ## qwerty
 qwerty_key_chars = [['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
                     ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
                     ['z', 'x', 'c', 'v', 'b', 'n', 'm', space_char, break_chars[1], break_chars[0][1], break_chars[0][0], break_chars[0][2]],
                     [back_char, clear_char, mybad_char]
                     ]
-key_chars = pickle.load(open("user_preferences/layout_preference.p", "rb"))
 # get gaussian distribution
 bars = [4.1731209137640166e-11, 1.5674042704727563e-10, 5.702330790217924e-10, 2.009440319647259e-09,
         6.858815826469396e-09, 2.2676420114286876e-08, 7.261915168381362e-08, 2.2525745454100865e-07,
@@ -72,9 +73,6 @@ bars = [4.1731209137640166e-11, 1.5674042704727563e-10, 5.702330790217924e-10, 2
         0.0014260697131632965, 0.0006125631118014535, 0.00025486620252588053, 0.00010271289727370786,
         4.009489083361327e-05, 1.5160181992883289e-05, 5.552276918629734e-06, 1.969650386894789e-06,
         6.767971122297759e-07, 2.2525745454100865e-07, 7.261915168381387e-08, 2.2676420114286876e-08]
-
-### First Load ###
-first_load = pickle.load(open("user_preferences/first_load.p", "rb"))
 
 ### Events ###
 # event selection
@@ -136,13 +134,12 @@ winner_time = 2000
 # data file prefix
 file_pre = "data/clocks."
 # data file suffix
-file_suff = ".txt"
+#file_suff = ".txt"
+file_stuff = ".pickle"
 # train file name
 # TESTING:train_file_name = "../corpus/ANC-token-proc-small.txt"
 train_file_name_default = "corpus/merged_ce-0.2.txt"  # removed "../" from beginning
 train_file_name_censored = "corpus/merged_ce-0.2_censored.txt"
-
-train_file_name = pickle.load(open('user_preferences/profanity_filter_preference.p', 'rb'))
 
 # phrases file
 base_file = "phrases/base_file_phrases.txt"
@@ -152,7 +149,8 @@ phrase_suff = ".txt"
 ## saving settings
 # where to save
 dump_pre = "save/settings."
-dump_suff = ".dump"
+#dump_suff = ".dump"
+dump_stuff = ".pickle"
 # max time for a round
 max_round_sec = 14 * 60
 # whether or not to have pause (and how long: milliseconds)
