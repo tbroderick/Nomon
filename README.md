@@ -1,6 +1,6 @@
 Nomon
 ================
-** Please Watch This Tutorial Video: https://youtu.be/wIGuaIdynTA for installing / Nomon. 
+** Please Watch This Tutorial Video: https://youtu.be/wIGuaIdynTA for installing / using Nomon. 
 
 This repository contains the Windows Installer for Nomon.
 
