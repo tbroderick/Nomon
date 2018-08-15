@@ -1,3 +1,0 @@
-S'default'
-p0
-.
