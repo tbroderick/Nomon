@@ -1,5 +1,7 @@
 Nomon
 ================
+** Please Watch This Tutorial Video: https://youtu.be/wIGuaIdynTA for installing / using Nomon. 
+
 This repository contains the Windows Installer for Nomon.
 
 Nomon, invented by [Tamara Broderick](http://people.csail.mit.edu/tbroderick/index.html), is a keyboard application that uses a single switch selection method, allowing users to select a letter or a word with a single click. These clicks are distinguished by their timing, which can be controlled depending on the users desired speed. Each letter and suggested word is paired with a set of small clocks, each one associated with each option of a letter or a word. Repeatedly, when the clock's moving hand is at noon, the user clicks the single click until the desired option is selected. Using this method, users can select words and letters to form sentences with just a single switch.
