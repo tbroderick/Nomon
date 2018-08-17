@@ -32,6 +32,7 @@ class StartWindow(QtGui.QMainWindow):
             self.initUI_splash()
         else:
             self.initUI_welcome()
+        self.last_release_time = time.time()
 
     def initUI_splash(self):
         self.mainWidgit = SplashScreen(self)
@@ -65,9 +66,9 @@ class StartWindow(QtGui.QMainWindow):
 
         self.show()
 
-    def keyPressEvent(self, e):
+    def keyReleaseEvent(self, e):
         if not self.splash:
-            if e.key() == QtCore.Qt.Key_Space:
+            if e.key() == QtCore.Qt.Key_Space and not(e.isAutoRepeat()):
                 self.screen_num += 1  # cycle through the multiple welcome/help screens
                 if self.screen_num == 1:
                     self.mainWidgit.close()
@@ -99,7 +100,10 @@ class StartWindow(QtGui.QMainWindow):
 #                     if self.num_presses >= self.total_presses:
 #                         self.on_finish()
 # =============================================================================
-                    self.on_press()
+                    if time.time()-self.last_release_time > 0.25:
+                        self.on_press()
+                
+                self.last_release_time = time.time()
 
 
 class SplashScreen(QtGui.QWidget):

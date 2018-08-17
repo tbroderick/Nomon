@@ -423,9 +423,9 @@ class BroderClocks:
         self.num_bits += self.bits_per_select
         t = time.time()
         # if self.parent.is_write_data:
-        #	loc_rate = self.bits_per_select / (t - self.last_win_time)
-        #	bit_rate = self.num_bits / (t - self.start_time)
-        #	self.file_handle.write("bits " + str(bit_rate) + " " + str(loc_rate) + "\n")
+        #    loc_rate = self.bits_per_select / (t - self.last_win_time)
+        #    bit_rate = self.num_bits / (t - self.start_time)
+        #    self.file_handle.write("bits " + str(bit_rate) + " " + str(loc_rate) + "\n")
         self.last_win_time = t
 
 
@@ -454,10 +454,11 @@ class BroderClocks:
                 self.canvas.create_line([x, y, x, lry], fill=config.hour_color, width=config.hand_width))
         # blank out the clocks that aren't in use this round
         for clock in self.clocks_off:
-            self.canvas.itemconfigure(self.circle_id[clock], fill=self.circle_off_color,
-                                      outline=config.circle_off_color)
-            self.canvas.itemconfigure(self.noon_id[clock], fill=config.circle_off_color)
-            self.canvas.itemconfigure(self.hour_id[clock], fill=config.circle_off_color)
+            pass
+            #self.canvas.itemconfigure(self.circle_id[clock], fill=self.circle_off_color,
+            #                          outline=config.circle_off_color)
+            #self.canvas.itemconfigure(self.noon_id[clock], fill=config.circle_off_color)
+            #self.canvas.itemconfigure(self.hour_id[clock], fill=config.circle_off_color)
 
     # usually called after a timer increment in the parent program
     def increment(self, time_in):
@@ -632,8 +633,8 @@ class BroderClocks:
                 # set scores for non-zero entries of clock_score_prior
                 ##count = 0
                 ##for count in range(0,len(clock_score_prior)):
-                ##	if(clock_score_prior[count] != 0):
-                ##		self.cscores[self.clocks_on[count]] = self.cscores[self.sorted_inds[2]] # set to third highest score
+                ##    if(clock_score_prior[count] != 0):
+                ##        self.cscores[self.clocks_on[count]] = self.cscores[self.sorted_inds[2]] # set to third highest score
                 count = 0
                 self.old_scores = list(self.cscores)
                 for clock in self.clocks_on:
@@ -658,10 +659,10 @@ class BroderClocks:
         # current: (always) restart according to score order
         ### NEW0: design improvement
         # if is_win or is_start:
-        #	count = 0
-        #	for clock in self.clocks_on: #when start, group close letters together
-        #	    self.cur_hours[clock] = count % self.num_divs_time
-        #	    count += 1
+        #    count = 0
+        #    for clock in self.clocks_on: #when start, group close letters together
+        #        self.cur_hours[clock] = count % self.num_divs_time
+        #        count += 1
         # else:
         count = 0
         for sind in self.sorted_inds:
@@ -685,10 +686,10 @@ class BroderClocks:
         # current: (always) restart according to score order
         ### NEW0: design improvement
         # if is_win or is_start:
-        #	count = 0
-        #	for clock in self.clocks_on: #when start, group close letters together
-        #	    self.cur_hours[clock] = count % self.num_divs_time
-        #	    count += 1
+        #    count = 0
+        #    for clock in self.clocks_on: #when start, group close letters together
+        #        self.cur_hours[clock] = count % self.num_divs_time
+        #        count += 1
         # else:
         count = 0
         for sind in self.sorted_inds:
