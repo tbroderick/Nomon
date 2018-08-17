@@ -203,14 +203,14 @@ def main():
     print "in dtree.py"
 
     # file
-    file_name = kconfig.train_file_name
+    file_name = kconfig.train_file_name_default
     file_handle = open(file_name, 'r')
     # output object
-    out_name = kconfig.train_obj_name
-    out_handle = open(out_name, 'w')
+    #out_name = kconfig.train_obj_name
+    #out_handle = open(out_name, 'w')
 
     # dictionary tree
-    dt = DTree(file_handle)
+    dt = DTree(file_handle, None)
 
     # run some checks
     # li = dt.get_words("",map(chr, range(97, 123)))
@@ -221,7 +221,7 @@ def main():
 
     # close stuff
     file_handle.close()
-    out_handle.close()
+    #out_handle.close()
 
 
 if __name__ == "__main__":

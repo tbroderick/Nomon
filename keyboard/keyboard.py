@@ -47,6 +47,11 @@ class Keyboard(MainWindow):
         self.usenum_file = "data/usenum.pickle"
         self.usenum_handle = PickleUtil(self.usenum_file)
         self.use_num = self.usenum_handle.safe_load()
+        
+        #2 is turn fully on, 1 is turn on but reduce, 0 is turn off
+        self.word_pred_on = 1
+        #Number of word clocks to display in case word prediction == 1 (reduced)
+        self.reduce_display = 3
 
         if self.use_num == None:
             self.use_num = 0
@@ -221,12 +226,18 @@ class Keyboard(MainWindow):
         self.gen_click_time_handle()
         ### animate ###
         self.on_timer()
+        
+        #record to prevent double tap
+        self.last_key_press_time = time.time()
+        self.last_release_time = time.time()
+        
 
         # which ones to try predicting on
         try_pred = []
         for row in range(0, self.N_rows):
             for col in range(0, self.N_keys_row[row]):
                 try_pred = self.key_chars[row][col].isalpha()
+                
 
     # def gen_load_usenum(self):
     #    self.usenum_handle = open(self.usenum_file, 'wb')
@@ -244,8 +255,22 @@ class Keyboard(MainWindow):
         self.parent.after(20, self.find_events)
 
     def keyPressEvent(self, e):
-        if e.key() == QtCore.Qt.Key_Space:
-            self.on_press()
+        if e.key() == QtCore.Qt.Key_Space and not(e.isAutoRepeat()):
+            self.last_key_press_time = time.time()
+            print "pressed at "+ str(self.last_key_press_time)
+            
+    def keyReleaseEvent(self, e):
+        #iself.last_key_press_timetime.time()
+        key = e.key()
+        if key == QtCore.Qt.Key_Space and not(e.isAutoRepeat()) and time.time()-self.last_release_time > 0.25:
+            self.on_press()      
+            #print 'released
+        
+        print "released after " + str(time.time() - self.last_release_time) 
+        
+        self.last_release_time = time.time()
+
+            
 
     def init_locs(self):
         # size of keyboard
@@ -459,6 +484,8 @@ class Keyboard(MainWindow):
         self.bars = bars
         self.mainWidgit.histogram.repaint()
 
+
+
     def init_words(self):
         (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq, self.prefix) = self.dt.get_words(
             self.context, self.keys_li)
@@ -466,8 +493,47 @@ class Keyboard(MainWindow):
         self.word_pair = []
         word = 0
         index = 0
+        windex = 0
         self.words_on = []
         self.words_off = []
+        self.word_list = []
+        #self.flag_args = []
+        
+        #if word prediction on but reduced
+        if self.word_pred_on == 1:
+            flat_freq_list =  numpy.array([freq for sublist in self.word_freq_li for freq in sublist])
+            if len(flat_freq_list) >= self.reduce_display:
+                #replacement_count = 0
+                for arg in flat_freq_list.argsort()[-self.reduce_display:]:
+                    word_to_add = self.words_li[(arg /3)][arg%3]
+# =============================================================================
+#                     while len(word_to_add) == 1:
+#                         replacement_count +=1
+#                         new_arg = flat_freq_list.argsort()[-self.reduce_display-replacement_count]
+#                         word_to_add = self.words_li[(new_arg /3)][new_arg%3]
+# =============================================================================
+                    if word_to_add != '':
+                        self.word_list.append(word_to_add)
+                    
+                    
+            else:
+                temp_word_list = [word_item for sublist in self.words_li for word_item in sublist]
+                for word_item in temp_word_list:
+                    if word_item != '':
+                        self.word_list.append(word_item)
+                    
+        
+        #if word prediction completely on 
+        elif self.word_pred_on == 2:
+            temp_word_list = [word_item for sublist in self.words_li for word_item in sublist]
+            for word_item in temp_word_list:
+                if word_item != '':
+                    self.word_list.append(word_item)
+                
+            #print "TURNED ON AND WORD LIST IS" + str(self.word_list)
+        
+        
+        
         len_con = len(self.context)
         for key in range(0, self.N_alpha_keys):
             for pred in range(0, kconfig.N_pred):
@@ -479,7 +545,21 @@ class Keyboard(MainWindow):
                 if word_str == '':
                     self.words_off.append(index)
                 else:
-                    self.words_on.append(index)
+                    #turn word prediciton off
+                    if self.word_pred_on == 0:
+                        self.words_off.append(index)
+                    #word prediction completely on
+                    elif self.word_pred_on == 2:
+                        self.words_on.append(index)
+                    #word prediction turned on but reduced
+                    #rank words frequency and display only three
+                    else:
+                        if windex in flat_freq_list.argsort()[-self.reduce_display:]:
+                            self.words_on.append(index)
+                        else:
+                            self.words_off.append(index)
+                
+                windex +=1
                 word += 1
                 index += 1
             self.words_on.append(index)
@@ -495,20 +575,26 @@ class Keyboard(MainWindow):
             self.word_pair.append((key,))
             index += 1
         # Send words to MainKeyboardWidget
-        words = []
-        for letter_group in self.words_li:
-            for word in letter_group:
-                if word != '':
-                    words += [word]
-        self.word_list = words
+# =============================================================================
+#         words = []
+#         count = 0
+#         for letter_group in self.words_li:
+#             for word in letter_group:
+#                 if word != '':
+#                     words += [word]
+# =============================================================================
+        #temp
+        #self.word_list = [self.key_chars[row][col]]
         self.typed_versions = ['']
 
-        # print "THe self.words_on are " + str(self.words_on)
-        # print "Self.word list is " + str(self.word_list)
+        #print "self.word_pair is" + str(self.word_pair)
+
+    
 
     def raise_words(self):
         pass
-
+    
+            
     def draw_words(self):
         (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq, self.prefix) = self.dt.get_words(
             self.context, self.keys_li)
@@ -516,7 +602,33 @@ class Keyboard(MainWindow):
         index = 0
         self.words_on = []
         self.words_off = []
+        self.word_list = []
+        
+        #if word prediction on but reduced
+        if self.word_pred_on == 1:
+            flat_freq_list =  numpy.array([freq for sublist in self.word_freq_li for freq in sublist])
+            if len(flat_freq_list) >= self.reduce_display:
+                for arg in flat_freq_list.argsort()[-self.reduce_display:]:
+                    word_to_add = self.words_li[(arg /3)][arg%3]
+                    self.word_list.append(word_to_add)
+                    if word_to_add != '':
+                        self.word_list.append(word_to_add)
+            else:
+                temp_word_list = [word_item for sublist in self.words_li for word_item in sublist]
+                for word_item in temp_word_list:
+                    if word_item != '':
+                        self.word_list.append(word_item)
+        
+        #if word prediction completely on 
+        elif self.word_pred_on == 2:
+            temp_word_list = [word_item for sublist in self.words_li for word_item in sublist]
+            for word_item in temp_word_list:
+                if word_item != '':
+                    self.word_list.append(word_item)
+        
         len_con = len(self.context)
+        
+        windex = 0
         for key in range(0, self.N_alpha_keys):
             key_char = self.keys_li[key]
             for pred in range(0, kconfig.N_pred):
@@ -527,7 +639,22 @@ class Keyboard(MainWindow):
                 if word_str == '':
                     self.words_off.append(index)
                 else:
-                    self.words_on.append(index)
+                    #turn word prediciton off
+                    if self.word_pred_on == 0:
+                        self.words_off.append(index)
+                    #word prediction completely on
+                    elif self.word_pred_on == 2:
+                        self.words_on.append(index)
+                    #word prediction turned on but reduced
+                    #rank words frequency and display only three
+                    else:
+                        if windex in flat_freq_list.argsort()[-self.reduce_display:]:
+                            self.words_on.append(index)
+                        else:
+                            self.words_off.append(index)
+     
+                    
+                windex +=1
                 word += 1
                 index += 1
             self.words_on.append(index)
@@ -544,14 +671,30 @@ class Keyboard(MainWindow):
             self.word_pair.append((key,))
             index += 1
         # Send words to MainKeyboardWidget
-        words = []
-        for letter_group in self.words_li:
-            for word in letter_group:
-                if word != '':
-                    words += [word]
-
-        self.word_list = words
+# =============================================================================
+#         words = []
+#         for letter_group in self.words_li:
+#             for word in letter_group:
+#                 if word != '':
+#                     words += [word]
+# 
+#         self.word_list = self.words
+# =============================================================================
+# =============================================================================
+#         for ind in self.words_on:
+#             if ind < 25:
+#                 row_ind, col_ind = int(ind /5 ), ind%5
+#                 word = kconfig.key_chars[row_ind][col_ind]
+#             else:
+#                 row_ind, col_ind = 5, ind%5
+#                 word = kconfig.key_chars[row_ind][col_ind]
+#             self.word_list.append(word)
+# =============================================================================
         self.mainWidgit.updateClocks()
+        
+        #print "self.word_pair is" + str(self.word_pair)
+        
+   
 
     def gen_word_prior(self, is_undo):
         self.word_score_prior = []

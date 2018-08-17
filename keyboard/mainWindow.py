@@ -605,6 +605,7 @@ class MainKeyboardWidget(QtGui.QWidget):
         output = []
         for word in self.parent.word_list:
             index = len(self.parent.prefix)
+            
             if word[index] == char:
                 i += 1
                 if i > 3:
@@ -618,6 +619,7 @@ class MainKeyboardWidget(QtGui.QWidget):
             for text in row:
                 clock = ClockWidgit(text, self)
                 words = self.getWords(clock.text.lower())
+                
                 word_clocks = ['' for i in range(kconfig.N_pred)]
                 i = 0
                 for word in words:
