@@ -303,7 +303,7 @@ class ClockWidgit(QtGui.QWidget):
             else:
                 width = self.w*0.7
 
-            size_factor = float(text_width)/float(width)
+            size_factor = float(text_width)/(float(width)+0.1)
 
             if size_factor > 1:
                 if size_factor < 1.3:
@@ -318,8 +318,8 @@ class ClockWidgit(QtGui.QWidget):
                     label.setFont(self.text_font)
                     text_width = label.fontMetrics().boundingRect(label.text()).width()
 
-                    size_factor = float(text_width) / float(width)
-                    self.text_font.setPixelSize(int(float(self.h)/size_factor))
+                    size_factor = float(text_width) / (float(width)+0.1)
+                    self.text_font.setPixelSize(max(1, int(float(self.h)/size_factor)))
 
                     label = QtGui.QLabel(self.text)
                     label.setFont(self.text_font)

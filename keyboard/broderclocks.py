@@ -466,20 +466,21 @@ class BroderClocks:
 
         # update records
         if not self.parent.pretrain:
-            draw_time = time.time()
-            for clock in self.clocks_on:
-                # update time indices
-                self.cur_hours[clock] = (self.cur_hours[clock] + 1) % self.num_divs_time
-                # register in coordinates of hour hand
-                v = self.hl.hour_locs[self.cur_hours[clock]]
-                angle = math.atan2(v[1], v[0])
+            if self.parent.mainWidgit.clocks != []:
+                draw_time = time.time()
+                for clock in self.clocks_on:
+                    # update time indices
+                    self.cur_hours[clock] = (self.cur_hours[clock] + 1) % self.num_divs_time
+                    # register in coordinates of hour hand
+                    v = self.hl.hour_locs[self.cur_hours[clock]]
+                    angle = math.atan2(v[1], v[0])
 
-                self.parent.mainWidgit.clocks[clock].angle = angle + math.pi*0.5
-                self.parent.mainWidgit.clocks[clock].repaint()
-            draw_time = (time.time()-draw_time)
-            self.draw_times+draw_time
-            # if len(self.draw_times) == self.draw_times.max_size:
-            #     print(sum(self.draw_times) / len(self.draw_times))
+                    self.parent.mainWidgit.clocks[clock].angle = angle + math.pi*0.5
+                    self.parent.mainWidgit.clocks[clock].repaint()
+                draw_time = (time.time()-draw_time)
+                self.draw_times+draw_time
+                # if len(self.draw_times) == self.draw_times.max_size:
+                #     print(sum(self.draw_times) / len(self.draw_times))
 
 
         # refresh the canvas
