@@ -266,11 +266,12 @@ class Keyboard(MainWindow):
         key = e.key()
         if key == QtCore.Qt.Key_Space and not(e.isAutoRepeat()) and time.time()-self.last_release_time > 0.25:
             self.on_press()      
+            self.last_release_time = time.time()
+
             #print 'released
 
         print ("released after " + str(time.time() - self.last_release_time))
 
-        self.last_release_time = time.time()
 
             
 
