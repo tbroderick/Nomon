@@ -26,35 +26,33 @@ import pickle
 ### Keyboard setup ###
 # characters in the keys
 space_char = '_'
-mybad_char = 'Undo'
+mybad_char = '@'
 # yourbad_char = 'Yours'
 yourbad_char = 'Undo+'
-break_chars = [['.', ',', '?'], '\'']
-back_char = 'Backspace'
-clear_char = 'Clear'
+break_chars = ['.', ',', '?', '\'']
+back_char = '#'
+clear_char = '$'
 
 # word length to display in completions
 max_chars_display = 11
 ## alphabetic
 # always put alpha-numeric keys first (self.N_alpha_keys)
 
-alpha_key_chars = [['a', 'b', 'c', 'd', 'e'],
-                   ['f', 'g', 'h', 'i', 'j'],
-                   ['k', 'l', 'm', 'n', 'o',],
-                   ['p', 'q', 'r', 's', 't'],
-                   ['u', 'v', 'w', 'x', 'y'],
-                   ['z', space_char, break_chars[1], break_chars[0][0], break_chars[0][1], break_chars[0][2], back_char, clear_char, mybad_char]
-
-                   ]
-
-key_chars = alpha_key_chars
+key_chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+                   'u', 'v', 'w', 'x', 'y', 'z', space_char, break_chars[3], break_chars[0], break_chars[1],
+                   break_chars[2], back_char, clear_char, mybad_char]
+alpha_target_layout = [['a', 'b', 'c', 'd', 'e'],
+                 ['f', 'g', 'h', 'i', 'j'],
+                 ['k', 'l', 'm', 'n', 'o'],
+                 ['p', 'q', 'r', 's', 't'],
+                 ['u', 'v', 'w', 'x', 'y'],
+                 ['z', 'BREAKUNIT', space_char, 'BACKUNIT', 'UNDOUNIT']]
 
 ## qwerty
-qwerty_key_chars = [['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
-                    ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
-                    ['z', 'x', 'c', 'v', 'b', 'n', 'm', space_char, break_chars[1], break_chars[0][1], break_chars[0][0], break_chars[0][2]],
-                    [back_char, clear_char, mybad_char]
-                    ]
+qwerty_target_layout = [['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+                    ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', break_chars[3]],
+                    ['z', 'x', 'c', 'v', 'b', 'n', 'm', break_chars[0], break_chars[1], break_chars[2]],
+                    [ back_char, space_char, clear_char, 'UNDOUNIT']]
 # get gaussian distribution
 bars = [4.1731209137640166e-11, 1.5674042704727563e-10, 5.702330790217924e-10, 2.009440319647259e-09,
         6.858815826469396e-09, 2.2676420114286876e-08, 7.261915168381362e-08, 2.2525745454100865e-07,
