@@ -18,6 +18,7 @@
 #    along with Nomon Keyboard.  If not, see <http://www.gnu.org/licenses/>.
 ######################################
 
+from __future__ import print_function
 import broderclocks
 import dtree
 import time
@@ -49,9 +50,9 @@ class Keyboard(MainWindow):
         self.use_num = self.usenum_handle.safe_load()
         
         #2 is turn fully on, 1 is turn on but reduce, 0 is turn off
-        self.word_pred_on = 1
+        self.word_pred_on = 2
         #Number of word clocks to display in case word prediction == 1 (reduced)
-        self.reduce_display = 3
+        self.reduce_display = 5
 
         if self.use_num == None:
             self.use_num = 0
@@ -64,9 +65,10 @@ class Keyboard(MainWindow):
         self.up_handel = PickleUtil("user_preferences/user_preferences.p")
         self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference, self.start_speed, self.is_write_data = self.up_handel.safe_load()
         if self.layout_preference == 'alpha':
-            self.key_chars = kconfig.alpha_key_chars
+            self.target_layout = kconfig.alpha_target_layout
         elif self.layout_preference == 'qwerty':
-            self.key_chars = kconfig.qwerty_key_chars
+            self.target_layout = kconfig.qwerty_target_layout
+        self.key_chars = kconfig.key_chars
 
         if self.pf_preference == 'off':
             self.train_file_name = kconfig.train_file_name_default
@@ -257,7 +259,7 @@ class Keyboard(MainWindow):
     def keyPressEvent(self, e):
         if e.key() == QtCore.Qt.Key_Space and not(e.isAutoRepeat()):
             self.last_key_press_time = time.time()
-            print "pressed at "+ str(self.last_key_press_time)
+            print("pressed at " + str(self.last_key_press_time))
             
     def keyReleaseEvent(self, e):
         #iself.last_key_press_timetime.time()
@@ -265,9 +267,9 @@ class Keyboard(MainWindow):
         if key == QtCore.Qt.Key_Space and not(e.isAutoRepeat()) and time.time()-self.last_release_time > 0.25:
             self.on_press()      
             #print 'released
-        
-        print "released after " + str(time.time() - self.last_release_time) 
-        
+
+        print ("released after " + str(time.time() - self.last_release_time))
+
         self.last_release_time = time.time()
 
             
@@ -501,7 +503,7 @@ class Keyboard(MainWindow):
         
         #if word prediction on but reduced
         if self.word_pred_on == 1:
-            flat_freq_list =  numpy.array([freq for sublist in self.word_freq_li for freq in sublist])
+            flat_freq_list = numpy.array([freq for sublist in self.word_freq_li for freq in sublist])
             if len(flat_freq_list) >= self.reduce_display:
                 #replacement_count = 0
                 for arg in flat_freq_list.argsort()[-self.reduce_display:]:
@@ -513,7 +515,8 @@ class Keyboard(MainWindow):
 #                         word_to_add = self.words_li[(new_arg /3)][new_arg%3]
 # =============================================================================
                     if word_to_add != '':
-                        self.word_list.append(word_to_add)
+                        if word_to_add not in self.word_list:
+                            self.word_list.append(word_to_add)
                     
                     
             else:
@@ -606,11 +609,10 @@ class Keyboard(MainWindow):
         
         #if word prediction on but reduced
         if self.word_pred_on == 1:
-            flat_freq_list =  numpy.array([freq for sublist in self.word_freq_li for freq in sublist])
+            flat_freq_list = numpy.array([freq for sublist in self.word_freq_li for freq in sublist])
             if len(flat_freq_list) >= self.reduce_display:
                 for arg in flat_freq_list.argsort()[-self.reduce_display:]:
                     word_to_add = self.words_li[(arg /3)][arg%3]
-                    self.word_list.append(word_to_add)
                     if word_to_add != '':
                         self.word_list.append(word_to_add)
             else:
@@ -618,7 +620,7 @@ class Keyboard(MainWindow):
                 for word_item in temp_word_list:
                     if word_item != '':
                         self.word_list.append(word_item)
-        
+            self.word_list.reverse()
         #if word prediction completely on 
         elif self.word_pred_on == 2:
             temp_word_list = [word_item for sublist in self.words_li for word_item in sublist]
@@ -760,7 +762,7 @@ class Keyboard(MainWindow):
 
         index = self.previous_winner
         if self.mainWidgit.clocks[index] != '':
-            if self.mainWidgit.clocks[index].text == kconfig.mybad_char:
+            if self.mainWidgit.clocks[index].text in [kconfig.mybad_char, 'Undo']:
                 undo = True
                 delete = False
         if self.typed_versions[-1] == '' and len(self.typed_versions) > 1:
