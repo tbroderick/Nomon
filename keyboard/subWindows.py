@@ -102,8 +102,7 @@ class StartWindow(QtGui.QMainWindow):
 # =============================================================================
                     if time.time()-self.last_release_time > 0.25:
                         self.on_press()
-                
-                self.last_release_time = time.time()
+                        self.last_release_time = time.time()
 
 
 class SplashScreen(QtGui.QWidget):
