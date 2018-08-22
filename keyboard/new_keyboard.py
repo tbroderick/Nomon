@@ -18,7 +18,6 @@
 #    along with Nomon Keyboard.  If not, see <http://www.gnu.org/licenses/>.
 ######################################
 
-<<<<<<< HEAD:keyboard/new_keyboard.py
 import dtree
 import time
 import numpy
@@ -35,21 +34,6 @@ import sys,os
 from new_broderclocks import *
 import config, kconfig
 
-=======
-import broderclocks
-import dtree
-import time
-import numpy
-import config
-
-import cPickle, pickle
-from mainWindow import *
-from subWindows import *
-import os
-
-sys.path.insert(0, os.path.realpath('../tests'))
-from pickle_util import *
->>>>>>> master:keyboard/keyboard.py
 
 if kconfig.target_evt == kconfig.joy_evt:
     import pygame
@@ -58,7 +42,6 @@ if kconfig.target_evt == kconfig.joy_evt:
 class Keyboard(MainWindow):
 
     def __init__(self, screen_res, app):
-<<<<<<< HEAD:keyboard/new_keyboard.py
         super(Keyboard, self).__init__(screen_res)
 
         self.app = app
@@ -73,66 +56,6 @@ class Keyboard(MainWindow):
 
         prop_width = kconfig.base_window_width
         prop_height = kconfig.base_window_height
-=======
-
-        super(Keyboard, self).__init__(screen_res)
-
-        self.app = app
-
-        self.usenum_file = "data/usenum.pickle"
-        self.usenum_handle = PickleUtil(self.usenum_file)
-        self.use_num = self.usenum_handle.safe_load()
-
-        if self.use_num == None:
-            self.use_num = 0
-
-        # print "use_num is " + str(self.use_num)
-        self.user_id = 0
-        use_num = self.use_num
-        user_id = self.user_id
-
-        self.up_handel = PickleUtil("user_preferences/user_preferences.p")
-        self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference, self.start_speed, self.is_write_data = self.up_handel.safe_load()
-        if self.layout_preference == 'alpha':
-            self.key_chars = kconfig.alpha_key_chars
-        elif self.layout_preference == 'qwerty':
-            self.key_chars = kconfig.qwerty_key_chars
-
-        if self.pf_preference == 'off':
-            self.train_file_name = kconfig.train_file_name_default
-        elif self.pf_preference == 'on':
-            self.train_file_name = kconfig.train_file_name_censored
-
-
-        # This block of codes is not working
-        # check that number of arguments is valid
-        # =============================================================================
-        #         if len(sys.argv) < 3:  # replaced with a default 0 0
-        #             print "Error: Too few (" + str(len(sys.argv)-1) + " < 2) arguments"
-
-        #             # print "Usage: python keyboard.py user-id use-number proposed-window-width proposed-window-height"
-        #             # sys.exit() #replaced quit() with this
-        #             # quit()
-        #             user_id = 0
-        #             use_num = 0
-        #         # read arguments
-        #         else:
-        #             user_id = string.atoi(sys.argv[1])
-        #             use_num = string.atoi(sys.argv[2])
-        #         self.user_id = user_id
-        #         self.use_num = use_num
-        # =============================================================================
-        # read extra arguments if they're there
-        if len(sys.argv) > 3:
-            # print "this actually can happen"
-            prop_width = string.atoi(sys.argv[4])
-        else:
-            prop_width = kconfig.base_window_width
-        if len(sys.argv) > 4:
-            prop_height = string.atoi(sys.argv[3])
-        else:
-            prop_height = kconfig.base_window_height
->>>>>>> master:keyboard/keyboard.py
         self.set_sizes(prop_height, prop_width)
 
         ### initialize ###
@@ -141,11 +64,7 @@ class Keyboard(MainWindow):
             pygame.init()
             if pygame.joystick.get_count() < 1:
                 # no joysticks found
-<<<<<<< HEAD:keyboard/new_keyboard.py
                 print "Please connect a joystick.\n"
-=======
-                # print "Please connect a joystick.\n"
->>>>>>> master:keyboard/keyboard.py
                 self.quit(None)
             else:
                 # create a new joystick object from
@@ -161,32 +80,12 @@ class Keyboard(MainWindow):
         ## determine keyboard positions
         self.init_locs()
         ## get old data if there is such
-<<<<<<< HEAD:keyboard/new_keyboard.py
         #Just for default. Loaded again when bc initalizes
         self.rotate_index = config.default_rotate_ind
-=======
-        ####Need to see if this line works 
-        if self.use_num > 0:
-            # input file (if such exists) for histogram
-            dump_file_in = kconfig.dump_pre + "clocks." + str(self.user_id) + "." + str(
-                self.use_num - 1) + kconfig.dump_suff
-            if not os.path.exists(os.path.dirname(dump_file_in)):
-                os.makedirs(os.path.dirname(dump_file_in))
-            dump_pickle = PickleUtil(dump_file_in)
-            in_data = dump_pickle.safe_load()
-
-            # period
-            self.rotate_index = in_data[0]
-            prev_data = in_data[1]
-        else:
-            self.rotate_index = config.default_rotate_ind
-            prev_data = []
->>>>>>> master:keyboard/keyboard.py
         ## set up file handle for printing useful stuff
         self.undefined = False
 
         if config.is_write_data:
-<<<<<<< HEAD:keyboard/new_keyboard.py
             self.params_handle_dict= {'speed': [], 'params': [], 'start': [], 'press': [], 'choice':[]}  
             self.num_presses = 0
 
@@ -195,25 +94,12 @@ class Keyboard(MainWindow):
         else:
             #self.params_handle = None
             pass
-=======
-            self.gen_handle()
-            self.num_presses = 0
-
-            self.file_handle_dict['params'].append([config.period_li[config.default_rotate_ind], config.theta0])
-            self.file_handle_dict['start'].append(time.time())
-        else:
-            self.file_handle = None
->>>>>>> master:keyboard/keyboard.py
         ## set up canvas for displaying stuff
         # self.gen_canvas()
         self.gen_scale()
         # self.gen_button_frame()
         # self.toggle_pause_button()
         self.pause_set = True
-<<<<<<< HEAD:keyboard/new_keyboard.py
-=======
-        self.sound_set = True
->>>>>>> master:keyboard/keyboard.py
         # self.gen_learn_button()
         # self.toggle_pause_button()
         ## set up "typed" text
@@ -224,7 +110,6 @@ class Keyboard(MainWindow):
         self.last_add_li = [0]
         ## set up "talked" text
         self.talk_file = "talk.txt"
-<<<<<<< HEAD:keyboard/new_keyboard.py
         ## set up dictionary tree
         
             
@@ -240,38 +125,11 @@ class Keyboard(MainWindow):
         self.bars = kconfig.bars
         self.previous_undo_text = ''
         self.previous_winner=0
-=======
-
-        self.pause_animation = False
-        ## set up dictionary tree
-        train_handle = open(self.train_file_name, 'r')
-        self.dt = dtree.DTree(train_handle, self)
-        train_handle.close()
-        # check for speech
-        talk_fid = open(self.talk_file, 'w')
-        ##	talk_fid.write(".. Festival is ready ?")
-        ##	talk_fid.close()
-        ##	out = os.system("/usr/bin/festival --tts talk.txt")
-        ##	if out == 32512:
-        ##		self.has_festival = False
-        ##	else:
-        ##		self.has_festival = True
-        # write keys
-        # self.init_keys()
-        # write words
-        self.init_words()
-
-        self.bc_init = False
-        self.bars = kconfig.bars
-        self.previous_undo_text = ''
-        self.previous_winner = 0
->>>>>>> master:keyboard/keyboard.py
         self.wpm_data = config.Stack(config.wpm_history_length)
         self.wpm_time = 0
         self.clear_text = False
         self.pretrain = False
 
-<<<<<<< HEAD:keyboard/new_keyboard.py
         self.initUI()
 
         ## set up broderclocks
@@ -295,25 +153,6 @@ class Keyboard(MainWindow):
         
         self.bc = New_BroderClocks(self)
         self.bc.init_follow_up(self.word_score_prior)   
-=======
-        self.first_load_handel = PickleUtil("user_preferences/first_load.p")
-        self.first_load = self.first_load_handel.safe_load()
-
-        if self.first_load:
-            self.pretrain = True
-        self.initUI()
-
-        ## set up broderclocks
-        self.time_rotate = config.period_li[self.start_speed]
-        self.bc = broderclocks.BroderClocks(self, self.clock_centers, self.win_diffs, kconfig.clock_rad,
-                                            self.words_on, self.words_off, kconfig.key_color,
-                                            time.time(), use_num, user_id, self.time_rotate, prev_data)
-        self.mainWidgit.changeValue(self.start_speed)
-        self.wait_s = self.bc.get_wait()
-        # get language model results
-        self.gen_word_prior(False)
-        self.bc.init_follow_up(self.word_score_prior)
->>>>>>> master:keyboard/keyboard.py
         # write key text
         self.init_key_text()
         # draw histogram
@@ -321,26 +160,12 @@ class Keyboard(MainWindow):
         # bring word text to the front
         self.raise_words()
 
-<<<<<<< HEAD:keyboard/new_keyboard.py
         
         self.consent = True
         ### animate ###
         self.on_timer()
 
     #def gen_load_usenum(self):
-=======
-        self.gen_click_time_handle()
-        ### animate ###
-        self.on_timer()
-
-        # which ones to try predicting on
-        try_pred = []
-        for row in range(0, self.N_rows):
-            for col in range(0, self.N_keys_row[row]):
-                try_pred = self.key_chars[row][col].isalpha()
-
-    # def gen_load_usenum(self):
->>>>>>> master:keyboard/keyboard.py
     #    self.usenum_handle = open(self.usenum_file, 'wb')
 
     def find_events(self):
@@ -352,10 +177,7 @@ class Keyboard(MainWindow):
                 # generate the event I've defined
                 self.canvas.event_generate(kconfig.joy_evt)
 
-<<<<<<< HEAD:keyboard/new_keyboard.py
 
-=======
->>>>>>> master:keyboard/keyboard.py
         ## return to check for more events in a moment
         self.parent.after(20, self.find_events)
 
@@ -365,16 +187,11 @@ class Keyboard(MainWindow):
 
     def init_locs(self):
         # size of keyboard
-<<<<<<< HEAD:keyboard/new_keyboard.py
         self.N_rows = len(kconfig.key_chars)
-=======
-        self.N_rows = len(self.key_chars)
->>>>>>> master:keyboard/keyboard.py
         self.N_keys_row = []
         self.N_keys = 0
         self.N_alpha_keys = 0
         for row in range(0, self.N_rows):
-<<<<<<< HEAD:keyboard/new_keyboard.py
             n_keys = len(kconfig.key_chars[row])
             for col in range(0, n_keys):
                 if isinstance(kconfig.key_chars[row][col], list):
@@ -385,34 +202,14 @@ class Keyboard(MainWindow):
                     elif kconfig.key_chars[row][col] == kconfig.space_char and (len(kconfig.key_chars[row][col]) == 1):
                         self.N_alpha_keys = self.N_alpha_keys + 1
                     elif kconfig.key_chars[row][col] == kconfig.break_chars[1] and (len(kconfig.key_chars[row][col]) == 1):
-=======
-            n_keys = len(self.key_chars[row])
-            for col in range(0, n_keys):
-                if isinstance(self.key_chars[row][col], list):
-                    pass
-                else:
-                    if self.key_chars[row][col].isalpha() and (len(self.key_chars[row][col]) == 1):
-                        self.N_alpha_keys = self.N_alpha_keys + 1
-                    elif self.key_chars[row][col] == kconfig.space_char and (len(self.key_chars[row][col]) == 1):
-                        self.N_alpha_keys = self.N_alpha_keys + 1
-                    elif self.key_chars[row][col] == kconfig.break_chars[1] and (
-                            len(self.key_chars[row][col]) == 1):
->>>>>>> master:keyboard/keyboard.py
                         self.N_alpha_keys = self.N_alpha_keys + 1
 
             self.N_keys_row.append(n_keys)
             self.N_keys += n_keys
-<<<<<<< HEAD:keyboard/new_keyboard.py
         
         print "NKEYS is " + str(self.N_keys)
         print "And N_alpha_keys is " + str(self.N_alpha_keys)
         
-=======
-
-        # print "NKEYS is " + str(self.N_keys)
-        # print "And N_alpha_keys is " + str(self.N_alpha_keys)
-
->>>>>>> master:keyboard/keyboard.py
         # width difference when include letter
         word_clock_offset = 7 * kconfig.clock_rad
         rect_offset = word_clock_offset - kconfig.clock_rad
@@ -450,11 +247,7 @@ class Keyboard(MainWindow):
                 self.word_locs.append([x + word_offset, y + 3 * kconfig.clock_rad])
                 self.word_locs.append([x + word_offset, y + 5 * kconfig.clock_rad])
                 # rectangles
-<<<<<<< HEAD:keyboard/new_keyboard.py
-                self.rect_locs.append([x + rect_offset, y	 ,x +rect_end , y + 2* kconfig.clock_rad])
-=======
-                self.rect_locs.append([x + rect_offset, y, x + rect_end, y + 2 * kconfig.clock_rad])
->>>>>>> master:keyboard/keyboard.py
+                self.rect_locs.append([x + rect_offset, y    ,x +rect_end , y + 2* kconfig.clock_rad])
                 self.rect_locs.append(
                     [x + rect_offset, y + 2 * kconfig.clock_rad, x + rect_end, y + 4 * kconfig.clock_rad])
                 self.rect_locs.append(
@@ -468,13 +261,8 @@ class Keyboard(MainWindow):
 
                 ## key character
                 # reference to index of key character
-<<<<<<< HEAD:keyboard/new_keyboard.py
                 key_char = kconfig.key_chars[row][col]
                 self.keys_li.append(kconfig.key_chars[row][col])
-=======
-                key_char = self.key_chars[row][col]
-                self.keys_li.append(self.key_chars[row][col])
->>>>>>> master:keyboard/keyboard.py
                 self.keys_ref.append(index)
                 self.index_to_wk.append(key)
                 # key character position
@@ -504,7 +292,6 @@ class Keyboard(MainWindow):
 
     def gen_handle(self):
         # file handle
-<<<<<<< HEAD:keyboard/new_keyboard.py
         #data_file = kconfig.file_pre + str(self.user_id) + "." + str(self.use_num) + kconfig.file_stuff
         #self.params_handle = PickleUtil(data_file)
         self.params_handle_dict= {'speed': [], 'params': [], 'start': [], 'press': [], 'choice':[]}       
@@ -514,33 +301,10 @@ class Keyboard(MainWindow):
         tick_int = int((len(config.period_li) - 1) * kconfig.word_pt * 3 / (1.0 * scale_length)) + 1
         self.time_rotate = config.period_li[self.rotate_index]
         
-=======
-        data_file = kconfig.file_pre + str(self.user_id) + "." + str(self.use_num) + kconfig.file_stuff
-        self.file_handle = PickleUtil(data_file)
-        self.file_handle_dict = {'speed': [], 'params': [], 'start': [], 'press': [], 'choice': []}
-
-    # Pickle file to save click time
-    def gen_click_time_handle(self):
-        click_data_file = "data/click_time_log" + str(self.user_id) + "." + str(self.use_num) + ".pickle"
-        self.click_handle = PickleUtil(click_data_file)
-
-    def gen_scale(self):
-        scale_length = self.w_canvas / 2  # (len(self.key_chars[0])-1)*kconfig.word_w
-        tick_int = int((len(config.period_li) - 1) * kconfig.word_pt * 3 / (1.0 * scale_length)) + 1
-        self.time_rotate = config.period_li[self.rotate_index]
-
->>>>>>> master:keyboard/keyboard.py
     def toggle_pause_button(self, value):
         self.pause_set = value
         self.mainWidgit.sldLabel.setFocus()
 
-<<<<<<< HEAD:keyboard/new_keyboard.py
-=======
-    def toggle_sound_button(self, value):
-        self.sound_set = value
-        self.mainWidgit.sldLabel.setFocus()
-
->>>>>>> master:keyboard/keyboard.py
     def toggle_talk_button(self, value):
         self.talk_set = value
         self.mainWidgit.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
@@ -556,18 +320,10 @@ class Keyboard(MainWindow):
         self.rotate_index = config.scale_max - speed_index + 1
         old_rotate = self.time_rotate
         self.time_rotate = config.period_li[self.rotate_index]
-<<<<<<< HEAD:keyboard/new_keyboard.py
         self.bc.clock_inf.clockutil.change_period(self.time_rotate)
 
         # note period change in log file
         self.params_handle_dict['speed'].append([time.time(), old_rotate, self.time_rotate])
-=======
-        self.bc.change_period(self.time_rotate)
-        self.wait_s = self.bc.get_wait()
-
-        # note period change in log file
-        self.file_handle_dict['speed'].append([time.time(), old_rotate, self.time_rotate])
->>>>>>> master:keyboard/keyboard.py
 
         # update the histogram
         self.draw_histogram()
@@ -589,16 +345,6 @@ class Keyboard(MainWindow):
         kconfig.word_font = ("Helvetica", kconfig.word_pt)
         kconfig.type_font = ("Helvetica", kconfig.type_pt)
 
-<<<<<<< HEAD:keyboard/new_keyboard.py
-=======
-    def inc_speed(self, evt):
-        index = self.scale.get()
-        self.scale.set(min(config.scale_max, index + 1))
-
-    def dec_speed(self, evt):
-        index = self.scale.get()
-        self.scale.set(max(config.scale_min, index - 1))
->>>>>>> master:keyboard/keyboard.py
 
     def init_keys(self):
         for key in range(0, self.N_keys):
@@ -676,23 +422,14 @@ class Keyboard(MainWindow):
                     words += [word]
         self.word_list = words
         self.typed_versions = ['']
-<<<<<<< HEAD:keyboard/new_keyboard.py
         
         print "THe self.words_on are " + str(self.words_on)
         print "Self.word list is " + str(self.word_list)
-=======
-
-        # print "THe self.words_on are " + str(self.words_on)
-        # print "Self.word list is " + str(self.word_list)
->>>>>>> master:keyboard/keyboard.py
 
     def raise_words(self):
         pass
 
-<<<<<<< HEAD:keyboard/new_keyboard.py
 
-=======
->>>>>>> master:keyboard/keyboard.py
     def draw_words(self):
         (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq, self.prefix) = self.dt.get_words(
             self.context, self.keys_li)
@@ -799,10 +536,7 @@ class Keyboard(MainWindow):
             undo_text = new_text
             last_add = 0
 
-<<<<<<< HEAD:keyboard/new_keyboard.py
 
-=======
->>>>>>> master:keyboard/keyboard.py
         index = self.previous_winner
         if self.mainWidgit.clocks[index] != '':
             if self.mainWidgit.clocks[index].text == kconfig.mybad_char:
@@ -827,7 +561,6 @@ class Keyboard(MainWindow):
                 self.typed_versions = self.typed_versions[:-1]
                 self.mainWidgit.text_box.setText("<span style='color:#000000;'>" + self.typed_versions[-1] + "</span>")
         else:
-<<<<<<< HEAD:keyboard/new_keyboard.py
             self.typed_versions += [previous_text+new_text]
             self.mainWidgit.text_box.setText("<span style='color:#000000;'>"+previous_text+"</span><span style='color:#00dd00;'>"+new_text+"</span>")
         self.previous_undo_text = undo_text
@@ -840,30 +573,12 @@ class Keyboard(MainWindow):
             self.wpm_data+time_diff
             self.wpm_time = 0
             self.mainWidgit.wpm_label.setText("Selections/Min: "+str(round(self.wpm_data.average(), 2)))
-=======
-            self.typed_versions += [previous_text + new_text]
-            self.mainWidgit.text_box.setText(
-                "<span style='color:#000000;'>" + previous_text + "</span><span style='color:#00dd00;'>" + new_text + "</span>")
-        self.previous_undo_text = undo_text
-        self.mainWidgit.undo_label.setText("<font color='green'>" + undo_text + "</font>")
-
-    def wpm_update(self):
-        time_diff = (time.time() - self.wpm_time)
-        if time_diff < 15. * 10 / self.time_rotate:
-            self.wpm_data + time_diff
-            self.wpm_time = 0
-            self.mainWidgit.wpm_label.setText("Selections/Min: " + str(round(self.wpm_data.average(), 2)))
->>>>>>> master:keyboard/keyboard.py
 
     def on_pause(self):
 
         self.mainWidgit.pause_timer.start(kconfig.pause_length)
         self.in_pause = True
-<<<<<<< HEAD:keyboard/new_keyboard.py
         self.setStyleSheet("background-color:"+config.bg_color_highlt+";")
-=======
-        self.setStyleSheet("background-color:" + config.bg_color_highlt + ";")
->>>>>>> master:keyboard/keyboard.py
         self.mainWidgit.text_box.setStyleSheet("background-color:#ffffff;")
 
     def end_pause(self):
@@ -874,24 +589,15 @@ class Keyboard(MainWindow):
 
     def on_timer(self):
         if self.wpm_time != 0:
-<<<<<<< HEAD:keyboard/new_keyboard.py
             if time.time()-self.wpm_time > 15:  # reset wrd prior and click history after inactivity
                 self.wpm_time = 0
                 self.bc.clock_inf.clock_history = [[]]
                 self.bc.is_undo = True
                 self.bc.init_round(True, False, self.bc.clock_inf.prev_cscores)
-=======
-            if time.time() - self.wpm_time > 15:  # reset wrd prior and click history after inactivity
-                self.wpm_time = 0
-                self.bc.clock_history = [[]]
-                self.bc.is_undo = True
-                self.bc.init_round(True, False, self.bc.prev_cscores)
->>>>>>> master:keyboard/keyboard.py
                 self.wpm_time = 0
 
         if self.focusWidget() == self.mainWidgit.text_box:
             self.mainWidgit.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
-<<<<<<< HEAD:keyboard/new_keyboard.py
         if not self.in_pause:
             start_t = time.time()
             self.bc.clock_inf.clockutil.increment(self.words_on)
@@ -915,36 +621,6 @@ class Keyboard(MainWindow):
     def highlight_winner(self, index):
 
 
-=======
-        if self.bc_init:
-            if not self.in_pause:
-                start_t = time.time()
-                self.bc.increment(start_t)
-        if not self.pretrain:
-            if self.first_load:
-                self.logDataEvent()
-                self.first_load_handel.safe_save(False)
-                self.first_load = False
-
-
-    def on_press(self):
-        self.num_presses += 1
-        self.play()
-        self.bc.select(time.time())
-
-        if self.wpm_time == 0:
-            self.wpm_time = time.time()
-        self.file_handle_dict['press'].append([time.time(), self.num_presses])
-
-
-    def play(self):
-        if self.sound_set:
-            sound_file = "icons/bell.wav"
-            QSound(sound_file).play()
-
-    def highlight_winner(self, index):
-
->>>>>>> master:keyboard/keyboard.py
         if self.mainWidgit.clocks[index] != '':
             self.mainWidgit.clocks[index].selected = True
             self.mainWidgit.clocks[index].repaint()
@@ -958,52 +634,19 @@ class Keyboard(MainWindow):
             self.mainWidgit.highlight_timer.stop()
 
     def clock_index_to_text(self, index):
-<<<<<<< HEAD:keyboard/new_keyboard.py
         letter_num = int(index/4)
         letter_rem = index-letter_num*4
         if index < 26*4:
-=======
-        letter_num = int(index / 4)
-        letter_rem = index - letter_num * 4
-        if index < 26 * 4:
->>>>>>> master:keyboard/keyboard.py
             if letter_rem < 3:
                 return self.words_li[letter_num][letter_rem]
             return string.lowercase[letter_num]
 
-<<<<<<< HEAD:keyboard/new_keyboard.py
 
-=======
-    def end_winner(self, index):
-        self.canvas.itemconfigure(self.subkey_id[index], fill=kconfig.key_color)
->>>>>>> master:keyboard/keyboard.py
 
     def talk_winner(self, talk_string):
         pass
 
-<<<<<<< HEAD:keyboard/new_keyboard.py
    
-=======
-    ##	if self.has_festival:
-    ##		if(talk_string == 'a'):
-    ##			talk_string = 'ay'
-    ##		elif(talk_string == 'the'):
-    ##			talk_string = 'thee'
-    ##		elif(talk_string == 'of'):
-    ##			talk_string = 'of'
-    ##		elif(talk_string == 'on'):
-    ##			talk_string = 'on'
-    ##		elif(talk_string == 'or'):
-    ##			talk_string = 'oar'
-    ##		elif(talk_string == 'to'):
-    ##			talk_string = 'two'
-    ##
-    ##		talk_fid = open(self.talk_file,'w')
-    ##		talk_fid.write(".. " + talk_string + " ?")
-    ##		talk_fid.close()
-    ##		os.spawnv(os.P_NOWAIT,'C:/festival/festival.exe',['festival','--tts',self.talk_file]) #"/usr/bin/festival" "c:/festival/festival.exe"
-
->>>>>>> master:keyboard/keyboard.py
     def make_choice(self, index):
         is_undo = False
         is_equalize = False
@@ -1054,11 +697,7 @@ class Keyboard(MainWindow):
                 talk_string = new_char
                 # if delete the last character that turn
                 self.old_context_li.append(self.context)
-<<<<<<< HEAD:keyboard/new_keyboard.py
                 print(self.context)
-=======
-                # print(self.context)
->>>>>>> master:keyboard/keyboard.py
                 lt = len(self.typed)
                 if lt > 0:  # typed anything yet?
                     self.btyped += self.typed[-1]
@@ -1087,11 +726,7 @@ class Keyboard(MainWindow):
 
                 self.clear_text = True
 
-<<<<<<< HEAD:keyboard/new_keyboard.py
             
-=======
-
->>>>>>> master:keyboard/keyboard.py
             elif new_char.isalpha():
                 talk_string = new_char
                 self.old_context_li.append(self.context)
@@ -1131,13 +766,8 @@ class Keyboard(MainWindow):
         #     self.talk_winner(talk_string)
 
         # write output
-<<<<<<< HEAD:keyboard/new_keyboard.py
         if config.is_write_data:
             self.params_handle_dict['choice'].append([time.time(), is_undo, is_equalize, self.typed])
-=======
-        if self.is_write_data:
-            self.file_handle_dict['choice'].append([time.time(), is_undo, is_equalize, self.typed])
->>>>>>> master:keyboard/keyboard.py
 
         return self.words_on, self.words_off, self.word_score_prior, is_undo, is_equalize
 
@@ -1145,7 +775,6 @@ class Keyboard(MainWindow):
         self.draw_histogram()
         # self.canvas.update_idletasks()
 
-<<<<<<< HEAD:keyboard/new_keyboard.py
     
     def closeEvent(self, event):
         print "CLOSING THRU CLOSEEVENT"
@@ -1162,69 +791,6 @@ class Keyboard(MainWindow):
                 
         #import sys
         #sys.exit()
-=======
-    def closeEvent(self, event):
-        # print "CLOSING THRU CLOSEEVENT"
-        self.quit(event)
-        # self.deleteLater()
-
-    def quit(self, event=None):
-        #Save click time log
-        if self.is_write_data:
-            self.click_handle.safe_save({'user id': self.user_id, 'click time list': self.bc.click_time_list})
-            self.usenum_handle.safe_save(self.use_num)
-
-        bars_pickle = PickleUtil("data/barsdump.pickle")
-        prev_barlist = bars_pickle.safe_load()
-        if prev_barlist == None:
-            prev_barlist = []
-
-        self.pretrain_bars = self.bc.hsi.dens_li
-        bars_pickle.safe_save(prev_barlist+[[self.pretrain_bars, self.bars]])
-        # print "click pickle closed properly!"
-
-        if config.is_write_data:
-            data_file = "data/preconfig.pickle"
-            file_handle = PickleUtil(data_file)
-            li = self.bc.hsi.dens_li
-            z = self.bc.hsi.Z
-
-            ##SO HERE IT IS PBC BUT IT SHOULD BE LIKE BC
-            self.save_dict = {'li': li, 'z': z, 'opt_sig': self.bc.hsi.opt_sig, 'y_li': self.bc.hsi.y_li}
-
-            file_handle.safe_save(self.save_dict)
-            # print "I'm quitting and the density is" + str(li)
-            # print "And the Z is " + str(z)
-            # print "file closed"
-
-        # Do NOT UNCOMMENT THESE
-
-        if not self.undefined:
-            ## close clocks
-            try:
-                self.bc
-            except AttributeError:
-                bc_data = []
-            else:
-                bc_data = self.bc.quit()
-                ## save settings
-                dump_file_out = kconfig.dump_pre + "clocks." + str(self.user_id) + "." + str(
-                    self.use_num) + kconfig.dump_stuff
-                dump_pickle = PickleUtil(dump_file_out)
-                dump_pickle.safe_save({'rotate index': self.rotate_index, 'bc data': bc_data})
-
-            ## close write file
-            #Save file_handle_dict to file_handle
-            if config.is_write_data:
-                try:
-                    self.file_handle.safe_save(self.file_handle_dict)
-                except AttributeError:
-                    pass
-
-        import sys
-        sys.exit()
-        #self.deleteLater()
->>>>>>> master:keyboard/keyboard.py
 
     def launch_help(self):
         help_window = StartWindow(self.mainWidgit.screen_res, False)
@@ -1237,7 +803,6 @@ class Keyboard(MainWindow):
         retrain_window.mainWidgit = WelcomeScreen(retrain_window)
         retrain_window.mainWidgit.initUI4()
         retrain_window.setCentralWidget(retrain_window.mainWidgit)
-<<<<<<< HEAD:keyboard/new_keyboard.py
         
         retrain_window.retrain = True
 
@@ -1260,29 +825,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-=======
-
-    def restartEvent(self):
-        pass
-
-def main():
-    # print "****************************\n****************************\n[Loading...]"
-    app = QtGui.QApplication(sys.argv)
-    screen_res = (app.desktop().screenGeometry().width(), app.desktop().screenGeometry().height())
-    splash = StartWindow(screen_res, True)
-    app.processEvents()
-
-    ex = Keyboard(screen_res, app)
-
-    ### First Load ###
-    first_load_handel = PickleUtil("user_preferences/first_load.p")
-    first_load = first_load_handel.safe_load()
-
-    if first_load:
-        welcome = Pretraining(screen_res, ex)
-        first_load_handel.safe_save(False)
-    sys.exit(app.exec_())
-
-if __name__ == "__main__":
-    main()
->>>>>>> master:keyboard/keyboard.py
