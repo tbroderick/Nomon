@@ -457,7 +457,6 @@ class PretrainScreen(QtGui.QWidget):
             angle = self.clock.angle + clock.dummy_angle_offset
             clock.angle = angle
             clock.repaint()
-<<<<<<< HEAD
         #selected_clock = random.randint(0, 63)
         selected_clock = 0
         
@@ -477,22 +476,6 @@ class PretrainScreen(QtGui.QWidget):
         self.dummy_clocks[selected_clock].setText("Click Me!")
         self.dummy_clocks[selected_clock].repaint()
 
-=======
-        self.selected_clock = random.randint(0, 63)
-        self.dummy_clocks[self.selected_clock].dummy_angle_offset = 0
-        self.dummy_clocks[self.selected_clock].selected = True
-        self.dummy_clocks[self.selected_clock].setText("Click Me!")
-        if self.parent.num_presses > 0:
-            self.highlight_clock = True
-            self.start_time = time.time()
-
-    def highlight(self):
-        if time.time()-self.start_time < .500:
-            self.dummy_clocks[self.selected_clock].background = True
-        else:
-            self.dummy_clocks[self.selected_clock].background = False
-            self.highlight_clock = False
->>>>>>> master
 
     def start_button_func(self):
         if self.parent.num_presses >= self.parent.total_presses:
