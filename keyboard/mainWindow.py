@@ -722,7 +722,6 @@ class MainKeyboardWidget(QtGui.QWidget):
 
         if self.parent.word_pred_on == 1:
             if self.layed_out:
-                print("SDDD")
                 self.words_hbox.deleteLater()
                 self.words_hbox = QtGui.QHBoxLayout()
                 for clock in word_clocks:

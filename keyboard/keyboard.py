@@ -786,6 +786,14 @@ class Keyboard(MainWindow):
             self.typed_versions += [previous_text + new_text]
             self.mainWidgit.text_box.setText(
                 "<span style='color:#000000;'>" + previous_text + "</span><span style='color:#00dd00;'>" + new_text + "</span>")
+
+        if undo_text == kconfig.mybad_char:
+            undo_text = "Undo"
+        elif undo_text == kconfig.back_char:
+            undo_text = "Backspace"
+        elif undo_text == kconfig.clear_char:
+            undo_text = "Clear"
+
         self.previous_undo_text = undo_text
         self.mainWidgit.undo_label.setText("<font color='green'>" + undo_text + "</font>")
 
