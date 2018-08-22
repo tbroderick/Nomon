@@ -56,7 +56,6 @@ class Keyboard(MainWindow):
 
         if self.use_num == None:
             self.use_num = 0
-
         # print "use_num is " + str(self.use_num)
         self.user_id = 0
         use_num = self.use_num
@@ -132,11 +131,10 @@ class Keyboard(MainWindow):
         if self.use_num > 0:
             # input file (if such exists) for histogram
             dump_file_in = kconfig.dump_pre + "clocks." + str(self.user_id) + "." + str(
-                self.use_num - 1) + kconfig.dump_suff
-            if not os.path.exists(os.path.dirname(dump_file_in)):
-                os.makedirs(os.path.dirname(dump_file_in))
-            dump_pickle = PickleUtil(dump_file_in)
-            in_data = dump_pickle.safe_load()
+                self.use_num - 1) + kconfig.dump_stuff
+            fid = open(dump_file_in, 'r')
+            in_data = cPickle.load(fid)
+            fid.close()
 
             # period
             self.rotate_index = in_data[0]
@@ -144,7 +142,7 @@ class Keyboard(MainWindow):
         else:
             self.rotate_index = config.default_rotate_ind
             prev_data = []
-        ## set up file handle for printing useful stuff
+            ## set up file handle for printing useful stuff
         self.undefined = False
 
         if config.is_write_data:
@@ -383,7 +381,7 @@ class Keyboard(MainWindow):
 
     def gen_handle(self):
         # file handle
-        data_file = kconfig.file_pre + str(self.user_id) + "." + str(self.use_num) + kconfig.file_stuff
+        data_file = kconfig.file_pre + str(self.user_id) + "." + str(self.use_num) + '.txt'
         self.file_handle = PickleUtil(data_file)
         self.file_handle_dict = {'speed': [], 'params': [], 'start': [], 'press': [], 'choice': []}
 
@@ -424,7 +422,7 @@ class Keyboard(MainWindow):
         self.wait_s = self.bc.get_wait()
 
         # note period change in log file
-        self.file_handle_dict['speed'].append([time.time(), old_rotate, self.time_rotate])
+        # self.file_handle_dict['speed'].append([time.time(), old_rotate, self.time_rotate])
 
         # update the histogram
         self.draw_histogram()
@@ -1015,7 +1013,8 @@ class Keyboard(MainWindow):
 
         # write output
         if self.is_write_data:
-            self.file_handle_dict['choice'].append([time.time(), is_undo, is_equalize, self.typed])
+            # self.file_handle_dict['choice'].append([time.time(), is_undo, is_equalize, self.typed])
+            pass
 
         return self.words_on, self.words_off, self.word_score_prior, is_undo, is_equalize
 
@@ -1029,35 +1028,21 @@ class Keyboard(MainWindow):
         # self.deleteLater()
 
     def quit(self, event=None):
-        #Save click time log
+
         if self.is_write_data:
             self.click_handle.safe_save({'user id': self.user_id, 'click time list': self.bc.click_time_list})
             self.usenum_handle.safe_save(self.use_num)
 
-        bars_pickle = PickleUtil("data/barsdump.pickle")
-        prev_barlist = bars_pickle.safe_load()
-        if prev_barlist == None:
-            prev_barlist = []
-
-        self.pretrain_bars = self.bc.hsi.dens_li
-        bars_pickle.safe_save(prev_barlist+[[self.pretrain_bars, self.bars]])
-        # print "click pickle closed properly!"
-
         if config.is_write_data:
             data_file = "data/preconfig.pickle"
-            file_handle = PickleUtil(data_file)
-            li = self.bc.hsi.dens_li
-            z = self.bc.hsi.Z
-
-            ##SO HERE IT IS PBC BUT IT SHOULD BE LIKE BC
-            self.save_dict = {'li': li, 'z': z, 'opt_sig': self.bc.hsi.opt_sig, 'y_li': self.bc.hsi.y_li}
-
-            file_handle.safe_save(self.save_dict)
-            # print "I'm quitting and the density is" + str(li)
-            # print "And the Z is " + str(z)
-            # print "file closed"
-
-        # Do NOT UNCOMMENT THESE
+            file_handle = open(data_file, 'wb')
+            try:
+                li = self.bc.hsi.dens_li
+                z = self.bc.hsi.Z
+                pickle.dump([li, z, self.bc.hsi.ksigma, self.bc.hsi.y_li], file_handle,
+                            protocol=pickle.HIGHEST_PROTOCOL)
+            except IOError as (errno, strerror):
+                print("I/O error({0}): {1}".format(errno, strerror))
 
         if not self.undefined:
             ## close clocks
@@ -1070,20 +1055,15 @@ class Keyboard(MainWindow):
                 ## save settings
                 dump_file_out = kconfig.dump_pre + "clocks." + str(self.user_id) + "." + str(
                     self.use_num) + kconfig.dump_stuff
-                dump_pickle = PickleUtil(dump_file_out)
-                dump_pickle.safe_save({'rotate index': self.rotate_index, 'bc data': bc_data})
+                fid = open(dump_file_out, 'w')
+                cPickle.dump([self.rotate_index, bc_data], fid)
+                fid.close()
 
             ## close write file
-            #Save file_handle_dict to file_handle
             if config.is_write_data:
-                try:
-                    self.file_handle.safe_save(self.file_handle_dict)
-                except AttributeError:
-                    pass
-
+                self.file_handle.safe_save(self.file_handle_dict)
         import sys
         sys.exit()
-        #self.deleteLater()
 
     def launch_help(self):
         help_window = StartWindow(self.mainWidgit.screen_res, False)

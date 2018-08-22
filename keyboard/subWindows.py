@@ -627,17 +627,24 @@ class Pretraining(StartWindow):
         self.use_num = self.sister.bc.use_num
         if config.is_write_data:
             try:
-                li = self.pbc.hsi.dens_li
-                # print "The length of li is" + str(len(li))
-                z = self.pbc.hsi.Z
-                self.save_dict = {'li': li, 'z': z, 'opt_sig': self.pbc.hsi.opt_sig, 'y_li': self.pbc.hsi.y_li}
-                self.pickle_handle.safe_save(self.save_dict)
-
-                #pickle.dump([li, z, self.pbc.hsi.opt_sig, self.pbc.hsi.y_li], open(self.file_handle, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
+                # li = self.pbc.hsi.dens_li
+                # # print "The length of li is" + str(len(li))
+                # z = self.pbc.hsi.Z
+                # self.save_dict = {'li': li, 'z': z, 'opt_sig': self.pbc.hsi.opt_sig, 'y_li': self.pbc.hsi.y_li}
+                # self.pickle_handle.safe_save(self.save_dict)
+                #
+                # #pickle.dump([li, z, self.pbc.hsi.opt_sig, self.pbc.hsi.y_li], open(self.file_handle, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
 
                 self.prev_data = [[self.pbc.hsi.y_li[0]], [self.pbc.hsi.opt_sig]]
                 self.use_num = 1
-
+                data_file = "data/preconfig.pickle"
+                file_handle = PickleUtil(data_file)
+                try:
+                    li = self.pbc.hsi.dens_li
+                    z = self.pbc.hsi.Z
+                    file_handle.safe_save([li, z, self.pbc.hsi.opt_sig, self.pbc.hsi.y_li])
+                except IOError as (errno, strerror):
+                    print("I/O error({0}): {1}".format(errno, strerror))
                 # print "I'm quitting and the density is" + str(li)
                 # print "And the Z is " + str(z)
                 # print "file closed"
