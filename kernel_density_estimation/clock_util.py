@@ -2,7 +2,6 @@ from __future__ import division
 import numpy, math, time, sys, os
 sys.path.insert(0, os.path.realpath('../keyboard'))
 import config, kconfig
-
 #import click_distribution_inference_engine as inference
 
 
@@ -180,5 +179,4 @@ class ClockUtil:
             self.parent.mainWidgit.clocks[clock_index].repaint()
             self.parent.mainWidgit.highlight_timer.stop()
     
-
 

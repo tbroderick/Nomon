@@ -30,9 +30,8 @@ from pickle_util import *
 
 
 import sys,os
-#sys.path.insert(0, os.path.realpath('../kernel_density_estimation'))
+sys.path.insert(0, os.path.realpath('../kernel_density_estimation'))
 from new_broderclocks import *
-import config, kconfig
 
 
 if kconfig.target_evt == kconfig.joy_evt:
@@ -247,7 +246,7 @@ class Keyboard(MainWindow):
                 self.word_locs.append([x + word_offset, y + 3 * kconfig.clock_rad])
                 self.word_locs.append([x + word_offset, y + 5 * kconfig.clock_rad])
                 # rectangles
-                self.rect_locs.append([x + rect_offset, y    ,x +rect_end , y + 2* kconfig.clock_rad])
+                self.rect_locs.append([x + rect_offset, y	 ,x +rect_end , y + 2* kconfig.clock_rad])
                 self.rect_locs.append(
                     [x + rect_offset, y + 2 * kconfig.clock_rad, x + rect_end, y + 4 * kconfig.clock_rad])
                 self.rect_locs.append(
