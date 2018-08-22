@@ -300,6 +300,5 @@ class clock_inference:
             elif (self.cscores[self.sorted_inds[0]] - self.cscores[self.sorted_inds[1]] > config.max_init_diff):
                 self.cscores[self.sorted_inds[0]] = self.cscores[self.sorted_inds[1]] + config.max_init_diff
         
-
     
     

@@ -37,6 +37,7 @@ period_li = [0,  # place holder
              1.46, 1.62, 1.80, 2.00, 2.22,
              2.47, 2.74, 3.05]
 period_li = [i*1.5 for i in period_li]
+start_speed = pickle.load(open("user_preferences/start_speed.p", 'rb'))
 scale_min = 1
 scale_max = len(period_li) - 1
 default_rotate_ind = 19  # 19 # (22,) 19, 16, 13, 10, 7
@@ -73,55 +74,98 @@ class Stack(list):
 ### Colors ###
 # Background Color
 bg_color_highlt = "#ddf6dd"
+high_contrast = pickle.load(open("user_preferences/high_contrast.p", 'rb'))
+if high_contrast:
 
-#  clock colors [regular, high_contrast]
-clock_bg_color = [QtGui.QColor(255, 255, 255), QtGui.QColor(255, 255, 255)]
+    # clock colors
+    clock_bg_color = QtGui.QColor(255, 255, 255)
 
-clock_text_color = [QtGui.QColor(0, 0, 0), QtGui.QColor(0, 0, 0)]
-clock_text_hl_color = [QtGui.QColor(0, 0, 0), QtGui.QColor(200, 0, 0)]
-clock_text_reg_color = [QtGui.QColor(0, 0, 0), QtGui.QColor(0, 0, 200)]
-# default
-default_hh_color = [QtGui.QColor(255, 0, 0), QtGui.QColor(0, 200, 0)]
+    clock_text_color = QtGui.QColor(0, 0, 0)
+    clock_text_hl_color = QtGui.QColor(0, 0, 200)
+    clock_text_reg_color = QtGui.QColor(200, 0, 0)
+    # default
+    default_hh_color = QtGui.QColor(0, 200, 0)
 
-default_selct_color = [QtGui.QColor(20, 245, 20), QtGui.QColor(20, 245, 20)]
-default_highlt_color = [QtGui.QColor(0, 0, 255), QtGui.QColor(255, 0, 0)]
-default_reg_color = [QtGui.QColor(0, 0, 0), QtGui.QColor(0, 0, 255)]
+    default_selct_color = QtGui.QColor(20, 245, 20)
+    default_reg_color = QtGui.QColor(255, 0, 0)
+    default_highlt_color = QtGui.QColor(0, 0, 255)
 
-# bar
-bar_hh_selct_color =[QtGui.QColor(10, 255, 10), QtGui.QColor(10, 255, 10)]
-bar_hh_highlt_color = [QtGui.QColor(75, 75, 255), QtGui.QColor(255, 0, 0)]
-bar_hh_reg_color = [QtGui.QColor(0, 0, 0), QtGui.QColor(00, 0, 255)]
+    # bar
+    bar_hh_selct_color = QtGui.QColor(10, 255, 10)
+    bar_hh_reg_color = QtGui.QColor(255, 0, 0)
+    bar_hh_highlt_color = QtGui.QColor(0, 0, 255)
 
-bar_mh_selct_color = [QtGui.QColor(20, 245, 20), QtGui.QColor(20, 245, 20)]
-bar_mh_highlt_color = [QtGui.QColor(150, 150, 255), QtGui.QColor(255, 150, 150)]
-bar_mh_reg_color = [QtGui.QColor(170, 170, 170), QtGui.QColor(150, 150, 255)]
+    bar_mh_selct_color = QtGui.QColor(20, 245, 20)
+    bar_mh_reg_color = QtGui.QColor(255, 150, 150)
+    bar_mh_highlt_color = QtGui.QColor(150, 150, 255)
 
-# ball
-ball_mh_selct_color = [QtGui.QColor(20, 245, 20), QtGui.QColor(20, 245, 20)]
-ball_mh_highlt_color = [QtGui.QColor(150, 150, 255), QtGui.QColor(255, 150, 150)]
-ball_mh_reg_color = [QtGui.QColor(100, 100, 100), QtGui.QColor(150, 150, 255)]
+    # ball
+    ball_mh_selct_color = QtGui.QColor(20, 245, 20)
+    ball_mh_reg_color = QtGui.QColor(255, 150, 150)
+    ball_mh_highlt_color = QtGui.QColor(150, 150, 255)
 
-# pac_man
-pac_man_selct_color = [QtGui.QColor(20, 245, 20), QtGui.QColor(20, 245, 20)]
-pac_man_highlt_color = [QtGui.QColor(0, 0, 255), QtGui.QColor(255, 0, 0)]
-pac_man_reg_color = [QtGui.QColor(0, 0, 0), QtGui.QColor(0, 0, 255)]
+    # pac_man
+    pac_man_selct_color = QtGui.QColor(20, 245, 20)
+    pac_man_reg_color = QtGui.QColor(255, 0, 0)
+    pac_man_highlt_color = QtGui.QColor(0, 0, 255)
+
+
+else:
+    # clock colors
+    clock_bg_color = QtGui.QColor(255, 255, 255)
+    clock_text_color = QtGui.QColor(0, 0, 0)
+    # default
+    default_hh_color = QtGui.QColor(255, 0, 0)
+
+    default_selct_color = QtGui.QColor(20, 245, 20)
+    default_highlt_color = QtGui.QColor(0, 0, 255)
+    default_reg_color = QtGui.QColor(0, 0, 0)
+
+    # bar
+    bar_hh_selct_color = QtGui.QColor(10, 255, 10)
+    bar_hh_highlt_color = QtGui.QColor(75, 75, 255)
+    bar_hh_reg_color = QtGui.QColor(0, 0, 0)
+
+    bar_mh_selct_color = QtGui.QColor(20, 245, 20)
+    bar_mh_highlt_color = QtGui.QColor(150, 150, 255)
+    bar_mh_reg_color = QtGui.QColor(170, 170, 170)
+
+    # ball
+    ball_mh_selct_color = QtGui.QColor(20, 245, 20)
+    ball_mh_highlt_color = QtGui.QColor(150, 150, 255)
+    ball_mh_reg_color = QtGui.QColor(100, 100, 100)
+
+    # pac_man
+    pac_man_selct_color = QtGui.QColor(20, 245, 20)
+    pac_man_highlt_color = QtGui.QColor(0, 0, 255)
+    pac_man_reg_color = QtGui.QColor(0, 0, 0)
 
 ### Fonts ###
 base_font = 'helvetica'
-splash_font = [QtGui.QFont(base_font, 11), QtGui.QFont(base_font, 15), QtGui.QFont(base_font, 22)]
-welcome_main_font = [QtGui.QFont(base_font, 11), QtGui.QFont(base_font, 15), QtGui.QFont(base_font, 22)]
-welcome_sub_font = [QtGui.QFont(base_font, 9), QtGui.QFont(base_font, 12), QtGui.QFont(base_font, 18)]
+font_scale = pickle.load(open("user_preferences/font_scale.p", 'rb'))
+
+if font_scale == 'med':
+    font_scale = 1
+elif font_scale == 'large':
+    font_scale = 1.5
+elif font_scale == 'small':
+    font_scale = 0.75
+splash_font = QtGui.QFont(base_font, 15*font_scale)
+
+welcome_main_font = QtGui.QFont(base_font, 15*font_scale)
+welcome_sub_font = QtGui.QFont(base_font, 12*font_scale)
 clock_font = QtGui.QFont(base_font)
 clock_font.setBold(False)
 
-top_bar_font = [QtGui.QFont(base_font, 11), QtGui.QFont(base_font, 15), QtGui.QFont(base_font, 24)]
-for font in top_bar_font:
-    font.setStretch(80)
-    font.setBold(True)
+top_bar_font = QtGui.QFont(base_font, 16*font_scale)
+top_bar_font.setStretch(80)
+top_bar_font.setBold(True)
 
-text_box_font = [QtGui.QFont(base_font, 11), QtGui.QFont(base_font, 15), QtGui.QFont(base_font, 24)]
-for font in text_box_font:
-    font.setStretch(90)
+text_box_font = QtGui.QFont(base_font, 20*font_scale)
+
+text_box_font.setStretch(90)
+
+
 
 ### Algorithm parameters ###
 # winning score difference
