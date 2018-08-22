@@ -125,12 +125,14 @@ class DTree:
             "Quotes from Nomon users:",
             "",
             ">> \"lots of fun\"",
+            "",
             ">> \"really useful\"",
             "",
-            ">> \"The writing system looks intimidating",
-            "when it first comes up on the screen",
-            "but is actually very easy to use\"",
+            ">> \"The writing system looks intimidating when it first comes up on the screen but is actually very easy to use\"",
             "",
+            ">> \"The writing system looks intimidating when it first comes up on the screen but is actually very easy to use\"",
+            "",
+            ">> \"The writing system looks intimidating when it first comes up on the screen but is actually very easy to use\"",
             "",
             "[...finished]********************************************************"]
 
@@ -150,7 +152,9 @@ class DTree:
 #         self.parent = None
 # =============================================================================
 
+
     def fill_tree(self):
+        self.parent.app.processEvents()  # allow splash screen to refresh
         n_line = 0
         for line in self.file_handle.xreadlines():
             # read each line
@@ -168,6 +172,13 @@ class DTree:
                     subWindows.loading_text = self.loading_text[n_line / 20000]  # send messages to GUI splash screen
 
                     self.parent.app.processEvents()  # allow splash screen to refresh
+        if self.parent.pause_animation:
+            self.parent.pause_animation = False
+
+            self.parent.mainWidgit.text_box.setStyleSheet("background-color:;")
+            self.parent.mainWidgit.splitter1.setStyleSheet("background-color:;")
+            self.parent.mainWidgit.setStyleSheet("background-color:;")
+            self.parent.mainWidgit.in_focus = True
 
 
     # returns a list (one for each letter)

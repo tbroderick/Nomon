@@ -216,3 +216,4 @@ class New_BroderClocks:
             self.clock_inf.clockutil.repaint_one_clock(clock, angle)
 
        
+

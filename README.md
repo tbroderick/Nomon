@@ -1,5 +1,7 @@
 Nomon
 ================
+** Please Watch This Tutorial Video: https://youtu.be/wIGuaIdynTA for installing / using Nomon. 
+
 This repository contains the Windows Installer for Nomon.
 
 Nomon, invented by [Tamara Broderick](http://people.csail.mit.edu/tbroderick/index.html), is a keyboard application that uses a single switch selection method, allowing users to select a letter or a word with a single click. These clicks are distinguished by their timing, which can be controlled depending on the users desired speed. Each letter and suggested word is paired with a set of small clocks, each one associated with each option of a letter or a word. Repeatedly, when the clock's moving hand is at noon, the user clicks the single click until the desired option is selected. Using this method, users can select words and letters to form sentences with just a single switch.
@@ -18,8 +20,8 @@ The software is licensed under the [MIT license](https://opensource.org/licenses
 Installing Nomon on Windows
 ================
 1. Download the Nomon folder by clicking on the green "clone or download" button on the right and then "download as zip".
-2. Click the "keyboard" folder, then the "dist" folder to locate the installer. 
-3. Click on the installer (Nomon-0.4-amd64.msi)
+2. Click the file "link_to_installer" and open to follow url inside. 
+3. Download on the installer (Nomon-1.0-amd64.msi)
 4. Choose a directory for Nomon (example: C:\Nomon) **Important:** Do not choose a directory in Program Files or Program Files (x86).
 5. "Do you want to allow an unknown publisher to make changes to your device?" may appear. If it does, click "yes."
 
