@@ -216,7 +216,7 @@ class clock_inference:
 
 
         for n in range(0, len(self.kde.y_li)):
-            self.increment_dens(self.kde.y_li[n], self.kde.y_ksigma[n])
+            self.kde.increment_dens(self.kde.y_li[n], self.kde.y_ksigma[n])
         #min(self.n_ksigma, len(self.y_li)) is the effective number of recent y_li
         self.kde.calc_ksigma(self.n_hist, min(self.kde.n_ksigma, len(self.kde.y_li)))
     

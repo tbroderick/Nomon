@@ -726,9 +726,10 @@ class Keyboard(MainWindow):
                 self.bc.clock_inf.clockutil.increment(self.words_on)
         if not self.pretrain:
             if self.first_load:
+                self.first_load = False
                 self.logDataEvent()
                 self.first_load_handel.safe_save(False)
-                self.first_load = False
+
 
     def on_press(self):
         # self.canvas.focus_set()

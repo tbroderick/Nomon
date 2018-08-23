@@ -168,6 +168,13 @@ class DTree:
                     new_subWindows.loading_text = self.loading_text[n_line / 20000]  # send messages to GUI splash screen
 
                     self.parent.app.processEvents()  # allow splash screen to refresh
+        if self.parent.pause_animation:
+            self.parent.pause_animation = False
+
+            self.parent.mainWidgit.text_box.setStyleSheet("background-color:;")
+            self.parent.mainWidgit.splitter1.setStyleSheet("background-color:;")
+            self.parent.mainWidgit.setStyleSheet("background-color:;")
+            self.parent.mainWidgit.in_focus = True
 
 
     # returns a list (one for each letter)
