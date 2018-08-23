@@ -10,11 +10,8 @@ from clock_util import *
 import time
 
 import sys,os
-sys.path.insert(0, os.path.realpath('../keyboard'))
 from pickle_util import PickleUtil
-import config, kconfig
-
-
+import config
 
 
 class New_BroderClocks:
