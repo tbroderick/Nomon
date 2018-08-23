@@ -31,6 +31,7 @@ class StartWindow(QtGui.QMainWindow):
             self.initUI_splash()
         else:
             self.initUI_welcome()
+        self.last_release_time = time.time()
 
     def initUI_splash(self):
         self.mainWidgit = SplashScreen(self)
@@ -60,9 +61,9 @@ class StartWindow(QtGui.QMainWindow):
 
         self.show()
 
-    def keyPressEvent(self, e):
+    def keyReleaseEvent(self, e):
         if not self.splash:
-            if e.key() == QtCore.Qt.Key_Space:
+            if e.key() == QtCore.Qt.Key_Space and not(e.isAutoRepeat()):
                 self.screen_num += 1  # cycle through the multiple welcome/help screens
                 if self.screen_num == 1:
                     self.mainWidgit.close()
@@ -94,7 +95,9 @@ class StartWindow(QtGui.QMainWindow):
 #                     if self.num_presses >= self.total_presses:
 #                         self.on_finish()
 # =============================================================================
-                    self.on_press()
+                    if time.time()-self.last_release_time > 0.25:
+                        self.on_press()
+                        self.last_release_time = time.time()
 
 
 class SplashScreen(QtGui.QWidget):
@@ -591,6 +594,7 @@ class Pretraining(StartWindow):
         self.use_num = self.sister.bc.use_num
         if config.is_write_data:
             try:
+<<<<<<< HEAD
                 li = self.pbc.hsi.dens_li
                 print "The length of li is" + str(len(li))
                 z = self.pbc.hsi.Z
@@ -606,6 +610,30 @@ class Pretraining(StartWindow):
                 print "And the Z is " + str(z)
                 print "file closed"
                 #self.file_handle.close()
+=======
+                # li = self.pbc.hsi.dens_li
+                # # print "The length of li is" + str(len(li))
+                # z = self.pbc.hsi.Z
+                # self.save_dict = {'li': li, 'z': z, 'opt_sig': self.pbc.hsi.opt_sig, 'y_li': self.pbc.hsi.y_li}
+                # self.pickle_handle.safe_save(self.save_dict)
+                #
+                # #pickle.dump([li, z, self.pbc.hsi.opt_sig, self.pbc.hsi.y_li], open(self.file_handle, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
+
+                self.prev_data = [[self.pbc.hsi.y_li[0]], [self.pbc.hsi.opt_sig]]
+                self.use_num = 1
+                data_file = "data/preconfig.pickle"
+                file_handle = PickleUtil(data_file)
+                try:
+                    li = self.pbc.hsi.dens_li
+                    z = self.pbc.hsi.Z
+                    file_handle.safe_save([li, z, self.pbc.hsi.opt_sig, self.pbc.hsi.y_li])
+                except IOError as (errno, strerror):
+                    print("I/O error({0}): {1}".format(errno, strerror))
+                # print "I'm quitting and the density is" + str(li)
+                # print "And the Z is " + str(z)
+                # print "file closed"
+                # self.file_handle.close()
+>>>>>>> origin/Master
             except IOError as (errno,strerror):
                 print "I/O error({0}): {1}".format(errno, strerror)
         

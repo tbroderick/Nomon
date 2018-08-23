@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Aug  2 16:00:14 2018
-
 @author: TiffMin
 """
 from __future__ import division
@@ -21,6 +20,7 @@ import config, kconfig
 class New_BroderClocks:
     def __init__(self, parent):
         self.parent = parent
+        self.parent.bc_init = True
         self.clock_inf = clock_inference(self.parent, self)
         
         self.is_undo = False

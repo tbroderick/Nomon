@@ -19,7 +19,7 @@
 ######################################
 
 import kconfig
-import subWindows
+import new_subWindows
 
 
 class dtree:
@@ -165,7 +165,7 @@ class DTree:
             if n_line % 20000 == 0:
                 if self.loading_text[n_line / 20000] != "":
                     print self.loading_text[n_line / 20000]
-                    subWindows.loading_text = self.loading_text[n_line / 20000]  # send messages to GUI splash screen
+                    new_subWindows.loading_text = self.loading_text[n_line / 20000]  # send messages to GUI splash screen
 
                     self.parent.app.processEvents()  # allow splash screen to refresh
 
@@ -202,14 +202,14 @@ def main():
     print "in dtree.py"
 
     # file
-    file_name = kconfig.train_file_name
+    file_name = kconfig.train_file_name_default
     file_handle = open(file_name, 'r')
     # output object
-    out_name = kconfig.train_obj_name
-    out_handle = open(out_name, 'w')
+    #out_name = kconfig.train_obj_name
+    #out_handle = open(out_name, 'w')
 
     # dictionary tree
-    dt = DTree(file_handle)
+    dt = DTree(file_handle, None)
 
     # run some checks
     # li = dt.get_words("",map(chr, range(97, 123)))
@@ -220,7 +220,7 @@ def main():
 
     # close stuff
     file_handle.close()
-    out_handle.close()
+    #out_handle.close()
 
 # =============================================================================
 # import threading

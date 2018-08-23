@@ -100,6 +100,8 @@ class ClockUtil:
         #ONLY UPDATES CERTAIN METHODS CLOCKINFERENCEENGINE
         self.clock_inf.time_rotate = new_period
         self.clock_inf.update_dens(new_period)
+        self.time_rotate = new_period
+        self.parent.time_rotate = new_period
 
         ## related quantities
         # number of unique clock positions in the animation
@@ -108,13 +110,13 @@ class ClockUtil:
         #BUT DON"T REALLY SEEM TO USE THIS SO DON"T KNOW
         self.wait_s = self.time_rotate / self.num_divs_time
         # find coordinates of hour hand positions
-        self.hl = HourLocs(self.num_divs_time, self.radius)
+        self.hl = HourLocs(self.num_divs_time)
         # array of spacings for high scorers
         self.spaced = SpacedArray(self.num_divs_time)
 
         ## restart rotation
         #IS THIS JUST UPDATING CURHOURS OR ALSO CSCORES= JUST CURHOURS
-        self.init_round(self, self.clock_inf.clocks_on)
+        self.init_round(self.clock_inf.clocks_on)
         
         
     
@@ -134,7 +136,7 @@ class ClockUtil:
                 
     def set_radius(self, radius):
         self.radius = radius
-        self.hl = HourLocs(self.num_divs_time, self.radius)
+        self.hl = HourLocs(self.num_divs_time)
         
     
     def repaint_clocks(self, clock_index_list, angle_for_each_clock):
@@ -179,4 +181,3 @@ class ClockUtil:
             self.parent.mainWidgit.clocks[clock_index].repaint()
             self.parent.mainWidgit.highlight_timer.stop()
     
-
