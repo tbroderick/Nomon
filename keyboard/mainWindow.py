@@ -426,6 +426,7 @@ class MainWindow(QtGui.QMainWindow):
         messageBox.setWindowIcon(self.icon)
 
         reply = messageBox.exec_()
+        self.first_load = False
         self.up_handel = PickleUtil("user_preferences/user_preferences.p")
         if reply == QtGui.QMessageBox.No:
             self.up_handel.safe_save(
