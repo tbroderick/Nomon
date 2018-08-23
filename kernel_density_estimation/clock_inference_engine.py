@@ -6,7 +6,7 @@ Created on Wed Aug  1 15:28:48 2018
 @author: TiffMin
 """
 from __future__ import division
-import numpy, math
+import numpy
 from clock_util import *
 import sys,os
 sys.path.insert(0, os.path.realpath('../keyboard'))
