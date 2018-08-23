@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Aug  1 15:28:48 2018
-
 @author: TiffMin
 """
 from __future__ import division
@@ -212,14 +211,14 @@ class clock_inference:
         self.time_rotate = new_time_rotate
         # location of histogram bins
         self.kde.x_li = []
-        for index in self.index_li:
+        for index in self.kde.index_li:
             self.kde.x_li.append(index * self.time_rotate / config.num_divs_click - self.time_rotate / 2.0)
 
 
         for n in range(0, len(self.kde.y_li)):
             self.increment_dens(self.kde.y_li[n], self.kde.y_ksigma[n])
         #min(self.n_ksigma, len(self.y_li)) is the effective number of recent y_li
-        self.calc_ksigma(self.n_hist, min(self.kde.n_ksigma, len(self.kde.y_li)))
+        self.kde.calc_ksigma(self.n_hist, min(self.kde.n_ksigma, len(self.kde.y_li)))
     
         
     #update clock history
@@ -300,5 +299,4 @@ class clock_inference:
             elif (self.cscores[self.sorted_inds[0]] - self.cscores[self.sorted_inds[1]] > config.max_init_diff):
                 self.cscores[self.sorted_inds[0]] = self.cscores[self.sorted_inds[1]] + config.max_init_diff
         
-    
     

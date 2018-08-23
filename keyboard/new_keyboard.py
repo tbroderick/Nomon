@@ -28,11 +28,10 @@ from new_subWindows import *
 import os, copy
 from pickle_util import *
 
+import sys, os
 
-import sys,os
 sys.path.insert(0, os.path.realpath('../kernel_density_estimation'))
 from new_broderclocks import *
-
 
 if kconfig.target_evt == kconfig.joy_evt:
     import pygame
@@ -44,14 +43,30 @@ class Keyboard(MainWindow):
         super(Keyboard, self).__init__(screen_res)
 
         self.app = app
-        
-        #just for initialization
+
+        #2 is turn fully on, 1 is turn on but reduce, 0 is turn off
+        self.word_pred_on = 2
+        #Number of word clocks to display in case word prediction == 1 (reduced)
+        self.reduce_display = 5
+
+        # just for initialization
         self.use_num = 0
-        
+
         print "use_num is " + str(self.use_num)
         self.user_id = 0
-        
-        
+
+        self.up_handel = PickleUtil("user_preferences/user_preferences.p")
+        self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference, self.start_speed, self.is_write_data = self.up_handel.safe_load()
+        if self.layout_preference == 'alpha':
+            self.target_layout = kconfig.alpha_target_layout
+        elif self.layout_preference == 'qwerty':
+            self.target_layout = kconfig.qwerty_target_layout
+        self.key_chars = kconfig.key_chars
+
+        if self.pf_preference == 'off':
+            self.train_file_name = kconfig.train_file_name_default
+        elif self.pf_preference == 'on':
+            self.train_file_name = kconfig.train_file_name_censored
 
         prop_width = kconfig.base_window_width
         prop_height = kconfig.base_window_height
@@ -79,19 +94,19 @@ class Keyboard(MainWindow):
         ## determine keyboard positions
         self.init_locs()
         ## get old data if there is such
-        #Just for default. Loaded again when bc initalizes
+        # Just for default. Loaded again when bc initalizes
         self.rotate_index = config.default_rotate_ind
         ## set up file handle for printing useful stuff
         self.undefined = False
 
         if config.is_write_data:
-            self.params_handle_dict= {'speed': [], 'params': [], 'start': [], 'press': [], 'choice':[]}  
+            self.params_handle_dict = {'speed': [], 'params': [], 'start': [], 'press': [], 'choice': []}
             self.num_presses = 0
 
             self.params_handle_dict['params'].append([config.period_li[config.default_rotate_ind], config.theta0])
             self.params_handle_dict['start'].append(time.time())
         else:
-            #self.params_handle = None
+            # self.params_handle = None
             pass
         ## set up canvas for displaying stuff
         # self.gen_canvas()
@@ -110,48 +125,61 @@ class Keyboard(MainWindow):
         ## set up "talked" text
         self.talk_file = "talk.txt"
         ## set up dictionary tree
-        
-            
-        train_handle = open(kconfig.train_file_name, 'r')
-        self.dt = dtree.DTree(train_handle, self)    
-            
+
+        self.pause_animation = False
+
+        train_handle = open(self.train_file_name, 'rb')
+        self.dt = dtree.DTree(train_handle, self)
+
         train_handle.close()
         # check for speech
-        talk_fid = open(self.talk_file, 'w')
+        talk_fid = open(self.talk_file, 'wb')
         # write words
         self.init_words()
 
+        self.first_load_handel = PickleUtil("user_preferences/first_load.p")
+        self.first_load = self.first_load_handel.safe_load()
+
+        if self.first_load:
+            self.pretrain = True
+
         self.bars = kconfig.bars
+        
+
+        self.bc_init = False
+        
         self.previous_undo_text = ''
-        self.previous_winner=0
+        self.previous_winner = 0
         self.wpm_data = config.Stack(config.wpm_history_length)
         self.wpm_time = 0
         self.clear_text = False
         self.pretrain = False
-
+        
         self.initUI()
 
+
+
         ## set up broderclocks
-# =============================================================================
-#         self.bc = broderclocks.BroderClocks(self, self.clock_centers, self.win_diffs, kconfig.clock_rad,
-#                                             self.words_on, self.words_off, kconfig.key_color,
-#                                             time.time(), use_num, user_id, self.time_rotate, prev_data)
-#         self.mainWidgit.changeValue(config.start_speed)
-# =============================================================================
-        
+        # =============================================================================
+        #         self.bc = broderclocks.BroderClocks(self, self.clock_centers, self.win_diffs, kconfig.clock_rad,
+        #                                             self.words_on, self.words_off, kconfig.key_color,
+        #                                             time.time(), use_num, user_id, self.time_rotate, prev_data)
+        #         self.mainWidgit.changeValue(config.start_speed)
+        # =============================================================================
+        self.time_rotate = config.period_li[self.start_speed]
         # get language model results
         self.gen_word_prior(False)
-        
-        
 
         # which ones to try predicting on
         try_pred = []
         for row in range(0, self.N_rows):
             for col in range(0, self.N_keys_row[row]):
                 try_pred = kconfig.key_chars[row][col].isalpha()
-        
+
         self.bc = New_BroderClocks(self)
-        self.bc.init_follow_up(self.word_score_prior)   
+        self.mainWidgit.changeValue(self.start_speed)
+
+        self.bc.init_follow_up(self.word_score_prior)
         # write key text
         self.init_key_text()
         # draw histogram
@@ -159,12 +187,15 @@ class Keyboard(MainWindow):
         # bring word text to the front
         self.raise_words()
 
-        
         self.consent = True
         ### animate ###
         self.on_timer()
 
-    #def gen_load_usenum(self):
+        #record to prevent double tap
+        self.last_key_press_time = time.time()
+        self.last_release_time = time.time()
+
+    # def gen_load_usenum(self):
     #    self.usenum_handle = open(self.usenum_file, 'wb')
 
     def find_events(self):
@@ -176,7 +207,6 @@ class Keyboard(MainWindow):
                 # generate the event I've defined
                 self.canvas.event_generate(kconfig.joy_evt)
 
-
         ## return to check for more events in a moment
         self.parent.after(20, self.find_events)
 
@@ -186,29 +216,30 @@ class Keyboard(MainWindow):
 
     def init_locs(self):
         # size of keyboard
-        self.N_rows = len(kconfig.key_chars)
+        self.N_rows = len(self.key_chars)
         self.N_keys_row = []
         self.N_keys = 0
         self.N_alpha_keys = 0
         for row in range(0, self.N_rows):
-            n_keys = len(kconfig.key_chars[row])
+            n_keys = len(self.key_chars[row])
             for col in range(0, n_keys):
-                if isinstance(kconfig.key_chars[row][col], list):
+                if isinstance(self.key_chars[row][col], list):
                     pass
                 else:
-                    if kconfig.key_chars[row][col].isalpha() and (len(kconfig.key_chars[row][col]) == 1):
+                    if self.key_chars[row][col].isalpha() and (len(self.key_chars[row][col]) == 1):
                         self.N_alpha_keys = self.N_alpha_keys + 1
-                    elif kconfig.key_chars[row][col] == kconfig.space_char and (len(kconfig.key_chars[row][col]) == 1):
+                    elif self.key_chars[row][col] == kconfig.space_char and (len(self.key_chars[row][col]) == 1):
                         self.N_alpha_keys = self.N_alpha_keys + 1
-                    elif kconfig.key_chars[row][col] == kconfig.break_chars[1] and (len(kconfig.key_chars[row][col]) == 1):
+                    elif self.key_chars[row][col] == kconfig.break_chars[1] and (
+                            len(self.key_chars[row][col]) == 1):
                         self.N_alpha_keys = self.N_alpha_keys + 1
 
             self.N_keys_row.append(n_keys)
             self.N_keys += n_keys
-        
-        print "NKEYS is " + str(self.N_keys)
-        print "And N_alpha_keys is " + str(self.N_alpha_keys)
-        
+
+        # print "NKEYS is " + str(self.N_keys)
+        # print "And N_alpha_keys is " + str(self.N_alpha_keys)
+
         # width difference when include letter
         word_clock_offset = 7 * kconfig.clock_rad
         rect_offset = word_clock_offset - kconfig.clock_rad
@@ -246,7 +277,7 @@ class Keyboard(MainWindow):
                 self.word_locs.append([x + word_offset, y + 3 * kconfig.clock_rad])
                 self.word_locs.append([x + word_offset, y + 5 * kconfig.clock_rad])
                 # rectangles
-                self.rect_locs.append([x + rect_offset, y	 ,x +rect_end , y + 2* kconfig.clock_rad])
+                self.rect_locs.append([x + rect_offset, y, x + rect_end, y + 2 * kconfig.clock_rad])
                 self.rect_locs.append(
                     [x + rect_offset, y + 2 * kconfig.clock_rad, x + rect_end, y + 4 * kconfig.clock_rad])
                 self.rect_locs.append(
@@ -260,8 +291,8 @@ class Keyboard(MainWindow):
 
                 ## key character
                 # reference to index of key character
-                key_char = kconfig.key_chars[row][col]
-                self.keys_li.append(kconfig.key_chars[row][col])
+                key_char = self.key_chars[row][col]
+                self.keys_li.append(self.key_chars[row][col])
                 self.keys_ref.append(index)
                 self.index_to_wk.append(key)
                 # key character position
@@ -291,17 +322,21 @@ class Keyboard(MainWindow):
 
     def gen_handle(self):
         # file handle
-        #data_file = kconfig.file_pre + str(self.user_id) + "." + str(self.use_num) + kconfig.file_stuff
-        #self.params_handle = PickleUtil(data_file)
-        self.params_handle_dict= {'speed': [], 'params': [], 'start': [], 'press': [], 'choice':[]}       
+        # data_file = kconfig.file_pre + str(self.user_id) + "." + str(self.use_num) + kconfig.file_stuff
+        # self.params_handle = PickleUtil(data_file)
+        self.params_handle_dict = {'speed': [], 'params': [], 'start': [], 'press': [], 'choice': []}
 
     def gen_scale(self):
         scale_length = self.w_canvas / 2  # (len(kconfig.key_chars[0])-1)*kconfig.word_w
         tick_int = int((len(config.period_li) - 1) * kconfig.word_pt * 3 / (1.0 * scale_length)) + 1
         self.time_rotate = config.period_li[self.rotate_index]
-        
+
     def toggle_pause_button(self, value):
         self.pause_set = value
+        self.mainWidgit.sldLabel.setFocus()
+
+    def toggle_sound_button(self, value):
+        self.sound_set = value
         self.mainWidgit.sldLabel.setFocus()
 
     def toggle_talk_button(self, value):
@@ -344,7 +379,6 @@ class Keyboard(MainWindow):
         kconfig.word_font = ("Helvetica", kconfig.word_pt)
         kconfig.type_font = ("Helvetica", kconfig.type_pt)
 
-
     def init_keys(self):
         for key in range(0, self.N_keys):
             self.canvas.create_rectangle(
@@ -379,14 +413,53 @@ class Keyboard(MainWindow):
         self.mainWidgit.histogram.repaint()
 
     def init_words(self):
-        (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq, self.prefix) = self.dt.get_words(
+        (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq,
+         self.prefix) = self.dt.get_words(
             self.context, self.keys_li)
         self.word_id = []
         self.word_pair = []
         word = 0
         index = 0
+        windex = 0
         self.words_on = []
         self.words_off = []
+        self.word_list = []
+        # self.flag_args = []
+
+        # if word prediction on but reduced
+        if self.word_pred_on == 1:
+            flat_freq_list = numpy.array([freq for sublist in self.word_freq_li for freq in sublist])
+            if len(flat_freq_list) >= self.reduce_display:
+                # replacement_count = 0
+                for arg in flat_freq_list.argsort()[-self.reduce_display:]:
+                    word_to_add = self.words_li[(arg / 3)][arg % 3]
+                    # =============================================================================
+                    #                     while len(word_to_add) == 1:
+                    #                         replacement_count +=1
+                    #                         new_arg = flat_freq_list.argsort()[-self.reduce_display-replacement_count]
+                    #                         word_to_add = self.words_li[(new_arg /3)][new_arg%3]
+                    # =============================================================================
+                    if word_to_add != '':
+                        if word_to_add not in self.word_list:
+                            self.word_list.append(word_to_add)
+
+
+            else:
+                temp_word_list = [word_item for sublist in self.words_li for word_item in sublist]
+                for word_item in temp_word_list:
+                    if word_item != '':
+                        self.word_list.append(word_item)
+
+
+        # if word prediction completely on
+        elif self.word_pred_on == 2:
+            temp_word_list = [word_item for sublist in self.words_li for word_item in sublist]
+            for word_item in temp_word_list:
+                if word_item != '':
+                    self.word_list.append(word_item)
+
+            # print "TURNED ON AND WORD LIST IS" + str(self.word_list)
+
         len_con = len(self.context)
         for key in range(0, self.N_alpha_keys):
             for pred in range(0, kconfig.N_pred):
@@ -398,7 +471,21 @@ class Keyboard(MainWindow):
                 if word_str == '':
                     self.words_off.append(index)
                 else:
-                    self.words_on.append(index)
+                    # turn word prediciton off
+                    if self.word_pred_on == 0:
+                        self.words_off.append(index)
+                    # word prediction completely on
+                    elif self.word_pred_on == 2:
+                        self.words_on.append(index)
+                    # word prediction turned on but reduced
+                    # rank words frequency and display only three
+                    else:
+                        if windex in flat_freq_list.argsort()[-self.reduce_display:]:
+                            self.words_on.append(index)
+                        else:
+                            self.words_off.append(index)
+
+                windex += 1
                 word += 1
                 index += 1
             self.words_on.append(index)
@@ -413,30 +500,46 @@ class Keyboard(MainWindow):
             self.words_on.append(index)
             self.word_pair.append((key,))
             index += 1
-        # Send words to MainKeyboardWidget
-        words = []
-        for letter_group in self.words_li:
-            for word in letter_group:
-                if word != '':
-                    words += [word]
-        self.word_list = words
         self.typed_versions = ['']
-        
-        print "THe self.words_on are " + str(self.words_on)
-        print "Self.word list is " + str(self.word_list)
+
 
     def raise_words(self):
         pass
 
-
     def draw_words(self):
-        (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq, self.prefix) = self.dt.get_words(
+        (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq,
+         self.prefix) = self.dt.get_words(
             self.context, self.keys_li)
         word = 0
         index = 0
         self.words_on = []
         self.words_off = []
+        self.word_list = []
+
+        # if word prediction on but reduced
+        if self.word_pred_on == 1:
+            flat_freq_list = numpy.array([freq for sublist in self.word_freq_li for freq in sublist])
+            if len(flat_freq_list) >= self.reduce_display:
+                for arg in flat_freq_list.argsort()[-self.reduce_display:]:
+                    word_to_add = self.words_li[(arg / 3)][arg % 3]
+                    if word_to_add != '':
+                        self.word_list.append(word_to_add)
+            else:
+                temp_word_list = [word_item for sublist in self.words_li for word_item in sublist]
+                for word_item in temp_word_list:
+                    if word_item != '':
+                        self.word_list.append(word_item)
+            self.word_list.reverse()
+        # if word prediction completely on
+        elif self.word_pred_on == 2:
+            temp_word_list = [word_item for sublist in self.words_li for word_item in sublist]
+            for word_item in temp_word_list:
+                if word_item != '':
+                    self.word_list.append(word_item)
+
         len_con = len(self.context)
+
+        windex = 0
         for key in range(0, self.N_alpha_keys):
             key_char = self.keys_li[key]
             for pred in range(0, kconfig.N_pred):
@@ -447,7 +550,21 @@ class Keyboard(MainWindow):
                 if word_str == '':
                     self.words_off.append(index)
                 else:
-                    self.words_on.append(index)
+                    # turn word prediciton off
+                    if self.word_pred_on == 0:
+                        self.words_off.append(index)
+                    # word prediction completely on
+                    elif self.word_pred_on == 2:
+                        self.words_on.append(index)
+                    # word prediction turned on but reduced
+                    # rank words frequency and display only three
+                    else:
+                        if windex in flat_freq_list.argsort()[-self.reduce_display:]:
+                            self.words_on.append(index)
+                        else:
+                            self.words_off.append(index)
+
+                windex += 1
                 word += 1
                 index += 1
             self.words_on.append(index)
@@ -463,14 +580,6 @@ class Keyboard(MainWindow):
             self.words_on.append(index)
             self.word_pair.append((key,))
             index += 1
-        # Send words to MainKeyboardWidget
-        words = []
-        for letter_group in self.words_li:
-            for word in letter_group:
-                if word != '':
-                    words += [word]
-
-        self.word_list = words
         self.mainWidgit.updateClocks()
 
     def gen_word_prior(self, is_undo):
@@ -519,6 +628,12 @@ class Keyboard(MainWindow):
         undo = False
         previous_text = self.mainWidgit.text_box.toPlainText()
 
+        def format_punct(text):
+            text.replace('_.', '._')
+            text.replace('_,', ',_')
+            text.replace('_?', '?_')
+            return text
+
         if len(self.last_add_li) > 1:
             last_add = self.last_add_li[-1]
             if last_add > 0:  # typed something
@@ -535,10 +650,9 @@ class Keyboard(MainWindow):
             undo_text = new_text
             last_add = 0
 
-
         index = self.previous_winner
         if self.mainWidgit.clocks[index] != '':
-            if self.mainWidgit.clocks[index].text == kconfig.mybad_char:
+            if self.mainWidgit.clocks[index].text in [kconfig.mybad_char, 'Undo']:
                 undo = True
                 delete = False
         if self.typed_versions[-1] == '' and len(self.typed_versions) > 1:
@@ -554,30 +668,38 @@ class Keyboard(MainWindow):
             self.prefix = self.prefix[:-1]
             if self.typed_versions[-1] != '':
                 self.typed_versions += [previous_text[:-1]]
-                self.mainWidgit.text_box.setText("<span style='color:#000000;'>" + self.typed_versions[-1] + "</span>")
+                self.mainWidgit.text_box.setText("<span style='color:#000000;'>" + format_punct(self.typed_versions[-1]) + "</span>")
         elif undo:
             if len(self.typed_versions) > 1:
                 self.typed_versions = self.typed_versions[:-1]
-                self.mainWidgit.text_box.setText("<span style='color:#000000;'>" + self.typed_versions[-1] + "</span>")
+                self.mainWidgit.text_box.setText("<span style='color:#000000;'>" + format_punct(self.typed_versions[-1]) + "</span>")
         else:
-            self.typed_versions += [previous_text+new_text]
-            self.mainWidgit.text_box.setText("<span style='color:#000000;'>"+previous_text+"</span><span style='color:#00dd00;'>"+new_text+"</span>")
-        self.previous_undo_text = undo_text
-        self.mainWidgit.undo_label.setText("<font color='green'>"+undo_text+"</font>")
+            self.typed_versions += [previous_text + new_text]
+            self.mainWidgit.text_box.setText(
+                "<span style='color:#000000;'>" + format_punct(previous_text) + "</span><span style='color:#00dd00;'>" + format_punct(new_text) + "</span>")
 
+        if undo_text == kconfig.mybad_char:
+            undo_text = "Undo"
+        elif undo_text == kconfig.back_char:
+            undo_text = "Backspace"
+        elif undo_text == kconfig.clear_char:
+            undo_text = "Clear"
+
+        self.previous_undo_text = undo_text
+        self.mainWidgit.undo_label.setText("<font color='green'>" + undo_text + "</font>")
 
     def wpm_update(self):
-        time_diff = (time.time()-self.wpm_time)
-        if time_diff < 15.*10/self.time_rotate:
-            self.wpm_data+time_diff
+        time_diff = (time.time() - self.wpm_time)
+        if time_diff < 15. * 10 / self.time_rotate:
+            self.wpm_data + time_diff
             self.wpm_time = 0
-            self.mainWidgit.wpm_label.setText("Selections/Min: "+str(round(self.wpm_data.average(), 2)))
+            self.mainWidgit.wpm_label.setText("Selections/Min: " + str(round(self.wpm_data.average(), 2)))
 
     def on_pause(self):
 
         self.mainWidgit.pause_timer.start(kconfig.pause_length)
         self.in_pause = True
-        self.setStyleSheet("background-color:"+config.bg_color_highlt+";")
+        self.setStyleSheet("background-color:" + config.bg_color_highlt + ";")
         self.mainWidgit.text_box.setStyleSheet("background-color:#ffffff;")
 
     def end_pause(self):
@@ -588,7 +710,7 @@ class Keyboard(MainWindow):
 
     def on_timer(self):
         if self.wpm_time != 0:
-            if time.time()-self.wpm_time > 15:  # reset wrd prior and click history after inactivity
+            if time.time() - self.wpm_time > 15:  # reset wrd prior and click history after inactivity
                 self.wpm_time = 0
                 self.bc.clock_inf.clock_history = [[]]
                 self.bc.is_undo = True
@@ -597,9 +719,16 @@ class Keyboard(MainWindow):
 
         if self.focusWidget() == self.mainWidgit.text_box:
             self.mainWidgit.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
-        if not self.in_pause:
-            start_t = time.time()
-            self.bc.clock_inf.clockutil.increment(self.words_on)
+
+        if self.bc_init:
+            if not self.in_pause:
+                start_t = time.time()
+                self.bc.clock_inf.clockutil.increment(self.words_on)
+        if not self.pretrain:
+            if self.first_load:
+                self.logDataEvent()
+                self.first_load_handel.safe_save(False)
+                self.first_load = False
 
     def on_press(self):
         # self.canvas.focus_set()
@@ -612,13 +741,12 @@ class Keyboard(MainWindow):
                 self.params_handle_dict['press'].append([time.time(), self.num_presses])
             self.bc.select()
         self.play()
-        
+
     def play(self):
         sound_file = "icons/bell.wav"
         QSound(sound_file).play()
 
     def highlight_winner(self, index):
-
 
         if self.mainWidgit.clocks[index] != '':
             self.mainWidgit.clocks[index].selected = True
@@ -633,19 +761,16 @@ class Keyboard(MainWindow):
             self.mainWidgit.highlight_timer.stop()
 
     def clock_index_to_text(self, index):
-        letter_num = int(index/4)
-        letter_rem = index-letter_num*4
-        if index < 26*4:
+        letter_num = int(index / 4)
+        letter_rem = index - letter_num * 4
+        if index < 26 * 4:
             if letter_rem < 3:
                 return self.words_li[letter_num][letter_rem]
             return string.lowercase[letter_num]
 
-
-
     def talk_winner(self, talk_string):
         pass
 
-   
     def make_choice(self, index):
         is_undo = False
         is_equalize = False
@@ -725,7 +850,7 @@ class Keyboard(MainWindow):
 
                 self.clear_text = True
 
-            
+
             elif new_char.isalpha():
                 talk_string = new_char
                 self.old_context_li.append(self.context)
@@ -774,22 +899,18 @@ class Keyboard(MainWindow):
         self.draw_histogram()
         # self.canvas.update_idletasks()
 
-    
     def closeEvent(self, event):
         print "CLOSING THRU CLOSEEVENT"
         self.quit(event)
-        #self.deleteLater()
-    
-    
+        # self.deleteLater()
+
     def quit(self, event=None):
         self.bc.quit_bc()
 
         self.close()
-        
-        
-                
-        #import sys
-        #sys.exit()
+
+        # import sys
+        # sys.exit()
 
     def launch_help(self):
         help_window = StartWindow(self.mainWidgit.screen_res, False)
@@ -802,11 +923,15 @@ class Keyboard(MainWindow):
         retrain_window.mainWidgit = WelcomeScreen(retrain_window)
         retrain_window.mainWidgit.initUI4()
         retrain_window.setCentralWidget(retrain_window.mainWidgit)
-        
+
         retrain_window.retrain = True
+
 
 def main():
     print "****************************\n****************************\n[Loading...]"
+    first_load_handel = PickleUtil("user_preferences/first_load.p")
+    first_load = first_load_handel.safe_load()
+    
     app = QtGui.QApplication(sys.argv)
     screen_res = (app.desktop().screenGeometry().width(), app.desktop().screenGeometry().height())
 
@@ -814,10 +939,11 @@ def main():
     app.processEvents()
     ex = Keyboard(screen_res, app)
 
+    
 
-    if kconfig.first_load:
+    if first_load:
         welcome = Pretraining(screen_res, ex)
-        PickleUtil("user_preferences/first_load.p").safe_save(False)
+        first_load_handel.safe_save(False)
 
     sys.exit(app.exec_())
 

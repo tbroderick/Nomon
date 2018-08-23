@@ -15,8 +15,7 @@
 #    GNU General Public License for more details.
 #
 #    You should have received a copy of the GNU General Public License
-#    along with Nomon Keyboard.  If not, see
-# <http://www.gnu.org/licenses/>.
+#    along with Nomon Keyboard.  If not, see <http://www.gnu.org/licenses/>.
 ######################################
 from __future__ import division
 import Tkinter
@@ -27,9 +26,9 @@ import math
 import random
 import os
 import pickle
+from pickle_util import *
 
 import numpy
-from pickle_util import *
 
 
 # pre-compute locations of the hour hands for a given
@@ -82,12 +81,24 @@ class HourScoreIncs:
         self.y_ksigma = []
         self.opt_sig = 1.
         self.not_read_pickle = 0
-        self.prev_data_path = "data/preconfig.pickle"
-        
-    
-        self.prev_data_pickle = PickleUtil(self.prev_data_path)
-        if self.prev_data_pickle.exists():
+
+        ## initialize the density histogram
+        if os.path.exists("data/preconfig.pickle") and self.not_read_pickle == 0:
+            print "using the trained preconfig!"
+
+            # with open("data/preconfig.pickle", 'rb') as pickle_file:
+            file_handel = PickleUtil("data/preconfig.pickle")
+            temp_dens = file_handel.safe_load()
+            # temp_dens = pickle.load(pickle_file)
+            self.dens_li = temp_dens[0]
+            print "I'm starting(reading) and the self.dens_li" + str(temp_dens[0])
+            self.Z = temp_dens[1]
+            self.ksigma0 = temp_dens[2]
+            print "Also the self.ksimga0" + str(temp_dens[2])
+            self.ksigma = self.ksigma0
+            self.y_li_from_pre = temp_dens[3]
             self.not_read_pickle = 1
+<<<<<<< HEAD
         
         #the dictionary from pre_train that contains 
         load_dict = self.prev_data_pickle.safe_load()
@@ -118,24 +129,23 @@ class HourScoreIncs:
                 self.ksigma = self.ksigma0
             
         #pickle file exists and can be loaded
+=======
+
+>>>>>>> origin/Master
         else:
+            print "couldn't find the trained preconfig!"
             self.Z = 0
             self.dens_li = []
             for x in self.x_li:
                 diff = x - config.mu0
 
-                dens = numpy.exp(-1/(2*config.sigma0_sq) * diff*diff)
-                dens /= numpy.sqrt(2*numpy.pi*config.sigma0_sq)
+                dens = numpy.exp(-1 / (2 * config.sigma0_sq) * diff * diff)
+                dens /= numpy.sqrt(2 * numpy.pi * config.sigma0_sq)
                 dens *= self.n_ksigma
                 self.dens_li.append(dens)
                 self.Z += dens
-            self.ksigma0 = 1.06*config.sigma0 / (self.n_ksigma**0.2)
+            self.ksigma0 = 1.06 * config.sigma0 / (self.n_ksigma ** 0.2)
             self.ksigma = self.ksigma0
-        
-
-
-
-
 
         ## add in previous data, if any
         if (use_num > 0):  # case: already have click data
@@ -157,32 +167,54 @@ class HourScoreIncs:
         for index in self.index_li:
             self.x_li.append(index * self.time_rotate / config.num_divs_click - self.time_rotate / 2.0)
 
+        # not pressed at all
+        if self.not_read_pickle == 0:
+            print "not read pickle"
+
+        if os.path.exists("data/preconfig.pickle"):
+            print "preconfig exists :0"
+
+        # =============================================================================
+        #         if os.path.exists("data/preconfig.pickle") and self.not_read_pickle ==0:
+        #             print "not pressed once so update from training"
+        #             #update self.dens_li and other things
+        #             empirical = [self.index_into_compatible_with_xloc(self.yin_into_index(yin)) for yin in self.y_li_from_pre]
+        #             opt_sig = self.optimal_bandwith(empirical)
+        #             self.dens_li = []
+        #             self.Z = 0
+        #             for x in self.x_li:
+        #                 x_loc = x
+        #                 dens = sum([self.normal(x_loc, self.index_into_compatible_with_xloc(self.yin_into_index(yin)), opt_sig**2) for yin in self.y_li_from_pre])
+        #                 #print "dens" + str(dens)
+        #                 self.dens_li.append(dens)
+        #                 self.Z += dens
+        #
+        #             self.not_read_pickle = 1
+        # =============================================================================
 
         yL = len(self.y_li)
         for n in range(0, yL):
             self.increment_dens(self.y_li[n], self.y_ksigma[n])
         self.calc_ksigma()
 
-
-    #Helper functions         
+    # Helper functions
     def normal(self, x, mu, sig_sq):
-        return numpy.exp(-((x-mu)**2)/(2*sig_sq)) / float(numpy.sqrt(2*numpy.pi*sig_sq))
-    
+        return numpy.exp(-((x - mu) ** 2) / (2 * sig_sq)) / float(numpy.sqrt(2 * numpy.pi * sig_sq))
+
     # return the click score for a particular press time
-    #yin will be index!
+    # yin will be index!
     def yin_into_index(self, yin):
-        #yin_into_index = yin
-        index = int(config.num_divs_click * (yin/self.time_rotate+0.5)) % config.num_divs_click
+        # yin_into_index = yin
+        index = int(config.num_divs_click * (yin / self.time_rotate + 0.5)) % config.num_divs_click
         return index
-    
+
     def index_into_compatible_with_xloc(self, index):
-        x_compat = index * self.time_rotate/config.num_divs_click - self.time_rotate/2.0
+        x_compat = index * self.time_rotate / config.num_divs_click - self.time_rotate / 2.0
         return x_compat
-    
+
     def optimal_bandwith(self, things):
         n = len(things)
         return 1.06 * (n ** -0.2) * numpy.std(things)
-
 
     def increment_dens(self, yin, ksigma):
         self.Z = 0
@@ -232,20 +264,16 @@ class HourScoreIncs:
         self.ksigma_sq = self.ns_factor * self.ns_factor * ave_sigma_sq
         self.ksigma = numpy.sqrt(self.ksigma_sq)
 
-
     # return the click score for a particular press time
     def get_score_inc(self, yin):
-        if self.Z >0 :
-            index = int(config.num_divs_click * (yin / self.time_rotate + 0.5)) % config.num_divs_click
-            return numpy.log(self.dens_li[index] / self.Z)
-        else:
-            return 0
+        index = int(config.num_divs_click * (yin / self.time_rotate + 0.5)) % config.num_divs_click
+        return numpy.log(self.dens_li[index] / self.Z)
 
     def reverse_index_gsi(self, log_dens_val):
         dens_val = numpy.e ** log_dens_val
         most_likely_index = numpy.argmin([abs(x - dens_val) for x in self.dens_li])
         return most_likely_index
-        
+
     # plot exp(the click scores) across press times
     def get_plot(self):
         # don't return x information
@@ -314,10 +342,10 @@ class BroderClocks:
         # reset wait_s so num_divs_time is integer
         self.wait_s = time_rotate / self.num_divs_time
 
-
         self.use_num, self.user_id, self.time_rotate, self.prev_data = use_num, user_id, time_rotate, prev_data
         self.last_press_time = 0
 
+<<<<<<< HEAD
         self.draw_times = config.Stack(500)
         
         #If user id is the same, load the click_time_list in the saved file
@@ -336,9 +364,22 @@ class BroderClocks:
                 else: self.click_time_list = []
             except:
                 self.click_time_list = []
+=======
+        # If user id is the same, load the click_time_list in the saved file
+        # Otherwise load empty list
+        # Variables to dump/save in click_time_log.pickle
+        if os.path.exists("data/click_time_log" + str(user_id) + "." + str(use_num) + ".pickle"):
+            with open("data/click_time_log" + str(user_id) + "." + str(use_num) + ".pickle", 'rb') as temp_handle:
+                try:
+                    temp_saved_list = pickle.load(temp_handle)
+                    # saved user id is the 0th element
+                    if temp_saved_list[0] == user_id:
+                        self.click_time_list = temp_saved_list[1]
+                except:
+                    self.click_time_list = []
+>>>>>>> origin/Master
         else:
             self.click_time_list = []
-
         self.rot_change_list = [(0, self.time_rotate)]
 
         ### initialize ###
@@ -429,7 +470,6 @@ class BroderClocks:
         #	self.file_handle.write("bits " + str(bit_rate) + " " + str(loc_rate) + "\n")
         self.last_win_time = t
 
-
     def init_canvas_clocks(self):
         # list of IDs so can retrieve these objects to change them later
         self.circle_id = []
@@ -467,7 +507,6 @@ class BroderClocks:
 
         # update records
         if not self.parent.pretrain:
-            draw_time = time.time()
             for clock in self.clocks_on:
                 # update time indices
                 self.cur_hours[clock] = (self.cur_hours[clock] + 1) % self.num_divs_time
@@ -475,13 +514,16 @@ class BroderClocks:
                 v = self.hl.hour_locs[self.cur_hours[clock]]
                 angle = math.atan2(v[1], v[0])
 
-                self.parent.mainWidgit.clocks[clock].angle = angle + math.pi*0.5
+                self.parent.mainWidgit.clocks[clock].angle = angle + math.pi * 0.5
                 self.parent.mainWidgit.clocks[clock].repaint()
+<<<<<<< HEAD
             draw_time = (time.time()-draw_time)
             self.draw_times+draw_time
             if len(self.draw_times) == self.draw_times.max_size:
                 print(sum(self.draw_times) / len(self.draw_times))
 
+=======
+>>>>>>> origin/Master
 
         # refresh the canvas
         # self.canvas.update_idletasks()
@@ -494,12 +536,12 @@ class BroderClocks:
         if config.is_learning:
             self.update_history(time_in - self.latest_time)
 
-        ##Save the click time of the current 
+        ##Save the click time of the current
         top_score_clock = self.top_cscore_arg()
         ind_in_histo = self.hsi.reverse_index_gsi(self.cscores[top_score_clock])
-        
-        #Save all click time by the user
-        
+
+        # Save all click time by the user
+
         last_gap_time = (time_in - self.last_press_time) % self.time_rotate
         self.save_click_time(last_gap_time, ind_in_histo)
         self.last_press_time = time_in
@@ -523,17 +565,14 @@ class BroderClocks:
         else:
             # update time indices
             self.init_round(False, False, [])
-          
-            
-        
 
-    #Save all click time by the user
-    def save_click_time(self,last_gap_time, index):
-        #time_diff_in = time_in - self.latest_time
-        #No such thing as cur_hour
-        #click_time = self.cur_hour*self.time_rotate*1.0/self.num_divs_time + time_diff_in - self.time_rotate*config.frac_period
-        
-        self.click_time_list.append((last_gap_time, index))     
+    # Save all click time by the user
+    def save_click_time(self, last_gap_time, index):
+        # time_diff_in = time_in - self.latest_time
+        # No such thing as cur_hour
+        # click_time = self.cur_hour*self.time_rotate*1.0/self.num_divs_time + time_diff_in - self.time_rotate*config.frac_period
+
+        self.click_time_list.append((last_gap_time, index))
 
     def learn_scores(self):
         n_hist = len(self.clock_history)
@@ -577,7 +616,6 @@ class BroderClocks:
 
     def top_cscore_arg(self):
         return numpy.argmax(self.cscores)
-        
 
     def update_history(self, time_diff_in):
         n_press = len(self.clock_history[0])
@@ -598,7 +636,6 @@ class BroderClocks:
         
         print "SELF.CLOCK_HISTORY[0][last] is " + str(self.clock_history[0][-1]) 
 
-
     # compares indices based on their cumulative score
     def compare_score(self, xind, yind):
         if (self.cscores[xind] < self.cscores[yind]):
@@ -607,7 +644,6 @@ class BroderClocks:
             return -1
         else:
             return 0
-
 
     # determine if a single clock has won out above the rest
     def is_winner(self):
@@ -619,6 +655,9 @@ class BroderClocks:
         else:
             return False
 
+    def get_prior_magnitude(self):
+        mag = self.hsi.get_magnitude()
+        return mag
 
     def init_round(self, is_win, is_start, clock_score_prior):
         if (is_win or is_start):  # if won, restart everything
@@ -683,7 +722,6 @@ class BroderClocks:
                 self.cscores[self.sorted_inds[0]] = self.cscores[self.sorted_inds[1]] + config.max_init_diff
         top_score = self.cscores[self.sorted_inds[0]]
 
-
         # update the sorted loading_text
         self.sorted_inds = list(self.clocks_on)
         self.sorted_inds.sort(self.compare_score)
@@ -742,9 +780,9 @@ class BroderClocks:
             # x = self.centers[clock][0]
             # y = self.centers[clock][1]
 
-            v = self.hl.hour_locs[self.cur_hours[clock]-1]
+            v = self.hl.hour_locs[self.cur_hours[clock] - 1]
             angle = math.atan2(v[1], v[0])
-            self.parent.mainWidgit.clocks[clock].angle = angle + math.pi*0.5
+            self.parent.mainWidgit.clocks[clock].angle = angle + math.pi * 0.5
             self.parent.mainWidgit.clocks[clock].repaint()
 
         # update the canvas

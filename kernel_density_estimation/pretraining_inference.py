@@ -54,6 +54,8 @@ class preClock_util(ClockUtil):
     def increment(self):
         #for all the dummy clocks
         count = 0
+        if self.parent.mainWidgit.highlight_clock:
+             self.parent.mainWidgit.highlight()
         for clock in self.parent.mainWidgit.dummy_clocks:
             self.cur_hours[count] = (self.cur_hours[count] + 1) % self.num_divs_time
             if count == self.selected_clock:
@@ -104,6 +106,10 @@ class preClock_util(ClockUtil):
             clock.repaint()
             count +=1
         self.latest_time = time.time()
+        
+        if self.pbc.parent.num_presses > 0:
+            self.pbc.parent.mainWidgit.highlight_clock = True
+            self.pbc.parent.mainWidgit.start_time = time.time()
              ###HERE
             #self.cur_hours[count] = self.angle_into_cur_hour(clock.angle)#should be index
             #count+=1

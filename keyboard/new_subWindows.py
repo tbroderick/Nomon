@@ -7,10 +7,13 @@ from widgets import *
 
 from pickle_util import *
 import math, numpy
+import random
 
-import sys,os
+import sys, os
+
 sys.path.insert(0, os.path.realpath('../kernel_density_estimation'))
 from pretraining_inference import *
+
 
 class StartWindow(QtGui.QMainWindow):
 
@@ -21,8 +24,12 @@ class StartWindow(QtGui.QMainWindow):
 
         self.screen_res = screen_res
 
-        self.clock_type = PickleUtil("user_preferences/clock_preference.p").safe_load()
-        self.high_contrast = PickleUtil("user_preferences/high_contrast.p").safe_load()
+        #self.clock_type = PickleUtil("user_preferences/clock_preference.p").safe_load()
+        #self.high_contrast = PickleUtil("user_preferences/high_contrast.p").safe_load()
+        
+        self.up_handel = PickleUtil("user_preferences/user_preferences.p")
+        self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference, self.start_speed, self.is_write_data = self.up_handel.safe_load()
+
         self.splash = splash
         self.help_screen = False  # if triggered under help menu adjust number of follow up screens
         self.screen_num = 0  # start at first screen if welcome screen
@@ -82,21 +89,21 @@ class StartWindow(QtGui.QMainWindow):
                         self.mainWidgit = WelcomeScreen(self)
                         self.mainWidgit.initUI4()
                         self.setCentralWidget(self.mainWidgit)
-                #I think here
+                # I think here
                 elif self.screen_num == 4:
                     self.mainWidgit.close()
                     self.re_init()
-                    #self.mainWidgit = PretrainScreen(self)
-                    #self.mainWidgit.initUI()
-                    #self.pbc = pre_broderclocks(self)
+                    # self.mainWidgit = PretrainScreen(self)
+                    # self.mainWidgit.initUI()
+                    # self.pbc = pre_broderclocks(self)
                     self.setCentralWidget(self.mainWidgit)
                     self.setGeometry(self.sister.geometry())
                 else:
 
-# =============================================================================
-#                     if self.num_presses >= self.total_presses:
-#                         self.on_finish()
-# =============================================================================
+                    # =============================================================================
+                    #                     if self.num_presses >= self.total_presses:
+                    #                         self.on_finish()
+                    # =============================================================================
                     self.on_press()
 
 
@@ -108,6 +115,7 @@ class SplashScreen(QtGui.QWidget):
         self.screen_res = self.parent.screen_res
         self.size_factor = min(self.screen_res) / 1080.
         self.alignment = 'cr'
+        self.color_index = self.parent.high_contrast
 
         self.initUI()
 
@@ -125,8 +133,8 @@ class SplashScreen(QtGui.QWidget):
 
         loading_label = QtGui.QLabel("LOADING NOMON...")
 
-        self.quotes_label.setFont(splash_font)
-        loading_label.setFont(splash_font)
+        self.quotes_label.setFont(splash_font[self.parent.font_scale])
+        loading_label.setFont(splash_font[self.parent.font_scale])
 
         self.timer = QtCore.QBasicTimer()
         self.timer.start(100, self)
@@ -141,6 +149,7 @@ class SplashScreen(QtGui.QWidget):
         vbox.addWidget(self.quotes_label, 1)
 
         self.setLayout(vbox)
+        self.loading_clock.calcClockSize()
 
     def timerEvent(self, e):
         if self.step >= math.pi * 2:
@@ -152,6 +161,7 @@ class SplashScreen(QtGui.QWidget):
         self.loading_clock.repaint()
 
 
+
 class WelcomeScreen(QtGui.QWidget):
 
     def __init__(self, parent):
@@ -160,6 +170,7 @@ class WelcomeScreen(QtGui.QWidget):
         self.screen_res = self.parent.screen_res
         self.size_factor = min(self.screen_res) / 1080.
         self.alignment = 'cr'
+        self.color_index = self.parent.high_contrast
 
     def initUI1(self):
         vbox = QtGui.QVBoxLayout()
@@ -175,10 +186,10 @@ class WelcomeScreen(QtGui.QWidget):
 
         self.sub_label_1.setWordWrap(True)
         loading_label = QtGui.QLabel("<b>Welcome to the Nomon Keyboard!</b>")
-        loading_label.setFont(welcome_main_font)
+        loading_label.setFont(welcome_main_font[self.parent.font_scale])
 
-        self.sub_label_1.setFont(welcome_sub_font)
-        self.sub_label_2.setFont(welcome_sub_font)
+        self.sub_label_1.setFont(welcome_sub_font[self.parent.font_scale])
+        self.sub_label_2.setFont(welcome_sub_font[self.parent.font_scale])
         self.timer = QtCore.QBasicTimer()
         self.timer.start(30, self)
         self.step = 0
@@ -201,10 +212,10 @@ class WelcomeScreen(QtGui.QWidget):
         self.sub_label_3 = QtGui.QLabel("<b>&</b>")
         self.sub_label_4 = QtGui.QLabel("<i>(press to continue)</i>")
 
-        self.header_label.setFont(welcome_main_font)
-        self.sub_label_1.setFont(welcome_main_font)
-        self.sub_label_2.setFont(welcome_main_font)
-        self.sub_label_3.setFont(welcome_main_font)
+        self.header_label.setFont(welcome_main_font[self.parent.font_scale])
+        self.sub_label_1.setFont(welcome_main_font[self.parent.font_scale])
+        self.sub_label_2.setFont(welcome_main_font[self.parent.font_scale])
+        self.sub_label_3.setFont(welcome_main_font[self.parent.font_scale])
 
         self.highlighted_clock = ClockWidgit('', self)
         self.highlighted_clock.highlighted = True
@@ -221,9 +232,9 @@ class WelcomeScreen(QtGui.QWidget):
             "select a <b>regular clock</b>, then you should press as <b>accurately</b> as "
             "possible!")
 
-        self.main_text_label.setFont(welcome_sub_font)
+        self.main_text_label.setFont(welcome_sub_font[self.parent.font_scale])
         self.main_text_label.setWordWrap(True)
-        self.sub_label_4.setFont(welcome_sub_font)
+        self.sub_label_4.setFont(welcome_sub_font[self.parent.font_scale])
 
         grid = QtGui.QGridLayout()
         grid.addWidget(self.header_label, 0, 0, 1, 5)
@@ -244,7 +255,7 @@ class WelcomeScreen(QtGui.QWidget):
     def initUI3(self):
         self.header_label = QtGui.QLabel("<b>Alternate Clock designs are located in the View Menu</b>")
 
-        self.header_label.setFont(welcome_main_font)
+        self.header_label.setFont(welcome_main_font[self.parent.font_scale])
         self.header_label.setWordWrap(True)
 
         self.picture_timer = QtCore.QTimer()
@@ -294,13 +305,13 @@ class WelcomeScreen(QtGui.QWidget):
                                         "the <span style='color:#00aa00;'>GREEN CLOCK</span> reaches Noon in each round.")
         self.sub_label_3 = QtGui.QLabel("<i>(press to continue)</i>")
 
-        self.header_label.setFont(welcome_main_font)
+        self.header_label.setFont(welcome_main_font[self.parent.font_scale])
         self.header_label.setWordWrap(True)
-        self.sub_label_1.setFont(welcome_sub_font)
+        self.sub_label_1.setFont(welcome_sub_font[self.parent.font_scale])
         self.sub_label_1.setWordWrap(True)
-        self.sub_label_2.setFont(welcome_sub_font)
+        self.sub_label_2.setFont(welcome_sub_font[self.parent.font_scale])
         self.sub_label_2.setWordWrap(True)
-        self.sub_label_3.setFont(welcome_sub_font)
+        self.sub_label_3.setFont(welcome_sub_font[self.parent.font_scale])
 
         grid = QtGui.QGridLayout()
         grid.addWidget(self.header_label, 0, 0, 1, 10)
@@ -324,6 +335,7 @@ class WelcomeScreen(QtGui.QWidget):
             self.loading_clock.repaint()
 
 
+
 class PretrainScreen(QtGui.QWidget):
 
     def __init__(self, parent):
@@ -333,7 +345,8 @@ class PretrainScreen(QtGui.QWidget):
         self.size_factor = min(self.screen_res) / 1080.
         self.alignment = 'cr'
         self.start_pretrain = False
-
+        self.color_index = self.parent.high_contrast
+        self.highlight_clock = False
 
     def initUI(self):
 
@@ -347,24 +360,24 @@ class PretrainScreen(QtGui.QWidget):
         self.generateDummyClocks()
         self.layoutClocks()
 
-        self.main_label= QtGui.QLabel("Please press when the moving hand on the <span style='color:#00aa00;'>"
-                                      "GREEN CLOCK</span> reaches Noon <b>"+str(self.parent.total_presses)+"</b> more"
-                                                                                                           " times...")
+        self.main_label = QtGui.QLabel("Please press when the moving hand on the <span style='color:#00aa00;'>"
+                                       "GREEN CLOCK</span> reaches Noon <b>" + str(
+            self.parent.total_presses) + "</b> more"
+                                         " times...")
         self.sub_label_1 = QtGui.QLabel("<i>(or press to continue)</i>")
-        self.main_label.setFont(welcome_main_font)
+        self.main_label.setFont(welcome_main_font[self.parent.font_scale])
         self.main_label.setWordWrap(True)
-        self.sub_label_1.setFont(welcome_sub_font)
+        self.sub_label_1.setFont(welcome_sub_font[self.parent.font_scale])
 
         self.start_button = QtGui.QPushButton("Start Training!")
         self.start_button.pressed.connect(self.start_buttton_func)
-
 
         vbox.addWidget(self.main_label, 1)
         vbox.addStretch(1)
         vbox.addLayout(self.key_grid)
         vbox.addStretch(3)
 
-        hbox=QtGui.QHBoxLayout()
+        hbox = QtGui.QHBoxLayout()
         hbox.addStretch(1)
         hbox.addWidget(self.start_button, 1)
         hbox.addStretch(1)
@@ -376,10 +389,9 @@ class PretrainScreen(QtGui.QWidget):
 
         self.setLayout(vbox)
 
-    
     def generateDummyClocks(self):
         self.dummy_clocks = [ClockWidgit("not me", self) for i in range(64)]
-        
+
     def layoutClocks(self):
         index = 0
         for row in range(4):
@@ -395,9 +407,33 @@ class PretrainScreen(QtGui.QWidget):
                         index += 1
                 if col == 3:
                     self.key_grid.addWidget(VerticalSeparator(), row * 4, col * 4, 5, 1)
-        self.key_grid.addWidget(HorizontalSeparator(), row * 5+1, 0, 1, 13)
+        self.key_grid.addWidget(HorizontalSeparator(), row * 5 + 1, 0, 1, 13)
 
+# =============================================================================
+#     def redrawClocks(self):
+#         for clock in self.dummy_clocks:
+#             clock.setText("not me")
+#             clock.selected = False
+#             clock.highlighted = (random.random() < random.random())
+#             clock.dummy_angle_offset = random.random() * math.pi * -1
+#             angle = self.clock.angle + clock.dummy_angle_offset
+#             clock.angle = angle
+#             clock.repaint()
+#         self.selected_clock = random.randint(0, 63)
+#         self.dummy_clocks[self.selected_clock].dummy_angle_offset = 0
+#         self.dummy_clocks[self.selected_clock].selected = True
+#         self.dummy_clocks[self.selected_clock].setText("Click Me!")
+#         if self.parent.num_presses > 0:
+#             self.highlight_clock = True
+#             self.start_time = time.time()
+# =============================================================================
 
+    def highlight(self):
+        if time.time()-self.start_time < .500:
+            self.dummy_clocks[self.parent.pbc.clock_inf.clockutil.selected_clock].background = True
+        else:
+            self.dummy_clocks[self.parent.pbc.clock_inf.clockutil.selected_clock].background = False
+            self.highlight_clock = False
 
     def start_buttton_func(self):
         if self.parent.num_presses >= self.parent.total_presses:
@@ -413,59 +449,56 @@ class Pretraining(StartWindow):
         self.sister = sister
         self.sister.pretrain = True
         
-        
+        self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference, self.start_speed, self.is_write_data = self.up_handel.safe_load()
+
+
         self.num_presses = 0
         self.total_presses = 10
-        
-        #just for initialization
+
+        # just for initialization
         self.pbc = None
         self.mainWidgit = PretrainScreen(self)
         self.mainWidgit.initUI()
         self.radius = self.mainWidgit.clock.radius
         self.time_rotate = self.sister.time_rotate
-        
-        
+
         self.pbc = pre_broderclocks(self)
-       
+
         self.in_pause = False
         self.deactivate_press = False
-        #whether training has actually started
+        # whether training has actually started
         self.started = 0
         self.training_ended = 0
         self.consent = True
-        
-        self.retrain = False
 
+        self.retrain = False
 
     def re_init(self):
         self.sister.pretrain = True
-        
-        
+
         self.num_presses = 0
         self.total_presses = 10
-        
-        #just for initialization
+
+        # just for initialization
         self.pbc = None
         self.mainWidgit = PretrainScreen(self)
         self.mainWidgit.initUI()
         self.radius = self.mainWidgit.clock.radius
         self.time_rotate = self.sister.time_rotate
-        
-        
+
         self.pbc = pre_broderclocks(self)
-       
+
         self.in_pause = False
         self.deactivate_press = False
-        #whether training has actually started
+        # whether training has actually started
         self.started = 0
         self.training_ended = 0
         self.consent = True
 
-    
     def play(self):
         sound_file = "icons/bell.wav"
         QSound(sound_file).play()
-    
+
     def on_press(self):
 
         if self.started == 1:
@@ -473,11 +506,10 @@ class Pretraining(StartWindow):
             self.mainWidgit.main_label.setText("Please press when the moving hand on the <span style='color:#00aa00;'>"
                                                "GREEN CLOCK</span> reaches Noon <b>" +
                                                str(self.total_presses - self.num_presses) + "</b> more times...")
-            #Log press time
+            # Log press time
             if (not self.in_pause) and self.deactivate_press == False:
-                #if config.is_write_data:
+                # if config.is_write_data:
                 self.pbc.select()
-
 
             if self.num_presses == self.total_presses:
                 print "finished calculating density"
@@ -490,9 +522,9 @@ class Pretraining(StartWindow):
 
                 self.mainWidgit.start_button.show()
                 self.deactivate_press = True
-                                    
-                    
-                
+
+
+
             elif self.num_presses > self.total_presses:
                 print "finished calculating density"
                 self.mainWidgit.main_label.setText("Training has finished!")
@@ -503,10 +535,7 @@ class Pretraining(StartWindow):
                 self.mainWidgit.start_button.show()
                 self.start_button_func()
                 self.deactivate_press = True
-                
-                
-           
-            
+
         if self.deactivate_press:
             self.on_finish()
         self.on_start()
@@ -516,28 +545,28 @@ class Pretraining(StartWindow):
         self.mainWidgit.main_label.setFocus()  # focus on not toggle-able widget to allow keypress event
         if not self.mainWidgit.start_pretrain:
             self.mainWidgit.start_pretrain = True
-     
+
         if self.started == 0:
             self.train_timer = QtCore.QTimer()
             self.train_timer.timeout.connect(self.on_timer)
-            self.train_timer.start(config.ideal_wait_s*1000)
+            self.train_timer.start(config.ideal_wait_s * 1000)
             self.started = 1
             self.mainWidgit.start_button.hide()
-            
+
     def on_timer(self):
-        if not(self.in_pause) and not(self.deactivate_press) and self.num_presses < self.total_presses:
+        if not (self.in_pause) and not (self.deactivate_press) and self.num_presses < self.total_presses:
             self.pbc.clock_inf.clockutil.increment()
-            
-        
+
+
         elif self.num_presses == self.total_presses:
 
-            #print "Training Ended"
+            # print "Training Ended"
             self.deactivate_press = True
 
     def load_saved_density_keyboard(self):
-        
+
         self.sister.bc.get_prev_data()
-        
+
     def save(self):
         if self.consent and config.is_write_data:
             self.pbc.quit_pbc()
@@ -547,35 +576,34 @@ class Pretraining(StartWindow):
     def on_finish(self):
         print "quitting"
         self.training_ended = 1
-        
+
         try:
             if self.retrain == False:
                 self.save()
                 self.load_saved_density_keyboard()
             elif self.retrain == True and self.pbc.clock_inf.calc_density_called == True:
                 self.sister.bc.save_when_quit()
-                
+
                 self.sister.use_num = 0
                 self.sister.user_id += 1
                 self.save()
                 self.load_saved_density_keyboard()
-                
+
             else:
                 pass
-        
+
         except:
             print "THERE was an error in saving pretraining data"
-        
-        
+
         self.sister.pretrain = False
         self.sister.draw_histogram(bars=None)
         self.sister.mainWidgit.histogram.repaint()
         self.sister.mainWidgit.text_box.setStyleSheet("background-color:;")
         self.sister.mainWidgit.in_focus = True
-        
+
         self.close()
 
-    #Is this used at all?
+    # Is this used at all?
     def closeEvent(self, event):
         self.on_finish()
         event.accept()
