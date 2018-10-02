@@ -1,178 +1,174 @@
-import sys
-import os
+from PyQt4 import QtGui, QtCore
 import string
+
 import config
-import time
+import kconfig
 import dtree
-import pickle
-from pickle_util import *
+from pickle_util import PickleUtil
+import os
 
-from widgets import *
+from widgets import ClockWidgit, HistogramWidget, VerticalSeparator, HorizontalSeparator
 
 
+# noinspection PyArgumentList
 class MainWindow(QtGui.QMainWindow):
+
     def __init__(self, screen_res):
         super(MainWindow, self).__init__()
 
         self.screen_res = screen_res
         # Load User Preferences
 
-    def initUI(self):
+    def init_ui(self):
         self.mainWidgit = MainKeyboardWidget(self, self.key_chars, self.screen_res)
-        self.mainWidgit.initUI()
+        self.mainWidgit.init_ui()
         self.setCentralWidget(self.mainWidgit)
-        self.clockTextAlign('auto', message=False)
-
+        self.clock_text_align('auto', message=False)
 
         # File Menu Actions
-        restartAction = QtGui.QAction('&Restart', self)
-        restartAction.setShortcut('Ctrl+R')
-        restartAction.setStatusTip('Restart application')
-        #restartAction.triggered.connect(self.restartEvent)
+        restart_action = QtGui.QAction('&Restart', self)
+        restart_action.setShortcut('Ctrl+R')
+        restart_action.setStatusTip('Restart application')
+        # restart_action.triggered.connect(self.restartEvent)
 
-        exitAction = QtGui.QAction('&Exit', self)
-        exitAction.setShortcut('Ctrl+Q')
-        exitAction.setStatusTip('Exit application')
-        # exitAction.triggered.connect(QtGui.qApp.quit)
-        exitAction.triggered.connect(self.closeEvent)
+        exit_action = QtGui.QAction('&Exit', self)
+        exit_action.setShortcut('Ctrl+Q')
+        exit_action.setStatusTip('Exit application')
+        # exit_action.triggered.connect(QtGui.qApp.quit)
+        exit_action.triggered.connect(self.closeEvent)
 
         # Clock Menu Actions
-        self.highContrastAction = QtGui.QAction('&High Contrast Mode', self, checkable=True)
-        self.highContrastAction.triggered.connect(lambda: self.highContrastEvent())
+        self.high_contrast_action = QtGui.QAction('&High Contrast Mode', self, checkable=True)
+        self.high_contrast_action.triggered.connect(lambda: self.high_contrast_event())
 
-        self.defaultClockAction = QtGui.QAction('&Default (Clock)', self, checkable=True)
-        self.defaultClockAction.setStatusTip('Regular Nomon clock with sweeping minute hand')
-        self.defaultClockAction.triggered.connect(lambda: self.clockChangeEvent('default'))
-        self.defaultClockAction.setIcon(QtGui.QIcon(os.path.join("icons/", 'default.png')))
+        self.default_clock_action = QtGui.QAction('&Default (Clock)', self, checkable=True)
+        self.default_clock_action.setStatusTip('Regular Nomon clock with sweeping minute hand')
+        self.default_clock_action.triggered.connect(lambda: self.clock_change_event('default'))
+        self.default_clock_action.setIcon(QtGui.QIcon(os.path.join("icons/", 'default.png')))
 
-        self.radarClockAction = QtGui.QAction('&Radar (Clock)', self, checkable=True)
-        self.radarClockAction.setStatusTip('Nomon clock with sweeping minute hand and radar trails')
-        self.radarClockAction.triggered.connect(lambda: self.clockChangeEvent('radar'))
-        self.radarClockAction.setIcon(QtGui.QIcon(os.path.join("icons/", 'radar.png')))
+        self.radar_clock_action = QtGui.QAction('&Radar (Clock)', self, checkable=True)
+        self.radar_clock_action.setStatusTip('Nomon clock with sweeping minute hand and radar trails')
+        self.radar_clock_action.triggered.connect(lambda: self.clock_change_event('radar'))
+        self.radar_clock_action.setIcon(QtGui.QIcon(os.path.join("icons/", 'radar.png')))
 
-        self.ballClockAction = QtGui.QAction('&Ball (Filling)', self, checkable=True)
-        self.ballClockAction.triggered.connect(lambda: self.clockChangeEvent('ball'))
-        self.ballClockAction.setIcon(QtGui.QIcon(os.path.join("icons/", 'ball.png')))
+        self.ball_clock_action = QtGui.QAction('&Ball (Filling)', self, checkable=True)
+        self.ball_clock_action.triggered.connect(lambda: self.clock_change_event('ball'))
+        self.ball_clock_action.setIcon(QtGui.QIcon(os.path.join("icons/", 'ball.png')))
 
-        self.pacmanClockAction = QtGui.QAction('&Pac Man (Filling Pac Man)', self, checkable=True)
-        self.pacmanClockAction.triggered.connect(lambda: self.clockChangeEvent('pac man'))
-        self.pacmanClockAction.setIcon(QtGui.QIcon(os.path.join("icons/", 'pac_man.png')))
+        self.pacman_clock_action = QtGui.QAction('&Pac Man (Filling Pac Man)', self, checkable=True)
+        self.pacman_clock_action.triggered.connect(lambda: self.clock_change_event('pac man'))
+        self.pacman_clock_action.setIcon(QtGui.QIcon(os.path.join("icons/", 'pac_man.png')))
 
-        self.barClockAction = QtGui.QAction('&Progress Bar', self, checkable=True)
-        self.barClockAction.triggered.connect(lambda: self.clockChangeEvent('bar'))
-        self.barClockAction.setIcon(QtGui.QIcon(os.path.join("icons/", 'bar.png')))
+        self.bar_clock_action = QtGui.QAction('&Progress Bar', self, checkable=True)
+        self.bar_clock_action.triggered.connect(lambda: self.clock_change_event('bar'))
+        self.bar_clock_action.setIcon(QtGui.QIcon(os.path.join("icons/", 'bar.png')))
 
         # Font Menu Actions
-        self.smallFontAction = QtGui.QAction('&Small', self, checkable=True)
-        self.smallFontAction.triggered.connect(lambda: self.changeFontSize('small'))
+        self.small_font_action = QtGui.QAction('&Small', self, checkable=True)
+        self.small_font_action.triggered.connect(lambda: self.change_font_size('small'))
 
-        self.medFontAction = QtGui.QAction('&Medium (Default)', self, checkable=True)
-        self.medFontAction.triggered.connect(lambda: self.changeFontSize('med'))
+        self.med_font_action = QtGui.QAction('&Medium (Default)', self, checkable=True)
+        self.med_font_action.triggered.connect(lambda: self.change_font_size('med'))
 
-        self.largeFontAction = QtGui.QAction('&Large', self, checkable=True)
-        self.largeFontAction.triggered.connect(lambda: self.changeFontSize('large'))
+        self.large_font_action = QtGui.QAction('&Large', self, checkable=True)
+        self.large_font_action.triggered.connect(lambda: self.change_font_size('large'))
 
         # Text Menu Actions
-        self.autoTextalignAction = QtGui.QAction('&Auto (Recommended)', self, checkable=True)
-        self.autoTextalignAction.triggered.connect(lambda: self.clockTextAlign('auto'))
+        self.auto_text_align_action = QtGui.QAction('&Auto (Recommended)', self, checkable=True)
+        self.auto_text_align_action.triggered.connect(lambda: self.clock_text_align('auto'))
 
-        self.tcTextalignAction = QtGui.QAction('&Top Center', self, checkable=True)
-        self.tcTextalignAction.triggered.connect(lambda: self.clockTextAlign('tc'))
+        self.tc_text_align_action = QtGui.QAction('&Top Center', self, checkable=True)
+        self.tc_text_align_action.triggered.connect(lambda: self.clock_text_align('tc'))
 
-        self.clTextalignAction = QtGui.QAction('&Center Left', self, checkable=True)
-        self.clTextalignAction.triggered.connect(lambda: self.clockTextAlign('cl'))
+        self.cl_text_align_action = QtGui.QAction('&Center Left', self, checkable=True)
+        self.cl_text_align_action.triggered.connect(lambda: self.clock_text_align('cl'))
 
-        self.ccTextalignAction = QtGui.QAction('&Center', self, checkable=True)
-        self.ccTextalignAction.triggered.connect(lambda: self.clockTextAlign('cc'))
+        self.cc_text_align_action = QtGui.QAction('&Center', self, checkable=True)
+        self.cc_text_align_action.triggered.connect(lambda: self.clock_text_align('cc'))
 
-        self.crTextalignAction = QtGui.QAction('&Center Right', self, checkable=True)
-        self.crTextalignAction.triggered.connect(lambda: self.clockTextAlign('cr'))
+        self.cr_text_align_action = QtGui.QAction('&Center Right', self, checkable=True)
+        self.cr_text_align_action.triggered.connect(lambda: self.clock_text_align('cr'))
 
-        self.bcTextalignAction = QtGui.QAction('&Bottom Center', self, checkable=True)
-        self.bcTextalignAction.triggered.connect(lambda: self.clockTextAlign('bc'))
+        self.bc_text_align_action = QtGui.QAction('&Bottom Center', self, checkable=True)
+        self.bc_text_align_action.triggered.connect(lambda: self.clock_text_align('bc'))
 
         # Keyboard Layout Menu Actions
-        self.defaultLayoutAction = QtGui.QAction('&Alphabetical (Default)', self, checkable=True)
-        self.defaultLayoutAction.triggered.connect(lambda: self.layoutChangeEvent('alphabetical'))
+        self.default_layout_action = QtGui.QAction('&Alphabetical (Default)', self, checkable=True)
+        self.default_layout_action.triggered.connect(lambda: self.layout_change_event('alphabetical'))
 
-        self.qwertyLayoutAction = QtGui.QAction('&QWERTY', self, checkable=True)
-        self.qwertyLayoutAction.triggered.connect(lambda: self.layoutChangeEvent('qwerty'))
+        self.qwerty_layout_action = QtGui.QAction('&QWERTY', self, checkable=True)
+        self.qwerty_layout_action.triggered.connect(lambda: self.layout_change_event('qwerty'))
 
         # Word Count Action
-        self.highWordAction = QtGui.QAction('&High (Default)', self, checkable=True)
-        self.highWordAction.triggered.connect(lambda: self.wordChangeEvent('high'))
+        self.high_word_action = QtGui.QAction('&High (Default)', self, checkable=True)
+        self.high_word_action.triggered.connect(lambda: self.word_change_event('high'))
 
-        self.lowWordAction = QtGui.QAction('&Low (5 Words)', self, checkable=True)
-        self.lowWordAction.triggered.connect(lambda: self.wordChangeEvent('low'))
+        self.low_word_action = QtGui.QAction('&Low (5 Words)', self, checkable=True)
+        self.low_word_action.triggered.connect(lambda: self.word_change_event('low'))
 
-        self.offWordAction = QtGui.QAction('&Off', self, checkable=True)
-        self.offWordAction.triggered.connect(lambda: self.wordChangeEvent('off'))
-
+        self.off_word_action = QtGui.QAction('&Off', self, checkable=True)
+        self.off_word_action.triggered.connect(lambda: self.word_change_event('off'))
 
         # Tools Menu Actions
-        self.profanityFilterAction = QtGui.QAction('&Profanity Filter', self, checkable=True)
-        self.profanityFilterAction.triggered.connect(self.profanityFilterEvent)
+        self.profanity_filter_action = QtGui.QAction('&Profanity Filter', self, checkable=True)
+        self.profanity_filter_action.triggered.connect(self.profanity_filter_event)
 
-        self.retrainAction = QtGui.QAction('&Retrain', self)
-        self.retrainAction.triggered.connect(self.retrainEvent)
+        self.retrain_action = QtGui.QAction('&Retrain', self)
+        self.retrain_action.triggered.connect(self.retrain_event)
 
-        self.logDataAction = QtGui.QAction('&Data Logging', self, checkable=True)
-        self.logDataAction.triggered.connect(self.logDataEvent)
+        self.log_data_action = QtGui.QAction('&Data Logging', self, checkable=True)
+        self.log_data_action.triggered.connect(self.log_data_event)
 
 
         # Help Menu Actions
-        helpAction = QtGui.QAction('&Help', self)
-        helpAction.setStatusTip('Nomon help')
-        helpAction.triggered.connect(self.helpEvent)
+        help_action = QtGui.QAction('&Help', self)
+        help_action.setStatusTip('Nomon help')
+        help_action.triggered.connect(self.help_event)
 
-        aboutAction = QtGui.QAction('&About', self)
-        aboutAction.setStatusTip('Application information')
-        aboutAction.triggered.connect(self.aboutEvent)
+        about_action = QtGui.QAction('&About', self)
+        about_action.setStatusTip('Application information')
+        about_action.triggered.connect(self.about_event)
 
         menubar = self.menuBar()
-        fileMenu = menubar.addMenu('&File')
-        fileMenu.addAction(exitAction)
-        # fileMenu.addAction(restartAction)
+        file_menu = menubar.addMenu('&File')
+        file_menu.addAction(exit_action)
 
-        viewMenu = menubar.addMenu('&View')
-        viewMenu.addAction(self.highContrastAction)
-        clockMenu = viewMenu.addMenu('&Clocks')
-        clockMenu.addAction(self.defaultClockAction)
-        clockMenu.addAction(self.radarClockAction)
-        clockMenu.addAction(self.ballClockAction)
-        clockMenu.addAction(self.pacmanClockAction)
-        clockMenu.addAction(self.barClockAction)
-        textMenu = viewMenu.addMenu('&Text Alignment')
-        textMenu.addAction(self.autoTextalignAction)
-        # textMenu.addAction(self.tcTextalignAction)
-        centerTextMenu = textMenu.addMenu('&Center')
-        centerTextMenu.addAction(self.clTextalignAction)
-        centerTextMenu.addAction(self.ccTextalignAction)
-        centerTextMenu.addAction(self.crTextalignAction)
-        fontMenu = viewMenu.addMenu('&Font Size')
-        fontMenu.addAction(self.smallFontAction)
-        fontMenu.addAction(self.medFontAction)
-        fontMenu.addAction(self.largeFontAction)
-        # textMenu.addAction(self.bcTextalignAction)
-        keyboardMenu = viewMenu.addMenu('&Keyboard Layout')
-        keyboardMenu.addAction(self.defaultLayoutAction)
-        keyboardMenu.addAction(self.qwertyLayoutAction)
+        view_menu = menubar.addMenu('&View')
+        view_menu.addAction(self.high_contrast_action)
+        clock_menu = view_menu.addMenu('&Clocks')
+        clock_menu.addAction(self.default_clock_action)
+        clock_menu.addAction(self.radar_clock_action)
+        clock_menu.addAction(self.ball_clock_action)
+        clock_menu.addAction(self.pacman_clock_action)
+        clock_menu.addAction(self.bar_clock_action)
+        text_menu = view_menu.addMenu('&Text Alignment')
+        text_menu.addAction(self.auto_text_align_action)
+        center_text_menu = text_menu.addMenu('&Center')
+        center_text_menu.addAction(self.cl_text_align_action)
+        center_text_menu.addAction(self.cc_text_align_action)
+        center_text_menu.addAction(self.cr_text_align_action)
+        font_menu = view_menu.addMenu('&Font Size')
+        font_menu.addAction(self.small_font_action)
+        font_menu.addAction(self.med_font_action)
+        font_menu.addAction(self.large_font_action)
+        keyboard_menu = view_menu.addMenu('&Keyboard Layout')
+        keyboard_menu.addAction(self.default_layout_action)
+        keyboard_menu.addAction(self.qwerty_layout_action)
         # word prediction
-        wordMenu = viewMenu.addMenu('&Word Prediction Frequency')
-        wordMenu.addAction(self.highWordAction)
-        wordMenu.addAction(self.lowWordAction)
-        wordMenu.addAction(self.offWordAction)
+        word_menu = view_menu.addMenu('&Word Prediction Frequency')
+        word_menu.addAction(self.high_word_action)
+        word_menu.addAction(self.low_word_action)
+        word_menu.addAction(self.off_word_action)
 
+        tools_menu = menubar.addMenu('&Tools')
+        tools_menu.addAction(self.profanity_filter_action)
+        tools_menu.addAction(self.log_data_action)
+        tools_menu.addAction(self.retrain_action)
 
-        toolsMenu = menubar.addMenu('&Tools')
-        toolsMenu.addAction(self.profanityFilterAction)
-        toolsMenu.addAction(self.logDataAction)
-        toolsMenu.addAction(self.retrainAction)
-
-        helpMenu = menubar.addMenu('&Help')
-        helpMenu.addAction(helpAction)
-        helpMenu.addSeparator()
-        helpMenu.addAction(aboutAction)
+        help_menu = menubar.addMenu('&Help')
+        help_menu.addAction(help_action)
+        help_menu.addSeparator()
+        help_menu.addAction(about_action)
 
         self.setWindowTitle('Nomon Keyboard')
 
@@ -191,42 +187,42 @@ class MainWindow(QtGui.QMainWindow):
             else:
                 unit.toggle()
         # check clocks
-        switch(self.defaultClockAction, self.clock_type == 'default')
-        switch(self.radarClockAction, self.clock_type == 'radar')
-        switch(self.ballClockAction, self.clock_type == 'ball')
-        switch(self.pacmanClockAction, self.clock_type == 'pac_man')
-        switch(self.barClockAction, self.clock_type == 'bar')
+        switch(self.default_clock_action, self.clock_type == 'default')
+        switch(self.radar_clock_action, self.clock_type == 'radar')
+        switch(self.ball_clock_action, self.clock_type == 'ball')
+        switch(self.pacman_clock_action, self.clock_type == 'pac_man')
+        switch(self.bar_clock_action, self.clock_type == 'bar')
 
         # check text alignment
-        switch(self.ccTextalignAction, self.alignment == 'cc')
-        switch(self.clTextalignAction, self.alignment == 'cl')
-        switch(self.crTextalignAction, self.alignment == 'cr')
-        switch(self.autoTextalignAction, self.mainWidgit.text_alignment == 'auto')
+        switch(self.cc_text_align_action, self.alignment == 'cc')
+        switch(self.cl_text_align_action, self.alignment == 'cl')
+        switch(self.cr_text_align_action, self.alignment == 'cr')
+        switch(self.auto_text_align_action, self.mainWidgit.text_alignment == 'auto')
 
         # check profanity
-        switch(self.profanityFilterAction, self.pf_preference == 'on')
+        switch(self.profanity_filter_action, self.pf_preference == 'on')
 
         # check log data
-        switch(self.logDataAction, self.is_write_data)
+        switch(self.log_data_action, self.is_write_data)
 
         # check font menu
-        switch(self.smallFontAction, self.font_scale == 0)
-        switch(self.medFontAction, self.font_scale == 1)
-        switch(self.largeFontAction, self.font_scale == 2)
+        switch(self.small_font_action, self.font_scale == 0)
+        switch(self.med_font_action, self.font_scale == 1)
+        switch(self.large_font_action, self.font_scale == 2)
 
         # check high contrast
-        switch(self.highContrastAction, self.high_contrast)
+        switch(self.high_contrast_action, self.high_contrast)
 
         # check layout
-        switch(self.defaultLayoutAction, self.target_layout == kconfig.alpha_target_layout)
-        switch(self.qwertyLayoutAction, self.target_layout == kconfig.qwerty_target_layout)
+        switch(self.default_layout_action, self.target_layout == kconfig.alpha_target_layout)
+        switch(self.qwerty_layout_action, self.target_layout == kconfig.qwerty_target_layout)
 
         # check word count
-        switch(self.highWordAction, self.word_pred_on == 2)
-        switch(self.lowWordAction, self.word_pred_on == 1)
-        switch(self.offWordAction, self.word_pred_on == 0)
+        switch(self.high_word_action, self.word_pred_on == 2)
+        switch(self.low_word_action, self.word_pred_on == 1)
+        switch(self.off_word_action, self.word_pred_on == 0)
 
-    def wordChangeEvent(self, frequency):
+    def word_change_event(self, frequency):
         if frequency == 'high':
             self.word_pred_on = 2
         elif frequency == 'low':
@@ -239,19 +235,17 @@ class MainWindow(QtGui.QMainWindow):
 
         self.mainWidgit.clocks = []
 
-
-        self.mainWidgit.clearLayout(self.mainWidgit.keyboard_grid)
-        self.mainWidgit.clearLayout(self.mainWidgit.words_hbox)
-        self.mainWidgit.layed_out=False
+        self.mainWidgit.clear_layout(self.mainWidgit.keyboard_grid)
+        self.mainWidgit.clear_layout(self.mainWidgit.words_hbox)
+        self.mainWidgit.laid_out = False
         self.mainWidgit.clocks = []
         self.mainWidgit.words_hbox.deleteLater()
         self.mainWidgit.keyboard_grid.deleteLater()
-        self.mainWidgit.generateClocks()
+        self.mainWidgit.generate_clocks()
         self.draw_words()
-        self.mainWidgit.layoutClocks()
+        self.mainWidgit.layout_clocks()
 
-
-    def changeFontSize(self, size):
+    def change_font_size(self, size):
         if size == 'small':
             size = 0
         elif size == 'med':
@@ -262,14 +256,14 @@ class MainWindow(QtGui.QMainWindow):
         self.up_handel.safe_save([self.clock_type, size, self.high_contrast, self.layout_preference, self.pf_preference,
                                   self.start_speed, self.is_write_data])
 
-        self.mainWidgit.sldLabel.setFont(top_bar_font[size])
-        self.mainWidgit.speed_slider_label.setFont(top_bar_font[size])
-        self.mainWidgit.wpm_label.setFont(top_bar_font[size])
-        self.mainWidgit.cb_talk.setFont(top_bar_font[size])
-        self.mainWidgit.cb_learn.setFont(top_bar_font[size])
-        self.mainWidgit.cb_pause.setFont(top_bar_font[size])
-        self.mainWidgit.cb_sound.setFont(top_bar_font[size])
-        self.mainWidgit.text_box.setFont(text_box_font[size])
+        self.mainWidgit.sldLabel.setFont(config.top_bar_font[size])
+        self.mainWidgit.speed_slider_label.setFont(config.top_bar_font[size])
+        self.mainWidgit.wpm_label.setFont(config.top_bar_font[size])
+        self.mainWidgit.cb_talk.setFont(config.top_bar_font[size])
+        self.mainWidgit.cb_learn.setFont(config.top_bar_font[size])
+        self.mainWidgit.cb_pause.setFont(config.top_bar_font[size])
+        self.mainWidgit.cb_sound.setFont(config.top_bar_font[size])
+        self.mainWidgit.text_box.setFont(config.text_box_font[size])
 
         self.mainWidgit.wpm_label.repaint()
         self.mainWidgit.cb_talk.repaint()
@@ -281,7 +275,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.check_filemenu()
 
-    def highContrastEvent(self):
+    def high_contrast_event(self):
 
         if self.high_contrast:
             hc_status = False
@@ -294,15 +288,15 @@ class MainWindow(QtGui.QMainWindow):
         self.high_contrast = hc_status
         self.mainWidgit.color_index = hc_status
 
-    def clockChangeEvent(self, design):
-        messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Change Clock Design", "This will change the clocks "
+    def clock_change_event(self, design):
+        message_box = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Change Clock Design", "This will change the clocks "
                                                                                          "to the <b>" + design + "</b"
                                                                                          "> design",
                                        QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
         design = design.replace(' ', '_')
-        messageBox.setDefaultButton(QtGui.QMessageBox.Cancel)
-        messageBox.setIconPixmap(QtGui.QPixmap(os.path.join("icons/", design + '.png')))
-        messageBox.setWindowIcon(self.icon)
+        message_box.setDefaultButton(QtGui.QMessageBox.Cancel)
+        message_box.setIconPixmap(QtGui.QPixmap(os.path.join("icons/", design + '.png')))
+        message_box.setWindowIcon(self.icon)
 
         self.clock_type = design
         self.up_handel.safe_save([design, self.font_scale, self.high_contrast, self.layout_preference,
@@ -313,21 +307,21 @@ class MainWindow(QtGui.QMainWindow):
         self.wpm_time = 0
 
         if self.mainWidgit.text_alignment == 'auto':
-            self.clockTextAlign('auto', message=False)
+            self.clock_text_align('auto', message=False)
             self.check_filemenu()
 
         for clock in self.mainWidgit.clocks:
             clock.calcClockSize()
 
-    def layoutChangeEvent(self, layout):
-        messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Change Keyboard Layout", "This will change the clock "
+    def layout_change_event(self, layout):
+        message_box = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Change Keyboard Layout", "This will change the clock "
                                                                                          "layout to <b>" + layout + "</b"
                                                                                          "> order. <b>NOTICE:</b> You "
                                                                                          "will have to restart Nomon for"
                                                                                          " these changes to take effect",
                                        QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
-        messageBox.setDefaultButton(QtGui.QMessageBox.Cancel)
-        messageBox.setWindowIcon(self.icon)
+        message_box.setDefaultButton(QtGui.QMessageBox.Cancel)
+        message_box.setWindowIcon(self.icon)
 
         self.up_handel = PickleUtil("user_preferences/user_preferences.p")
         if layout == 'alphabetical':
@@ -345,20 +339,17 @@ class MainWindow(QtGui.QMainWindow):
 
         self.mainWidgit.clocks = []
 
-
-        self.mainWidgit.clearLayout(self.mainWidgit.keyboard_grid)
-        self.mainWidgit.clearLayout(self.mainWidgit.words_hbox)
+        self.mainWidgit.clear_layout(self.mainWidgit.keyboard_grid)
+        self.mainWidgit.clear_layout(self.mainWidgit.words_hbox)
         self.mainWidgit.words_hbox.deleteLater()
         self.mainWidgit.keyboard_grid.deleteLater()
-        self.mainWidgit.generateClocks()
-        self.mainWidgit.layoutClocks()
+        self.mainWidgit.generate_clocks()
+        self.mainWidgit.layout_clocks()
 
-
-
-    def clockTextAlign(self, alignment, message=True):
+    def clock_text_align(self, alignment, message=True):
         if alignment == "auto":
             self.mainWidgit.text_alignment = 'auto'
-            messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Change Text Alignment", "The text will be <b>"
+            message_box = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Change Text Alignment", "The text will be <b>"
                                                                                                "Auto-Aligned</b> to "
                                                                                                "best suit the keyboard"
                                                                                                " layout. (recommended)",
@@ -369,6 +360,7 @@ class MainWindow(QtGui.QMainWindow):
                 alignment = "cr"
         else:
             self.mainWidgit.text_alignment = alignment
+            alignment_name = ""
             if alignment == "cr":
                 alignment_name = 'Center Right'
             elif alignment == "cc":
@@ -380,23 +372,21 @@ class MainWindow(QtGui.QMainWindow):
             elif alignment == "tc":
                 alignment_name = 'Top Center'
 
-            messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Change Text Alignment", "This will change the "
+            message_box = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Change Text Alignment", "This will change the "
                                                                                                "text to be aligned on "
                                                                                                "the <b>"
-                                           + alignment_name + "</b>  of the clocks",
-                                           QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
+                                            + alignment_name + "</b>  of the clocks",
+                                            QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
         self.alignment = alignment
 
         self.mainWidgit.alignment = alignment
-        self.resizeClocks()
+        self.resize_clocks()
         if message:
             self.check_filemenu()
             for clock in self.mainWidgit.clocks:
                 clock.calcClockSize()
 
-
-
-    def resizeClocks(self):
+    def resize_clocks(self):
         if self.alignment[0] == 'b' or self.mainWidgit.alignment[0] == 't':
             for clock in self.mainWidgit.clocks:
                 clock.setMaximumHeight(clock.maxSize*2)
@@ -406,26 +396,26 @@ class MainWindow(QtGui.QMainWindow):
                 clock.setMaximumHeight(clock.maxSize)
                 clock.setMinimumSize(clock.minSize, clock.minSize)
 
-    def logDataEvent(self):
-        messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Data Logging Consent", "We would like to save "
-                                                                                          "some data regarding your "
-                                                                                          "clicking time relative to "
-                                                                                          "Noon to help us improve "
-                                                                                          "Nomon. All data collected is"
-                                                                                          " anonymous and only your "
-                                                                                          "click times will be saved. "
-                                                                                          "<b> Do you consent to "
-                                                                                          "allowing us to log click "
-                                                                                          "timing data locally?</b>"
-                                                                                          " (Note: you can change your"
-                                                                                          " preference anytime in the "
-                                                                                          "Tools menu).")
-        messageBox.addButton(QtGui.QMessageBox.Yes)
-        messageBox.addButton(QtGui.QMessageBox.No)
-        messageBox.setDefaultButton(QtGui.QMessageBox.No)
-        messageBox.setWindowIcon(self.icon)
+    def log_data_event(self):
+        message_box = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Data Logging Consent", "We would like to save "
+                                                                                           "some data regarding your "
+                                                                                           "clicking time relative to "
+                                                                                           "Noon to help us improve "
+                                                                                           "Nomon. All data collected "
+                                                                                           "is anonymous and only your "
+                                                                                           "click times will be saved. "
+                                                                                           "<b> Do you consent to "
+                                                                                           "allowing us to log click "
+                                                                                           "timing data locally?</b>"
+                                                                                           " (Note: you can change your"
+                                                                                           " preference anytime in the "
+                                                                                           "Tools menu).")
+        message_box.addButton(QtGui.QMessageBox.Yes)
+        message_box.addButton(QtGui.QMessageBox.No)
+        message_box.setDefaultButton(QtGui.QMessageBox.No)
+        message_box.setWindowIcon(self.icon)
 
-        reply = messageBox.exec_()
+        reply = message_box.exec_()
         self.first_load = False
         self.up_handel = PickleUtil("user_preferences/user_preferences.p")
         if reply == QtGui.QMessageBox.No:
@@ -440,11 +430,12 @@ class MainWindow(QtGui.QMainWindow):
             self.is_write_data = True
         self.check_filemenu()
 
-    def profanityFilterEvent(self):
+    def profanity_filter_event(self):
         profanity_status = self.pf_preference
-        messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Profanity Filter Settings", "The profanity filter is "
-                                                                                             "currently <b>"
-                                       + self.pf_preference.upper() + "</b>. Please select your desired setting below. ")
+        messageBox = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Profanity Filter Settings", "The profanity filter is"
+                                                                                               " currently <b>"
+                                       + self.pf_preference.upper() + "</b>. Please select your desired setting "
+                                                                      "below. ")
         messageBox.addButton(QtGui.QPushButton('On'), QtGui.QMessageBox.YesRole)
         messageBox.addButton(QtGui.QPushButton('Off'), QtGui.QMessageBox.NoRole)
         messageBox.setIconPixmap(QtGui.QPixmap(os.path.join('icons/block.png')))
@@ -474,8 +465,8 @@ class MainWindow(QtGui.QMainWindow):
             self.pf_preference = 'on'
         self.check_filemenu()
 
-
-    def aboutEvent(self):
+    def about_event(self):
+        # noinspection PyTypeChecker
         QtGui.QMessageBox.question(self, 'About Nomon', "Copyright 2009 Tamara Broderick\n"
                                                         "This file is part of Nomon Keyboard.\n\n"
 
@@ -495,12 +486,11 @@ class MainWindow(QtGui.QMainWindow):
                                                         " <http://www.gnu.org/licenses/>.",
                                    QtGui.QMessageBox.Ok)
 
-    def helpEvent(self):
+    def help_event(self):
         self.launch_help()
 
-    def retrainEvent(self):
+    def retrain_event(self):
         self.launch_retrain()
-
 
 
 class MainKeyboardWidget(QtGui.QWidget):
@@ -518,7 +508,8 @@ class MainKeyboardWidget(QtGui.QWidget):
         self.in_focus = True
         self.color_index = self.parent.high_contrast
 
-    def initUI(self):
+    # noinspection PyUnresolvedReferences
+    def init_ui(self):
 
         # generate slider for clock rotation speed
         self.speed_slider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
@@ -526,14 +517,13 @@ class MainKeyboardWidget(QtGui.QWidget):
         self.speed_slider.setValue(self.parent.start_speed)
         self.speed_slider_label = QtGui.QLabel('Clock Rotation Speed:')
 
-        self.speed_slider_label.setFont(top_bar_font[self.parent.font_scale])
+        self.speed_slider_label.setFont(config.top_bar_font[self.parent.font_scale])
         self.sldLabel = QtGui.QLabel(str(self.speed_slider.value()))
-        self.sldLabel.setFont(top_bar_font[self.parent.font_scale])
+        self.sldLabel.setFont(config.top_bar_font[self.parent.font_scale])
 
         # wpm label
         self.wpm_label = QtGui.QLabel("Selections/Min: "+"----")
-        self.wpm_label.setFont(top_bar_font[self.parent.font_scale])
-
+        self.wpm_label.setFont(config.top_bar_font[self.parent.font_scale])
 
         # generate learn, speak, talk checkboxes
         self.cb_talk = QtGui.QCheckBox('Talk', self)
@@ -541,20 +531,20 @@ class MainKeyboardWidget(QtGui.QWidget):
         self.cb_pause = QtGui.QCheckBox('Pause', self)
         self.cb_sound = QtGui.QCheckBox('Sound', self)
         self.cb_talk.toggle()
-        self.cb_talk.setFont(top_bar_font[self.parent.font_scale])
+        self.cb_talk.setFont(config.top_bar_font[self.parent.font_scale])
         self.cb_learn.toggle()
-        self.cb_learn.setFont(top_bar_font[self.parent.font_scale])
+        self.cb_learn.setFont(config.top_bar_font[self.parent.font_scale])
         self.cb_pause.toggle()
-        self.cb_pause.setFont(top_bar_font[self.parent.font_scale])
+        self.cb_pause.setFont(config.top_bar_font[self.parent.font_scale])
         self.cb_sound.toggle()
-        self.cb_sound.setFont(top_bar_font[self.parent.font_scale])
+        self.cb_sound.setFont(config.top_bar_font[self.parent.font_scale])
 
         # generate clocks from layout
-        self.generateClocks()
+        self.generate_clocks()
 
         self.text_box = QtGui.QTextEdit("", self)
 
-        self.text_box.setFont(text_box_font[self.parent.font_scale])
+        self.text_box.setFont(config.text_box_font[self.parent.font_scale])
         self.text_box.setMinimumSize(300, 100)
         self.text_box.setReadOnly(True)
 
@@ -562,7 +552,7 @@ class MainKeyboardWidget(QtGui.QWidget):
         self.histogram = HistogramWidget(self)
 
         if __name__ != '__main__':
-            self.speed_slider.valueChanged[int].connect(self.changeValue)
+            self.speed_slider.valueChanged[int].connect(self.change_value)
             self.cb_learn.toggled[bool].connect(self.parent.toggle_learn_button)
             self.cb_pause.toggled[bool].connect(self.parent.toggle_pause_button)
             self.cb_talk.toggled[bool].connect(self.parent.toggle_talk_button)
@@ -599,32 +589,31 @@ class MainKeyboardWidget(QtGui.QWidget):
 
         self.vbox.addSpacing(5)
         self.vbox.addWidget(self.splitter1, 4)
-        self.layoutClocks()
+        self.layout_clocks()
         self.setLayout(self.vbox)
 
+        self.frame_timer = QtCore.QTimer()
+        self.frame_timer.timeout.connect(self.parent.on_timer)
+        self.frame_timer.start(config.ideal_wait_s * 1000)
 
-        if __name__ != '__main__':  # remove inheritance dependent timers for sole GUI run
-            self.frame_timer = QtCore.QTimer()
-            self.frame_timer.timeout.connect(self.parent.on_timer)
-            self.frame_timer.start(config.ideal_wait_s * 1000)
+        self.pause_timer = QtCore.QTimer()
+        self.pause_timer.setSingleShot(True)
+        self.pause_timer.timeout.connect(self.parent.end_pause)
 
-            self.pause_timer = QtCore.QTimer()
-            self.pause_timer.setSingleShot(True)
-            self.pause_timer.timeout.connect(self.parent.end_pause)
-
-            self.highlight_timer = QtCore.QTimer()
-            self.highlight_timer.setSingleShot(True)
-            self.highlight_timer.timeout.connect(self.parent.end_highlight)
+        self.highlight_timer = QtCore.QTimer()
+        self.highlight_timer.setSingleShot(True)
+        self.highlight_timer.timeout.connect(self.parent.end_highlight)
 
         # Tool Tips
+        # noinspection PyCallByClass
         QtGui.QToolTip.setFont(QtGui.QFont('Monospace', 12))
         self.setToolTip("This is the Nomon Keyboard. To select an option, \n "
                         "find the clock immediately to its left. Press the \n"
                         "spacebar when the moving hand is near noon.")
-        self.speed_slider_label.setToolTip("This slider scales the speed of clock rotation. Higher \n"
-                                "values correspond to the clock hand moving faster.")
+        self.speed_slider_label.setToolTip("This slider scales the speed of clock rotation. Higher \nvalues correspond "
+                                           "to the clock hand moving faster.")
         self.speed_slider.setToolTip("This slider scales the speed of clock rotation. Higher \n"
-                            "values correspond to the clock hand moving faster.")
+                                     "values correspond to the clock hand moving faster.")
         self.cb_pause.setToolTip("If this button is checked, there will be a brief \n"
                                  "pause and minty screen flash after each selection \n"
                                  "you make.")
@@ -651,7 +640,7 @@ class MainKeyboardWidget(QtGui.QWidget):
             self.splitter1.setStyleSheet("background-color:#e0e0e0;")
             self.in_focus = False
 
-    def changeValue(self, value):  # Change clock speed
+    def change_value(self, value):  # Change clock speed
         self.sldLabel.setText(str(self.speed_slider.value()))
         self.parent.change_speed(value)
         self.parent.start_speed = value
@@ -659,7 +648,7 @@ class MainKeyboardWidget(QtGui.QWidget):
         self.up_handel.safe_save([self.parent.clock_type, self.parent.font_scale, self.parent.high_contrast, self.parent.layout_preference,
                                   self.parent.pf_preference, self.parent.start_speed, self.parent.is_write_data])
 
-    def getWords(self, char):  # Reformat word list into blueprint for GUI construction
+    def get_words(self, char):  # Reformat word list into blueprint for GUI construction
         i = 0
         output = []
         for word in self.parent.word_list:
@@ -672,7 +661,7 @@ class MainKeyboardWidget(QtGui.QWidget):
                 output += [word]
         return output
 
-    def generateClocks(self):  # Generate the clock widgets according to blueprint from self.getWords
+    def generate_clocks(self):  # Generate the clock widgets according to blueprint from self.get_words
         self.clocks = []
         for row in self.layout:
             for text in row:
@@ -683,7 +672,7 @@ class MainKeyboardWidget(QtGui.QWidget):
                 elif text == kconfig.clear_char:
                     text = "Clear"
                 clock = ClockWidgit(text, self)
-                words = self.getWords(clock.text.lower())
+                words = self.get_words(clock.text.lower())
                 
                 word_clocks = ['' for i in range(kconfig.N_pred)]
                 i = 0
@@ -695,7 +684,7 @@ class MainKeyboardWidget(QtGui.QWidget):
                 self.clocks += word_clocks
                 self.clocks += [clock]
 
-    def updateClocks(self):  # Used to change text and turn off clocks after initialization
+    def update_clocks(self):  # Used to change text and turn off clocks after initialization
         index = 0
         word_clocks = []
         for row in self.layout:
@@ -706,7 +695,7 @@ class MainKeyboardWidget(QtGui.QWidget):
                     text = "Backspace"
                 elif text == kconfig.clear_char:
                     text = "Clear"
-                words = self.getWords(text.lower())
+                words = self.get_words(text.lower())
                 for word in words:
                     if self.parent.word_pred_on == 1:
                         word_clocks += [self.clocks[index]]
@@ -720,21 +709,18 @@ class MainKeyboardWidget(QtGui.QWidget):
                     index += 1
                 self.clocks[index].setText(text)
                 index += 1
-
         if self.parent.word_pred_on == 1:
-            if self.layed_out:
-                print("SDDD")
+            if self.laid_out:
                 self.words_hbox.deleteLater()
                 self.words_hbox = QtGui.QHBoxLayout()
                 for clock in word_clocks:
                     self.words_hbox.addWidget(clock, 6)
                     self.words_hbox.addStretch(1)
                 self.vbox.insertLayout(4, self.words_hbox, 4)
-
         for clock in self.clocks:
             clock.calcClockSize()
 
-    def layoutClocks(self):  # called after self.generateClocks, arranges clocks in grid
+    def layout_clocks(self):  # called after self.generate_clocks, arranges clocks in grid
         qwerty = (self.parent.layout_preference == 'qwerty')
         target_layout_list = [j for i in self.parent.target_layout for j in i]
         combine_back_clocks = 'BACKUNIT' in target_layout_list
@@ -831,7 +817,7 @@ class MainKeyboardWidget(QtGui.QWidget):
             word_clocks+=[clock for clock in sub_clocks if clock.text != '']
             self.grid_units += [make_grid_unit(main_clock, sub_clocks)]
 
-        ####### make break unit:
+        # make break unit:
         if combine_break_clocks:
             sub_break_unit = QtGui.QGridLayout()
             i = 1
@@ -852,7 +838,7 @@ class MainKeyboardWidget(QtGui.QWidget):
             break_unit.addLayout(sub_break_unit, 1)
             break_unit.addLayout(apostrophe_grid, 3)
 
-        ####### make undo unit
+        # make undo unit
         undo_unit = QtGui.QGridLayout()
         self.undo_label = QtGui.QLabel(self.parent.previous_undo_text)
         undo_font = QtGui.QFont('Consolas', 20)
@@ -869,7 +855,7 @@ class MainKeyboardWidget(QtGui.QWidget):
             undo_unit.addWidget(undo_clocks[0], 1, 1)
         undo_unit.addWidget(self.undo_label, 2, 1)
 
-        ####### make back unit
+        # make back unit
         if combine_back_clocks:
             back_unit = QtGui.QGridLayout()
             back_unit.addWidget(VerticalSeparator(), 0, 0, 4, 1)
@@ -928,43 +914,12 @@ class MainKeyboardWidget(QtGui.QWidget):
                 self.words_hbox.addWidget(clock, 6)
                 self.words_hbox.addStretch(1)
             self.vbox.insertLayout(4, self.words_hbox, 4)
-        self.layed_out = True
+        self.laid_out = True
 
-    def clearLayout(self, layout):
+    def clear_layout(self, layout):
         while layout.count():
             child = layout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
             elif child.layout():
-                self.clearLayout(child)
-
-
-def main():  # set up 'dummy' keyboard instance to allow for pure GUI layout debugging
-
-    currentExitCode = MainWindow.EXIT_CODE_REBOOT
-    while currentExitCode == MainWindow.EXIT_CODE_REBOOT:
-        app = QtGui.QApplication(sys.argv)
-        screen_res = (app.desktop().screenGeometry().width(), app.desktop().screenGeometry().height())
-        ex = MainWindow(screen_res)
-        word_list = open('word_list.txt', 'r')
-        words = word_list.read()
-        words = words.split()
-        word_list.close()
-        ex.word_list = []
-        for letter in string.ascii_lowercase:
-            i = 0
-            for word in words:
-                if word[0] == letter and i < kconfig.N_pred:
-                    i += 1
-                    ex.word_list += [word]
-        ex.prefix = ''
-        ex.bars = kconfig.bars
-        ex.previous_undo_text = ''
-        ex.initUI()
-
-        currentExitCode = app.exec_()
-        app = None  # delete the QApplication object
-
-
-if __name__ == '__main__':
-    main()
+                self.clear_layout(child)

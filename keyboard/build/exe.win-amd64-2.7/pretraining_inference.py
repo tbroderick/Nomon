@@ -204,7 +204,7 @@ class pre_broderclocks:
             index = int((percent *  len(self.clock_inf.kde.dens_li)) % len(self.clock_inf.kde.dens_li)) 
             click_time = self.clock_inf.kde.x_li[index] 
             
-            #click_time = (self.clock_inf.clockutil.cur_hour*self.time_rotate*1.0/self.num_divs_time + time_diff_in - self.time_rotate*config.frac_period + 0.5) % 1 - 0.5
+            #click_time = (self.clock_inf.clock_util.cur_hour*self.time_rotate*1.0/self.num_divs_time + time_diff_in - self.time_rotate*config.frac_period + 0.5) % 1 - 0.5
             print "y_li will be appended by" + str(click_time)
             self.clock_inf.kde.y_li.append(click_time)
             print "y_li is now" + str(self.clock_inf.kde.y_li)

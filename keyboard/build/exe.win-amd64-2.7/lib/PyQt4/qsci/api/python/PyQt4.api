@@ -6148,7 +6148,7 @@ PyQt4.QtGui.QAbstractItemDelegate.setModelData?4(QWidget, QAbstractItemModel, QM
 PyQt4.QtGui.QAbstractItemDelegate.updateEditorGeometry?4(QWidget, QStyleOptionViewItem, QModelIndex)
 PyQt4.QtGui.QAbstractItemDelegate.editorEvent?4(QEvent, QAbstractItemModel, QStyleOptionViewItem, QModelIndex) -> bool
 PyQt4.QtGui.QAbstractItemDelegate.elidedText?4(QFontMetrics, int, Qt.TextElideMode, QString) -> QString
-PyQt4.QtGui.QAbstractItemDelegate.helpEvent?4(QHelpEvent, QAbstractItemView, QStyleOptionViewItem, QModelIndex) -> bool
+PyQt4.QtGui.QAbstractItemDelegate.help_event?4(QHelpEvent, QAbstractItemView, QStyleOptionViewItem, QModelIndex) -> bool
 PyQt4.QtGui.QAbstractItemDelegate.commitData?4(QWidget)
 PyQt4.QtGui.QAbstractItemDelegate.closeEditor?4(QWidget, QAbstractItemDelegate.EndEditHint hint=QAbstractItemDelegate.NoHint)
 PyQt4.QtGui.QAbstractItemDelegate.sizeHintChanged?4(QModelIndex)
@@ -10794,7 +10794,7 @@ PyQt4.QtGui.QGraphicsScene.dragLeaveEvent?4(QGraphicsSceneDragDropEvent)
 PyQt4.QtGui.QGraphicsScene.dropEvent?4(QGraphicsSceneDragDropEvent)
 PyQt4.QtGui.QGraphicsScene.focusInEvent?4(QFocusEvent)
 PyQt4.QtGui.QGraphicsScene.focusOutEvent?4(QFocusEvent)
-PyQt4.QtGui.QGraphicsScene.helpEvent?4(QGraphicsSceneHelpEvent)
+PyQt4.QtGui.QGraphicsScene.help_event?4(QGraphicsSceneHelpEvent)
 PyQt4.QtGui.QGraphicsScene.keyPressEvent?4(QKeyEvent)
 PyQt4.QtGui.QGraphicsScene.keyReleaseEvent?4(QKeyEvent)
 PyQt4.QtGui.QGraphicsScene.mousePressEvent?4(QGraphicsSceneMouseEvent)
@@ -16968,7 +16968,7 @@ PyQt4.QtGui.QTextLayout.setPosition?4(QPointF)
 PyQt4.QtGui.QTextLayout.boundingRect?4() -> QRectF
 PyQt4.QtGui.QTextLayout.minimumWidth?4() -> float
 PyQt4.QtGui.QTextLayout.maximumWidth?4() -> float
-PyQt4.QtGui.QTextLayout.clearLayout?4()
+PyQt4.QtGui.QTextLayout.clear_layout?4()
 PyQt4.QtGui.QTextLayout.setCursorMoveStyle?4(Qt.CursorMoveStyle)
 PyQt4.QtGui.QTextLayout.cursorMoveStyle?4() -> Qt.CursorMoveStyle
 PyQt4.QtGui.QTextLayout.leftCursorPosition?4(int) -> int
@@ -17085,7 +17085,7 @@ PyQt4.QtGui.QTextBlock.userData?4() -> QTextBlockUserData
 PyQt4.QtGui.QTextBlock.setUserData?4(QTextBlockUserData)
 PyQt4.QtGui.QTextBlock.userState?4() -> int
 PyQt4.QtGui.QTextBlock.setUserState?4(int)
-PyQt4.QtGui.QTextBlock.clearLayout?4()
+PyQt4.QtGui.QTextBlock.clear_layout?4()
 PyQt4.QtGui.QTextBlock.revision?4() -> int
 PyQt4.QtGui.QTextBlock.setRevision?4(int)
 PyQt4.QtGui.QTextBlock.isVisible?4() -> bool
