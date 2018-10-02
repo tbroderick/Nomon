@@ -9,16 +9,15 @@ from clock_inference_engine import *
 from clock_util import *
 import time
 
-import sys,os
 from pickle_util import PickleUtil
 import config
 
 
-class New_BroderClocks:
+class NewBroderClocks:
     def __init__(self, parent):
         self.parent = parent
         self.parent.bc_init = True
-        self.clock_inf = clock_inference(self.parent, self)
+        self.clock_inf = ClockInference(self.parent, self)
         
         self.is_undo = False
         self.is_equalize = False
@@ -168,8 +167,8 @@ class New_BroderClocks:
         self.init_bits()
         
     def init_round(self, is_win, is_start, clock_score_prior):
-        self.clock_inf.clockutil.init_round(self.clock_inf.clocks_li)
-        self.clock_inf.clockutil.init_round(self.clock_inf.clocks_on)
+        self.clock_inf.clock_util.init_round(self.clock_inf.clocks_li)
+        self.clock_inf.clock_util.init_round(self.clock_inf.clocks_on)
         if (is_win or is_start):  # if won, restart everything
             if (is_win):
                 # identify the undo button as the winner to highlight
@@ -192,7 +191,7 @@ class New_BroderClocks:
         # update the sorted loading_text
         self.clock_inf.update_sorted_inds()
         #WHY IS THIS HERE?????
-        self.clock_inf.clockutil.update_curhours(self.clock_inf.sorted_inds)
+        self.clock_inf.clock_util.update_curhours(self.clock_inf.sorted_inds)
 
         self.clock_inf.handicap_cscores(is_win, is_start)
         top_score = self.clock_inf.cscores[self.clock_inf.sorted_inds[0]]
@@ -206,8 +205,8 @@ class New_BroderClocks:
                 self.parent.mainWidgit.clocks[clock].highlighted = False
             self.parent.mainWidgit.clocks[clock].repaint()
             #HIGHLIGHT에 관한 부분 추가
-            v = self.clock_inf.clockutil.hl.hour_locs[self.clock_inf.clockutil.cur_hours[clock]-1]
+            v = self.clock_inf.clock_util.hl.hour_locs[self.clock_inf.clock_util.cur_hours[clock] - 1]
             angle = math.atan2(v[1], v[0])
-            self.clock_inf.clockutil.repaint_one_clock(clock, angle)
+            self.clock_inf.clock_util.repaint_one_clock(clock, angle)
 
        

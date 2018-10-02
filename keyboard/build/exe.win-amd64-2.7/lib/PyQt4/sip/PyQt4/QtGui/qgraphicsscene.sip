@@ -198,7 +198,7 @@ protected:
     virtual void dropEvent(QGraphicsSceneDragDropEvent *event);
     virtual void focusInEvent(QFocusEvent *event);
     virtual void focusOutEvent(QFocusEvent *event);
-    virtual void helpEvent(QGraphicsSceneHelpEvent *event);
+    virtual void help_event(QGraphicsSceneHelpEvent *event);
     virtual void keyPressEvent(QKeyEvent *event);
     virtual void keyReleaseEvent(QKeyEvent *event);
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
