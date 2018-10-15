@@ -206,7 +206,7 @@ class NewBroderClocks:
             self.parent.mainWidgit.clocks[clock].repaint()
             #HIGHLIGHT에 관한 부분 추가
             v = self.clock_inf.clock_util.hl.hour_locs[self.clock_inf.clock_util.cur_hours[clock] - 1]
-            angle = math.atan2(v[1], v[0])
+            angle =v[0]
             self.clock_inf.clock_util.repaint_one_clock(clock, angle)
 
        

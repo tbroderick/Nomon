@@ -18,7 +18,7 @@
 #    along with Nomon Keyboard.  If not, see <http://www.gnu.org/licenses/>.
 ######################################
 
-import numpy
+import numpy as np
 from PyQt4 import QtGui, QtCore
 
 from mainWindow import MainWindow
@@ -152,10 +152,17 @@ class Keyboard(MainWindow):
         # get language model results
         self.gen_word_prior(False)
 
+        self.clock_spaces = np.zeros((len(self.clock_centers), 2))
+
         self.bc = NewBroderClocks(self)
         self.mainWidgit.change_value(self.start_speed)
 
         self.bc.init_follow_up(self.word_score_prior)
+
+        self.clock_params = np.zeros((len(self.clock_centers), 8))
+
+        self.bc.clock_inf.clock_util.calcualte_clock_params('default', recompute=True)
+
         # draw histogram
         self.init_histogram()
         # bring word text to the front
@@ -163,12 +170,29 @@ class Keyboard(MainWindow):
 
         self.consent = True
         # animate
-        self.on_timer()
 
         # record to prevent double tap
         self.last_key_press_time = time.time()
         self.last_release_time = time.time()
 
+        self.init_clocks()
+        self.update_radii = False
+        self.on_timer()
+
+
+    def init_clocks(self):
+
+        self.update_clock_radii()
+
+        self.bc.clock_inf.clock_util.calcualte_clock_params(self.clock_type, recompute=True)
+        for clock in self.words_on:
+            self.mainWidgit.clocks[clock].set_params(self.clock_params[clock, :], recompute=True)
+
+    def update_clock_radii(self):
+        for clock in self.words_on:
+            self.clock_spaces[clock, :] = np.array([self.mainWidgit.clocks[clock].w, self.mainWidgit.clocks[clock].h])
+        self.bc.clock_inf.clock_util.calcualte_clock_params(self.clock_type, recompute=True)
+        self.update_radii = False
 
     def find_events(self):
         # check everything in the queue of pygame events
@@ -185,6 +209,7 @@ class Keyboard(MainWindow):
     def keyPressEvent(self, e):
         if e.key() == QtCore.Qt.Key_Space:
             self.on_press()
+
 
     def init_locs(self):
         # size of keyboard
@@ -357,7 +382,7 @@ class Keyboard(MainWindow):
 
         # if word prediction on but reduced
         if self.word_pred_on == 1:
-            flat_freq_list = numpy.array([freq for sublist in self.word_freq_li for freq in sublist])
+            flat_freq_list = np.array([freq for sublist in self.word_freq_li for freq in sublist])
             if len(flat_freq_list) >= self.reduce_display:
                 # replacement_count = 0
                 for arg in flat_freq_list.argsort()[-self.reduce_display:]:
@@ -447,7 +472,7 @@ class Keyboard(MainWindow):
 
         # if word prediction on but reduced
         if self.word_pred_on == 1:
-            flat_freq_list = numpy.array([freq for sublist in self.word_freq_li for freq in sublist])
+            flat_freq_list = np.array([freq for sublist in self.word_freq_li for freq in sublist])
             if len(flat_freq_list) >= self.reduce_display:
                 for arg in flat_freq_list.argsort()[-self.reduce_display:]:
                     word_to_add = self.words_li[(arg / 3)][arg % 3]
@@ -508,6 +533,7 @@ class Keyboard(MainWindow):
             self.word_pair.append((key,))
             index += 1
         self.mainWidgit.update_clocks()
+        self.init_clocks()
 
     def gen_word_prior(self, is_undo):
         self.word_score_prior = []
@@ -520,21 +546,21 @@ class Keyboard(MainWindow):
                     (key, pred) = pair
                     prob = (self.word_freq_li[key][pred] + 1) * 1.0 / (self.tot_freq + N_on)
                     prob = prob * kconfig.rem_prob
-                    self.word_score_prior.append(numpy.log(prob))
+                    self.word_score_prior.append(np.log(prob))
                 else:
                     key = pair[0]
                     prob = (self.key_freq_li[key] + 1) * 1.0 / (self.tot_freq + N_on)
                     prob = prob * kconfig.rem_prob
                     if self.keys_li[key] == kconfig.mybad_char or self.keys_li[key] == kconfig.yourbad_char:
                         prob = kconfig.undo_prob
-                    if self.keys_li[key] in kconfig.break_chars[0]:
+                    if self.keys_li[key] in kconfig.break_chars:
                         prob = kconfig.break_prob
                     if self.keys_li[key] == kconfig.back_char:
                         prob = kconfig.back_prob
                     if self.keys_li[key] == kconfig.clear_char:
                         prob = kconfig.undo_prob
 
-                    self.word_score_prior.append(numpy.log(prob))
+                    self.word_score_prior.append(np.log(prob))
         else:
             for index in self.words_on:
                 pair = self.word_pair[index]
@@ -542,7 +568,7 @@ class Keyboard(MainWindow):
                     key = pair[0]
                     if (self.keys_li[key] == kconfig.mybad_char) or (self.keys_li[key] == kconfig.yourbad_char):
                         prob = kconfig.undo_prob
-                        self.word_score_prior.append(numpy.log(prob))
+                        self.word_score_prior.append(np.log(prob))
                     else:
                         self.word_score_prior.append(0)
                 else:

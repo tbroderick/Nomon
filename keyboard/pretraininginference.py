@@ -65,7 +65,7 @@ class PreClockUtil(ClockUtil):
             # clock.angle = self.parent.mainWidgit.clock.angle + clock.dummy_angle_offset
             # register in coordinates of hour hand
             v = self.hl.hour_locs[self.cur_hours[count]]
-            angle = math.atan2(v[1], v[0])
+            angle = v[0]
             self.repaint_one_clock(count, angle)
             count += 1
 
@@ -92,12 +92,12 @@ class PreClockUtil(ClockUtil):
             # clock.dummy_angle_offset = random.random() * math.pi* 2
             # angle = clock.dummy_angle_offset
             v = self.hl.hour_locs[self.cur_hours[count]]
-            clock.angle = math.atan2(v[1], v[0]) + math.pi * 0.5
+            clock.angle = v[0] + math.pi * 0.5
             if count == self.selected_clock:
                 self.cur_hour = random.choice(range(len(self.hl.hour_locs)))
                 self.cur_hours[count] = self.cur_hour
                 v = self.hl.hour_locs[self.cur_hours[count]]
-                clock.angle = math.atan2(v[1], v[0]) + math.pi * 0.5
+                clock.angle = v[0] + math.pi * 0.5
                 # clock.angle = 0
                 clock.selected = True
                 clock.setText("Click Me!")
