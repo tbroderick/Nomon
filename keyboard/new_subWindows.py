@@ -1,6 +1,6 @@
 from PyQt4 import QtGui, QtCore
 
-from widgets import ClockWidgit, VerticalSeparator, HorizontalSeparator
+from widgets import OldClockWidgit, VerticalSeparator, HorizontalSeparator
 from pretraininginference import PreBroderClocks
 
 import sys
@@ -122,7 +122,7 @@ class SplashScreen(QtGui.QWidget):
 
         hbox = QtGui.QHBoxLayout()
 
-        self.loading_clock = ClockWidgit('', self)
+        self.loading_clock = OldClockWidgit('', self)
         self.loading_clock.highlighted = True
         self.loading_clock.setMinimumSize(200, 200)
 
@@ -147,7 +147,6 @@ class SplashScreen(QtGui.QWidget):
         vbox.addWidget(self.quotes_label, 1)
 
         self.setLayout(vbox)
-        self.loading_clock.calcClockSize()
 
     def timerEvent(self, e):
         if self.step >= math.pi * 2:
@@ -174,7 +173,7 @@ class WelcomeScreen(QtGui.QWidget):
 
         hbox = QtGui.QHBoxLayout()
 
-        self.loading_clock = ClockWidgit('a', self)
+        self.loading_clock = OldClockWidgit('a', self)
         self.loading_clock.highlighted = True
         self.loading_clock.setMinimumSize(200, 200)
         self.sub_label_1 = QtGui.QLabel("To select an option, find the adjacent clock and press when the moving hand "
@@ -214,12 +213,12 @@ class WelcomeScreen(QtGui.QWidget):
         self.sub_label_2.setFont(config.welcome_main_font[self.parent.font_scale])
         self.sub_label_3.setFont(config.welcome_main_font[self.parent.font_scale])
 
-        self.highlighted_clock = ClockWidgit('', self)
+        self.highlighted_clock = OldClockWidgit('', self)
         self.highlighted_clock.highlighted = True
         self.highlighted_clock.angle = 1
         self.highlighted_clock.setMinimumSize(150, 150)
 
-        self.regular_clock = ClockWidgit('', self)
+        self.regular_clock = OldClockWidgit('', self)
         self.regular_clock.angle = 1
         self.regular_clock.setMinimumSize(150, 150)
 
@@ -351,7 +350,7 @@ class PretrainScreen(QtGui.QWidget):
 
         self.key_grid = QtGui.QGridLayout()
 
-        self.clock = ClockWidgit('', self)
+        self.clock = OldClockWidgit('', self)
         self.clock.highlighted = True
 
         self.generate_dummy_clocks()
@@ -387,7 +386,7 @@ class PretrainScreen(QtGui.QWidget):
         self.setLayout(vbox)
 
     def generate_dummy_clocks(self):
-        self.dummy_clocks = [ClockWidgit("not me", self) for i in range(64)]
+        self.dummy_clocks = [OldClockWidgit("not me", self) for i in range(64)]
 
     def layout_clocks(self):
         index = 0

@@ -311,7 +311,9 @@ class MainWindow(QtGui.QMainWindow):
             self.check_filemenu()
 
         for clock in self.mainWidgit.clocks:
-            clock.calcClockSize()
+            clock.calculate_clock_size()
+            self.update_clock_radii()
+
 
     def layout_change_event(self, layout):
         message_box = QtGui.QMessageBox(QtGui.QMessageBox.Warning, "Change Keyboard Layout", "This will change the clock "
@@ -384,7 +386,8 @@ class MainWindow(QtGui.QMainWindow):
         if message:
             self.check_filemenu()
             for clock in self.mainWidgit.clocks:
-                clock.calcClockSize()
+                clock.calculate_clock_size()
+                self.update_clock_radii()
 
     def resize_clocks(self):
         if self.alignment[0] == 'b' or self.mainWidgit.alignment[0] == 't':
@@ -718,7 +721,8 @@ class MainKeyboardWidget(QtGui.QWidget):
                     self.words_hbox.addStretch(1)
                 self.vbox.insertLayout(4, self.words_hbox, 4)
         for clock in self.clocks:
-            clock.calcClockSize()
+            clock.calculate_clock_size()
+            self.parent.update_clock_radii()
 
     def layout_clocks(self):  # called after self.generate_clocks, arranges clocks in grid
         qwerty = (self.parent.layout_preference == 'qwerty')
@@ -776,8 +780,10 @@ class MainKeyboardWidget(QtGui.QWidget):
                 for clock in self.clocks:
                     clock.maxSize = round(80 * clock.size_factor)
                     clock.setMaximumHeight(clock.maxSize)
-                    clock.calcClockSize()
+                    clock.calculate_clock_size()
+                    self.parent.update_clock_radii()
                     clock.repaint()
+
 
         self.grid_units=[]
         clock_index = 0

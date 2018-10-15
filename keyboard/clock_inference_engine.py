@@ -22,7 +22,7 @@ class Entropy:
         self.bits_per_select = numpy.log(K) / numpy.log(2)
         self.num_bits += self.bits_per_select
         return self.num_bits
-    
+
 
 class KernelDensityEstimation:
     
