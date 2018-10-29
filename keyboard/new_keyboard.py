@@ -60,7 +60,8 @@ class Keyboard(MainWindow):
         self.user_id = 0
 
         self.up_handel = PickleUtil("user_preferences/user_preferences.p")
-        self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference, self.start_speed, self.is_write_data = self.up_handel.safe_load()
+        user_preferences = self.up_handel.safe_load()
+        self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference, self.start_speed, self.is_write_data = user_preferences
         if self.layout_preference == 'alpha':
             self.target_layout = kconfig.alpha_target_layout
         elif self.layout_preference == 'qwerty':
@@ -877,9 +878,15 @@ class Keyboard(MainWindow):
 
 def main():
     print "****************************\n****************************\n[Loading...]"
-    first_load_handel = PickleUtil("user_preferences/first_load.p")
-    first_load = first_load_handel.safe_load()
-    
+    up_handel = PickleUtil("user_preferences/user_preferences.p")
+    user_preferences = up_handel.safe_load()
+    if user_preferences is None:
+        first_load = True
+        user_preferences = ['default', 1, False, 'alpha', 'off', 12, False]
+        up_handel.safe_save(user_preferences)
+    else:
+        first_load = False
+
     app = QtGui.QApplication(sys.argv)
     screen_res = (app.desktop().screenGeometry().width(), app.desktop().screenGeometry().height())
 
@@ -889,7 +896,6 @@ def main():
 
     if first_load:
         welcome = Pretraining(screen_res, ex)
-        first_load_handel.safe_save(False)
 
     sys.exit(app.exec_())
 
