@@ -348,6 +348,15 @@ class MainWindow(QtGui.QMainWindow):
         self.mainWidgit.generate_clocks()
         self.mainWidgit.layout_clocks()
 
+        self.init_clocks()
+        self.update_radii = True
+
+        for clock in self.mainWidgit.clocks:
+            clock.calculate_clock_size()
+            self.update_clock_radii()
+
+
+
     def clock_text_align(self, alignment, message=True):
         if alignment == "auto":
             self.mainWidgit.text_alignment = 'auto'
