@@ -37,7 +37,7 @@
 ## met: http://www.gnu.org/copyleft/gpl.html.
 ##
 ## If you have questions regarding the use of this file, please contact
-## Nokia at qt-loading_text@nokia.com.
+## Nokia at qt-info@nokia.com.
 ## $QT_END_LICENSE$
 ##
 #############################################################################

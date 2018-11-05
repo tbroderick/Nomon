@@ -106,7 +106,7 @@ class MainWindow(QtGui.QMainWindow):
     def about(self):
         QtGui.QMessageBox.about(self, "About Application",
                 "The <b>Application</b> example demonstrates how to write "
-                "modern MainKeyboardWidget applications using Qt, with a menu bar, "
+                "modern GUI applications using Qt, with a menu bar, "
                 "toolbars, and a status bar.")
 
     def documentWasModified(self):
