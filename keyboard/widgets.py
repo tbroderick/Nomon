@@ -1,11 +1,12 @@
 from __future__ import division
-from PyQt4 import QtGui, QtCore
+from PyQt4.QtCore import QPoint, QRect, QPointF, Qt
+from PyQt4.QtGui import QWidget, QPainter, QPen, QLabel, QFont, QBrush, QColor
 import math
-import numpy as np
+from numpy import array
 import config
 
 
-class ClockWidgit(QtGui.QWidget):
+class ClockWidgit(QWidget):
 
     def __init__(self, text, parent, filler_clock=False):
         super(ClockWidgit, self).__init__()
@@ -13,7 +14,7 @@ class ClockWidgit(QtGui.QWidget):
         self.text = text
         self.redraw_text = True
         self.start_angle = 0.
-        self.hand_loc = np.array([0, 0])
+        self.hand_loc = array([0, 0])
         self.parent = parent
         self.filler_clock = filler_clock  # filler clock is transparent, but saves space in layout for later use
         self.highlighted = False
@@ -29,8 +30,8 @@ class ClockWidgit(QtGui.QWidget):
         self.h = 1
 
         self.outer_radius = 0
-        self.minute_hand_point = QtCore.QPoint(0, 0)
-        self.hour_hand_point = QtCore.QPoint(0, 0)
+        self.minute_hand_point = QPoint(0, 0)
+        self.hour_hand_point = QPoint(0, 0)
         self.minute_hand_angles = [0, 0, 0, 0, 0, 0]
         self.minute_hand_angle = 0
         self.inner_radius = 0
@@ -67,15 +68,15 @@ class ClockWidgit(QtGui.QWidget):
 
     def set_params(self, clock_params, recompute=False):
         if recompute:
-            self.center = QtCore.QPoint(clock_params[0], clock_params[0])
+            self.center = QPoint(clock_params[0], clock_params[0])
             self.outer_radius = clock_params[1]
-            self.hour_hand_point = QtCore.QPointF(self.center.x(), self.center.x()-self.outer_radius)
+            self.hour_hand_point = QPointF(self.center.x(), self.center.x()-self.outer_radius)
             self.draw = True
             self.calculate_clock_size()
-            self.rect = QtCore.QRect(self.h/2-self.outer_radius, self.h/2-self.outer_radius, self.outer_radius * 2 , self.outer_radius * 2 )
+            self.rect = QRect(self.h/2-self.outer_radius, self.h/2-self.outer_radius, self.outer_radius * 2 , self.outer_radius * 2 )
 
         if self.parent.parent.clock_type == 'default':
-            self.minute_hand_point = QtCore.QPoint(clock_params[2], clock_params[3])
+            self.minute_hand_point = QPoint(clock_params[2], clock_params[3])
 
         elif self.parent.parent.clock_type == 'ball':
             self.inner_radius = clock_params[2]
@@ -97,7 +98,7 @@ class ClockWidgit(QtGui.QWidget):
             self.calculate_clock_size()
             self.parent.parent.update_radii = True
         if self.draw:
-            qp = QtGui.QPainter()
+            qp = QPainter()
             qp.begin(self)
             if not self.filler_clock:
                 self.drawClock(e, qp)
@@ -131,12 +132,12 @@ class ClockWidgit(QtGui.QWidget):
         else:
             center_offset_y = 0
 
-        self.center = QtCore.QPointF(constraint / 2 + center_offset_x, constraint / 2 + center_offset_y)
+        self.center = QPointF(constraint / 2 + center_offset_x, constraint / 2 + center_offset_y)
         self.redraw_text = True
 
     def drawClock(self, e, qp):
 
-        colored_pen = QtGui.QPen()
+        colored_pen = QPen()
         colored_pen.setWidth(4)
         if self.selected:
             colored_pen.setColor(config.default_selct_color[self.parent.color_index])
@@ -147,12 +148,12 @@ class ClockWidgit(QtGui.QWidget):
 
         # calculate size of text from leftover space
         if self.redraw_text:
-            self.text_font = QtGui.QFont(config.clock_font)
+            self.text_font = QFont(config.clock_font)
             self.text_font.setPixelSize(self.h)
             self.text_font.setStretch(85)
             qp.setFont(self.text_font)
 
-            label = QtGui.QLabel(self.text)
+            label = QLabel(self.text)
             label.setFont(self.text_font)
             text_width = label.fontMetrics().boundingRect(label.text()).width()
 
@@ -167,32 +168,32 @@ class ClockWidgit(QtGui.QWidget):
                 if size_factor < 1.3:
                     self.text_font.setStretch(int(85./size_factor))
 
-                    label = QtGui.QLabel(self.text)
+                    label = QLabel(self.text)
                     label.setFont(self.text_font)
                     text_width = label.fontMetrics().boundingRect(label.text()).width()
                 elif size_factor > 1.3:
                     self.text_font.setStretch(65)
-                    label = QtGui.QLabel(self.text)
+                    label = QLabel(self.text)
                     label.setFont(self.text_font)
                     text_width = label.fontMetrics().boundingRect(label.text()).width()
 
                     size_factor = float(text_width) / (float(width)+0.1)
                     self.text_font.setPixelSize(max(1, int(float(self.h)/size_factor)))
 
-                    label = QtGui.QLabel(self.text)
+                    label = QLabel(self.text)
                     label.setFont(self.text_font)
                     text_width = label.fontMetrics().boundingRect(label.text()).width()
 
         if self.background:
-            brush = QtGui.QBrush(QtGui.QColor(175, 255, 175))
+            brush = QBrush(QColor(175, 255, 175))
             qp.fillRect(0, 0, self.w, self.h, brush)
         # draw clock face
         qp.setPen(colored_pen)
 
-        brush = QtGui.QBrush(config.clock_bg_color[self.parent.color_index])
+        brush = QBrush(config.clock_bg_color[self.parent.color_index])
         try:
             if not self.parent.in_focus:
-                brush = QtGui.QBrush(QtGui.QColor(230, 230, 230))
+                brush = QBrush(QColor(230, 230, 230))
         except AttributeError:
             pass
 
@@ -205,7 +206,7 @@ class ClockWidgit(QtGui.QWidget):
 
         # draw hands
         if self.parent.parent.clock_type == 'default':
-            pen = QtGui.QPen()
+            pen = QPen()
             pen.setColor(config.default_hh_color[self.parent.color_index])
             pen.setWidth(2)
             qp.setPen(pen)
@@ -223,36 +224,36 @@ class ClockWidgit(QtGui.QWidget):
             else:
                 brush.setColor(config.ball_mh_reg_color[self.parent.color_index])
             qp.setBrush(brush)
-            pen = QtGui.QPen()
-            pen.setColor(QtGui.QColor(0, 0, 0, 0))
+            pen = QPen()
+            pen.setColor(QColor(0, 0, 0, 0))
             qp.setPen(pen)
             qp.drawEllipse(self.center, self.inner_radius, self.inner_radius)
 
         elif self.parent.parent.clock_type == 'radar':
-            pen = QtGui.QPen()
+            pen = QPen()
             pen.setColor(config.default_hh_color[self.parent.color_index])
             pen.setWidth(2)
             qp.setPen(pen)
 
             qp.drawLine(self.center, self.hour_hand_point)  # Hour Hand
-            pen.setColor(QtGui.QColor(0, 0, 0, 0))
+            pen.setColor(QColor(0, 0, 0, 0))
             qp.setPen(pen)
             for i in range(len(self.minute_hand_angles)-1):
                 if self.selected:
-                    brush.setColor(QtGui.QColor(0, 255, 0, 255 * i/6))
+                    brush.setColor(QColor(0, 255, 0, 255 * i/6))
                     qp.setBrush(brush)
                 elif self.highlighted:
-                    brush.setColor(QtGui.QColor(0, 0, 255, 255 * i/6))
+                    brush.setColor(QColor(0, 0, 255, 255 * i/6))
                     qp.setBrush(brush)
                 else:
-                    brush.setColor(QtGui.QColor(0, 0, 0, 255 * i/6))
+                    brush.setColor(QColor(0, 0, 0, 255 * i/6))
                     qp.setBrush(brush)
 
                 qp.drawPie(self.rect, self.minute_hand_angles[i], 30*16)
 
         elif self.parent.parent.clock_type == 'pac_man':
-            pen = QtGui.QPen()
-            pen.setColor(QtGui.QColor(0, 0, 0, 0))
+            pen = QPen()
+            pen.setColor(QColor(0, 0, 0, 0))
             qp.setPen(pen)
 
             if self.selected:
@@ -276,7 +277,7 @@ class ClockWidgit(QtGui.QWidget):
             qp.setBrush(brush)
             qp.drawPie(self.rect, 90*16, self.minute_hand_angle)
 
-            brush.setColor(QtGui.QColor(0, 0, 0, 0))
+            brush.setColor(QColor(0, 0, 0, 0))
             qp.setBrush(brush)
             qp.setPen(colored_pen)
             qp.drawEllipse(self.center, self.outer_radius, self.outer_radius)
@@ -290,8 +291,8 @@ class ClockWidgit(QtGui.QWidget):
             else:
                 brush.setColor(config.bar_mh_reg_color[self.parent.color_index])
             qp.setBrush(brush)
-            pen = QtGui.QPen()
-            pen.setColor(QtGui.QColor(0, 0, 0, 0))
+            pen = QPen()
+            pen.setColor(QColor(0, 0, 0, 0))
             qp.setPen(pen)
             qp.drawRect(10, 2, self.inner_radius, self.h - 4)
 
@@ -304,7 +305,7 @@ class ClockWidgit(QtGui.QWidget):
                 pen.setColor(config.bar_hh_reg_color[self.parent.color_index])
             pen.setWidth(4)
             qp.setPen(pen)
-            brush.setColor(QtGui.QColor(0, 0, 0, 0))
+            brush.setColor(QColor(0, 0, 0, 0))
             qp.setBrush(brush)
 
             qp.drawRect(10, 1, self.w - 20, self.h - 1)
@@ -350,7 +351,7 @@ class ClockWidgit(QtGui.QWidget):
         qp.drawText(self.text_x, self.text_y, self.text)
 
 
-class HistogramWidget(QtGui.QWidget):
+class HistogramWidget(QWidget):
 
     def __init__(self, parent):
         super(HistogramWidget, self).__init__()
@@ -363,7 +364,7 @@ class HistogramWidget(QtGui.QWidget):
 
 
     def paintEvent(self, e):
-        qp = QtGui.QPainter()
+        qp = QPainter()
         qp.begin(self)
         self.bars = self.parent.parent.bars
         self.drawBars(qp)
@@ -379,23 +380,23 @@ class HistogramWidget(QtGui.QWidget):
         h_scale = h / max_value
         bar_width = float(w) / len(self.bars)
 
-        qp.setPen(QtGui.QPen(QtGui.QColor(120, 120, 120), 1))
-        qp.setBrush(QtGui.QBrush(QtGui.QColor(255, 255, 255)))
+        qp.setPen(QPen(QColor(120, 120, 120), 1))
+        qp.setBrush(QBrush(QColor(255, 255, 255)))
         qp.drawRect(0, 0, w - 1, h)
 
-        pen = QtGui.QPen(QtGui.QColor(0, 0, 255), 1)
+        pen = QPen(QColor(0, 0, 255), 1)
         qp.setPen(pen)
-        brush = QtGui.QBrush(QtGui.QColor(0, 150, 255))
+        brush = QBrush(QColor(0, 150, 255))
         qp.setBrush(brush)
         i = 0
         for bar in self.bars:
             qp.drawRect(i * bar_width, h - bar * h_scale, bar_width, h)
             i += 1
         if not self.parent.in_focus:
-            qp.fillRect(0,0,self.geometry().width(),self.geometry().height(),QtGui.QColor(0,0,0,25))
+            qp.fillRect(0,0,self.geometry().width(),self.geometry().height(),QColor(0,0,0,25))
 
 
-class VerticalSeparator(QtGui.QWidget):
+class VerticalSeparator(QWidget):
 
     def __init__(self):
         super(VerticalSeparator, self).__init__()
@@ -407,7 +408,7 @@ class VerticalSeparator(QtGui.QWidget):
         self.setMaximumWidth(1)
 
     def paintEvent(self, e):
-        qp = QtGui.QPainter()
+        qp = QPainter()
         qp.begin(self)
         self.drawLine(qp)
         qp.end()
@@ -418,12 +419,12 @@ class VerticalSeparator(QtGui.QWidget):
         w = size.width()
         h = size.height()
 
-        pen = QtGui.QPen(QtGui.QColor(100, 100, 100), 1)
+        pen = QPen(QColor(100, 100, 100), 1)
         qp.setPen(pen)
         qp.drawLine(w / 2, 0, w / 2, h)
 
 
-class HorizontalSeparator(QtGui.QWidget):
+class HorizontalSeparator(QWidget):
 
     def __init__(self):
         super(HorizontalSeparator, self).__init__()
@@ -435,7 +436,7 @@ class HorizontalSeparator(QtGui.QWidget):
         self.setMaximumHeight(1)
 
     def paintEvent(self, e):
-        qp = QtGui.QPainter()
+        qp = QPainter()
         qp.begin(self)
         self.drawLine(qp)
         qp.end()
@@ -446,12 +447,12 @@ class HorizontalSeparator(QtGui.QWidget):
         w = size.width()
         h = size.height()
 
-        pen = QtGui.QPen(QtGui.QColor(100, 100, 100), 1)
+        pen = QPen(QColor(100, 100, 100), 1)
         qp.setPen(pen)
         qp.drawLine(0, h / 2, w, h / 2)
 
 
-class OldClockWidgit(QtGui.QWidget):
+class OldClockWidgit(QWidget):
 
     def __init__(self, text, parent, filler_clock=False):
         super(OldClockWidgit, self).__init__()
@@ -503,7 +504,7 @@ class OldClockWidgit(QtGui.QWidget):
         if self.w != size.width() or self.h != size.height():
             self.calcClockSize()
 
-        qp = QtGui.QPainter()
+        qp = QPainter()
         qp.begin(self)
         if not self.filler_clock:
             self.drawClock(e, qp)
@@ -537,7 +538,7 @@ class OldClockWidgit(QtGui.QWidget):
         else:
             center_offset_y = 0
 
-        self.center = QtCore.QPointF(constraint / 2 + center_offset_x, constraint / 2 + center_offset_y)
+        self.center = QPointF(constraint / 2 + center_offset_x, constraint / 2 + center_offset_y)
         self.redraw_text = True
 
     def drawClock(self, e, qp):
@@ -552,7 +553,7 @@ class OldClockWidgit(QtGui.QWidget):
                 else:
                     brush.setColor(config.ball_mh_reg_color[self.parent.color_index])
                 qp.setBrush(brush)
-                pen.setColor(QtGui.QColor(0, 0, 0, 0))
+                pen.setColor(QColor(0, 0, 0, 0))
                 qp.setPen(pen)
 
                 def sign(x):
@@ -571,24 +572,24 @@ class OldClockWidgit(QtGui.QWidget):
             if self.parent.parent.high_contrast:
                 def clock_color(color_factor):
                     if self.selected:
-                        brush.setColor(QtGui.QColor(0, 255, 0, 255 * color_factor))
+                        brush.setColor(QColor(0, 255, 0, 255 * color_factor))
                         qp.setBrush(brush)
                     elif self.highlighted:
-                        brush.setColor(QtGui.QColor(255, 0, 0, 255 * color_factor))
+                        brush.setColor(QColor(255, 0, 0, 255 * color_factor))
                         qp.setBrush(brush)
                     else:
-                        brush.setColor(QtGui.QColor(0, 0, 255, 255 * color_factor))
+                        brush.setColor(QColor(0, 0, 255, 255 * color_factor))
                         qp.setBrush(brush)
             else:
                 def clock_color(color_factor):
                     if self.selected:
-                        brush.setColor(QtGui.QColor(0, 255, 0, 255 * color_factor))
+                        brush.setColor(QColor(0, 255, 0, 255 * color_factor))
                         qp.setBrush(brush)
                     elif self.highlighted:
-                        brush.setColor(QtGui.QColor(0, 0, 255, 255 * color_factor))
+                        brush.setColor(QColor(0, 0, 255, 255 * color_factor))
                         qp.setBrush(brush)
                     else:
-                        brush.setColor(QtGui.QColor(0, 0, 0, 255 * color_factor))
+                        brush.setColor(QColor(0, 0, 0, 255 * color_factor))
                         qp.setBrush(brush)
 
             def hour_hand_from_angle(angle, radius):
@@ -598,7 +599,7 @@ class OldClockWidgit(QtGui.QWidget):
 
                 angle -= math.pi / 2  # reference angle from noon
                 radius *= 1.1
-                far_point = self.center + QtCore.QPointF(math.cos(angle) * radius, math.sin(angle) * radius)
+                far_point = self.center + QPointF(math.cos(angle) * radius, math.sin(angle) * radius)
                 qp.drawLine(self.center, far_point)
 
                 if self.selected:
@@ -618,11 +619,11 @@ class OldClockWidgit(QtGui.QWidget):
                 if angle > 0:
                     angle = -360 + angle
                 r = self.radius * (1. - clock_thickness / 2)
-                rect = QtCore.QRect(self.center.x() - r + 1, self.center.y() - r + 1, r * 2., r * 2.)
+                rect = QRect(self.center.x() - r + 1, self.center.y() - r + 1, r * 2., r * 2.)
 
                 n = 8.
                 length = math.pi * 2 / 3
-                pen.setColor(QtGui.QColor(0, 0, 0, 0))
+                pen.setColor(QColor(0, 0, 0, 0))
                 pen.setWidth(1)
                 qp.setPen(pen)
                 for i in range(int(n)):
@@ -642,7 +643,7 @@ class OldClockWidgit(QtGui.QWidget):
                 if angle > 0:
                     angle = -360 + angle
                 r = self.radius * (1. - clock_thickness / 2)
-                rect = QtCore.QRect(self.center.x() - r + 1, self.center.y() - r + 1, r * 2., r * 2.)
+                rect = QRect(self.center.x() - r + 1, self.center.y() - r + 1, r * 2., r * 2.)
 
                 if self.selected:
                     brush.setColor(config.pac_man_selct_color[self.parent.color_index])
@@ -652,7 +653,7 @@ class OldClockWidgit(QtGui.QWidget):
                 else:
                     brush.setColor(config.pac_man_reg_color[self.parent.color_index])
                 qp.setBrush(brush)
-                pen.setColor(QtGui.QColor(0, 0, 0, 0))
+                pen.setColor(QColor(0, 0, 0, 0))
                 qp.setPen(pen)
 
                 if angle > self.previous_angle:
@@ -682,7 +683,7 @@ class OldClockWidgit(QtGui.QWidget):
                 else:
                     brush.setColor(config.bar_mh_reg_color[self.parent.color_index])
                 qp.setBrush(brush)
-                pen.setColor(QtGui.QColor(0, 0, 0, 0))
+                pen.setColor(QColor(0, 0, 0, 0))
                 qp.setPen(pen)
 
                 def sign(x):
@@ -712,7 +713,7 @@ class OldClockWidgit(QtGui.QWidget):
 
                 angle -= math.pi / 2  # reference angle from noon
 
-                far_point = self.center + QtCore.QPointF(math.cos(angle) * radius, math.sin(angle) * radius)
+                far_point = self.center + QPointF(math.cos(angle) * radius, math.sin(angle) * radius)
                 qp.drawLine(self.center, far_point)
 
             def hour_hand_from_angle(angle, radius):
@@ -735,12 +736,12 @@ class OldClockWidgit(QtGui.QWidget):
         clock_thickness = 1. / 6
         # calculate size of text from leftover space
         if self.redraw_text:
-            self.text_font = QtGui.QFont(config.clock_font)
+            self.text_font = QFont(config.clock_font)
             self.text_font.setPixelSize(self.h)
             self.text_font.setStretch(85)
             qp.setFont(self.text_font)
 
-            label = QtGui.QLabel(self.text)
+            label = QLabel(self.text)
             label.setFont(self.text_font)
             text_width = label.fontMetrics().boundingRect(label.text()).width()
 
@@ -755,27 +756,27 @@ class OldClockWidgit(QtGui.QWidget):
                 if size_factor < 1.3:
                     self.text_font.setStretch(int(85. / size_factor))
 
-                    label = QtGui.QLabel(self.text)
+                    label = QLabel(self.text)
                     label.setFont(self.text_font)
                     text_width = label.fontMetrics().boundingRect(label.text()).width()
                 elif size_factor > 1.3:
                     self.text_font.setStretch(65)
-                    label = QtGui.QLabel(self.text)
+                    label = QLabel(self.text)
                     label.setFont(self.text_font)
                     text_width = label.fontMetrics().boundingRect(label.text()).width()
 
                     size_factor = float(text_width) / (float(width) + 0.1)
                     self.text_font.setPixelSize(max(1, int(float(self.h) / size_factor)))
 
-                    label = QtGui.QLabel(self.text)
+                    label = QLabel(self.text)
                     label.setFont(self.text_font)
                     text_width = label.fontMetrics().boundingRect(label.text()).width()
 
         if self.background:
-            brush = QtGui.QBrush(QtGui.QColor(175, 255, 175))
+            brush = QBrush(QColor(175, 255, 175))
             qp.fillRect(0, 0, self.w, self.h, brush)
         # draw clock face
-        pen = QtGui.QPen()
+        pen = QPen()
         if self.selected:
             pen.setColor(config.default_selct_color[self.parent.color_index])
 
@@ -785,10 +786,10 @@ class OldClockWidgit(QtGui.QWidget):
             pen.setColor(config.default_reg_color[self.parent.color_index])
         qp.setPen(pen)
 
-        brush = QtGui.QBrush(config.clock_bg_color[self.parent.color_index])
+        brush = QBrush(config.clock_bg_color[self.parent.color_index])
         try:
             if not self.parent.in_focus:
-                brush = QtGui.QBrush(QtGui.QColor(230, 230, 230))
+                brush = QBrush(QColor(230, 230, 230))
         except AttributeError:
             pass
         pen.setWidth(3)
@@ -803,7 +804,7 @@ class OldClockWidgit(QtGui.QWidget):
 
         # draw hands
         pen.setWidth(self.radius * clock_thickness)
-        pen.setCapStyle(QtCore.Qt.RoundCap)
+        pen.setCapStyle(Qt.RoundCap)
         qp.setPen(pen)
 
         hour_hand_from_angle(0, self.radius * 0.7)  # Hour hand
@@ -811,9 +812,9 @@ class OldClockWidgit(QtGui.QWidget):
         threshold = 0.025
         if math.sin(self.angle - math.pi / 2) < -1 + threshold:
             if self.highlighted:
-                pen.setColor(QtGui.QColor(0, 255, 255))
+                pen.setColor(QColor(0, 255, 255))
             elif not (self.selected):
-                pen.setColor(QtGui.QColor(150, 150, 150))
+                pen.setColor(QColor(150, 150, 150))
             qp.setPen(pen)
 
         minute_hand_from_angle(self.angle + self.start_angle, self.radius * 0.7)  # Minute Hand
@@ -827,7 +828,7 @@ class OldClockWidgit(QtGui.QWidget):
             pen.setColor(config.default_reg_color[self.parent.color_index])
         qp.setPen(pen)
 
-        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0, 0))
+        brush = QBrush(QColor(0, 0, 0, 0))
         pen.setWidth(self.radius * clock_thickness)
         qp.setPen(pen)
         qp.setBrush(brush)

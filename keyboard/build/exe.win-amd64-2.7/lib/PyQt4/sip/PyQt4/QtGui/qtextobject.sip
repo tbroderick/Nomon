@@ -197,7 +197,7 @@ public:
     int userState() const;
     void setUserState(int state);
 %If (Qt_4_4_0 -)
-    void clear_layout();
+    void clearLayout();
 %End
 %If (Qt_4_4_0 -)
     int revision() const;

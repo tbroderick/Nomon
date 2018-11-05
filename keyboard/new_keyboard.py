@@ -18,8 +18,9 @@
 #    along with Nomon Keyboard.  If not, see <http://www.gnu.org/licenses/>.
 ######################################
 
-import numpy as np
-from PyQt4 import QtGui, QtCore
+from numpy import zeros, array, log
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QSound, QApplication
 
 from mainWindow import MainWindow
 from new_subWindows import Pretraining, PretrainScreen, WelcomeScreen, SplashScreen, StartWindow
@@ -100,12 +101,11 @@ class Keyboard(MainWindow):
         # set up file handle for printing useful stuff
         self.undefined = False
 
-        if config.is_write_data:
-            self.params_handle_dict = {'speed': [], 'params': [], 'start': [], 'press': [], 'choice': []}
-            self.num_presses = 0
+        self.params_handle_dict = {'speed': [], 'params': [], 'start': [], 'press': [], 'choice': []}
+        self.num_presses = 0
 
-            self.params_handle_dict['params'].append([config.period_li[config.default_rotate_ind], config.theta0])
-            self.params_handle_dict['start'].append(time.time())
+        self.params_handle_dict['params'].append([config.period_li[config.default_rotate_ind], config.theta0])
+        self.params_handle_dict['start'].append(time.time())
 
         self.gen_scale()
         self.pause_set = True
@@ -117,6 +117,7 @@ class Keyboard(MainWindow):
         self.last_add_li = [0]
         # set up "talked" text
         self.talk_file = "talk.txt"
+        self.sound_set=True
         # set up dictionary tree
 
         self.pause_animation = False
@@ -153,14 +154,14 @@ class Keyboard(MainWindow):
         # get language model results
         self.gen_word_prior(False)
 
-        self.clock_spaces = np.zeros((len(self.clock_centers), 2))
+        self.clock_spaces = zeros((len(self.clock_centers), 2))
 
         self.bc = NewBroderClocks(self)
         self.mainWidgit.change_value(self.start_speed)
 
         self.bc.init_follow_up(self.word_score_prior)
 
-        self.clock_params = np.zeros((len(self.clock_centers), 8))
+        self.clock_params = zeros((len(self.clock_centers), 8))
 
         self.bc.clock_inf.clock_util.calcualte_clock_params('default', recompute=True)
 
@@ -191,7 +192,7 @@ class Keyboard(MainWindow):
 
     def update_clock_radii(self):
         for clock in self.words_on:
-            self.clock_spaces[clock, :] = np.array([self.mainWidgit.clocks[clock].w, self.mainWidgit.clocks[clock].h])
+            self.clock_spaces[clock, :] = array([self.mainWidgit.clocks[clock].w, self.mainWidgit.clocks[clock].h])
         self.bc.clock_inf.clock_util.calcualte_clock_params(self.clock_type, recompute=True)
         self.update_radii = False
 
@@ -208,7 +209,7 @@ class Keyboard(MainWindow):
         self.parent.after(20, self.find_events)
 
     def keyPressEvent(self, e):
-        if e.key() == QtCore.Qt.Key_Space:
+        if e.key() == Qt.Key_Space:
             self.on_press()
 
 
@@ -383,7 +384,7 @@ class Keyboard(MainWindow):
 
         # if word prediction on but reduced
         if self.word_pred_on == 1:
-            flat_freq_list = np.array([freq for sublist in self.word_freq_li for freq in sublist])
+            flat_freq_list = array([freq for sublist in self.word_freq_li for freq in sublist])
             if len(flat_freq_list) >= self.reduce_display:
                 # replacement_count = 0
                 for arg in flat_freq_list.argsort()[-self.reduce_display:]:
@@ -473,7 +474,7 @@ class Keyboard(MainWindow):
 
         # if word prediction on but reduced
         if self.word_pred_on == 1:
-            flat_freq_list = np.array([freq for sublist in self.word_freq_li for freq in sublist])
+            flat_freq_list = array([freq for sublist in self.word_freq_li for freq in sublist])
             if len(flat_freq_list) >= self.reduce_display:
                 for arg in flat_freq_list.argsort()[-self.reduce_display:]:
                     word_to_add = self.words_li[(arg / 3)][arg % 3]
@@ -547,7 +548,7 @@ class Keyboard(MainWindow):
                     (key, pred) = pair
                     prob = (self.word_freq_li[key][pred] + 1) * 1.0 / (self.tot_freq + N_on)
                     prob = prob * kconfig.rem_prob
-                    self.word_score_prior.append(np.log(prob))
+                    self.word_score_prior.append(log(prob))
                 else:
                     key = pair[0]
                     prob = (self.key_freq_li[key] + 1) * 1.0 / (self.tot_freq + N_on)
@@ -561,7 +562,7 @@ class Keyboard(MainWindow):
                     if self.keys_li[key] == kconfig.clear_char:
                         prob = kconfig.undo_prob
 
-                    self.word_score_prior.append(np.log(prob))
+                    self.word_score_prior.append(log(prob))
         else:
             for index in self.words_on:
                 pair = self.word_pair[index]
@@ -569,7 +570,7 @@ class Keyboard(MainWindow):
                     key = pair[0]
                     if (self.keys_li[key] == kconfig.mybad_char) or (self.keys_li[key] == kconfig.yourbad_char):
                         prob = kconfig.undo_prob
-                        self.word_score_prior.append(np.log(prob))
+                        self.word_score_prior.append(log(prob))
                     else:
                         self.word_score_prior.append(0)
                 else:
@@ -682,7 +683,6 @@ class Keyboard(MainWindow):
             if self.first_load:
                 self.first_load = False
                 self.log_data_event()
-                self.first_load_handel.safe_save(False)
 
     def on_press(self):
         # self.canvas.focus_set()
@@ -690,15 +690,16 @@ class Keyboard(MainWindow):
             self.wpm_time = time.time()
 
         if not self.in_pause:
-            if config.is_write_data:
+            if self.is_write_data:
                 self.num_presses += 1
                 self.params_handle_dict['press'].append([time.time(), self.num_presses])
             self.bc.select()
-        self.play()
+        if self.sound_set:
+            self.play()
 
     def play(self):
         sound_file = "icons/bell.wav"
-        QtGui.QSound(sound_file).play()
+        QSound(sound_file).play()
 
     def highlight_winner(self, index):
 
@@ -843,7 +844,7 @@ class Keyboard(MainWindow):
         #     self.talk_winner(talk_string)
 
         # write output
-        if config.is_write_data:
+        if self.is_write_data:
             self.params_handle_dict['choice'].append([time.time(), is_undo, is_equalize, self.typed])
 
         return self.words_on, self.words_off, self.word_score_prior, is_undo, is_equalize
@@ -887,7 +888,7 @@ def main():
     else:
         first_load = False
 
-    app = QtGui.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     screen_res = (app.desktop().screenGeometry().width(), app.desktop().screenGeometry().height())
 
     splash = StartWindow(screen_res, True)
@@ -895,6 +896,7 @@ def main():
     ex = Keyboard(screen_res, app)
 
     if first_load:
+        ex.first_load=True
         welcome = Pretraining(screen_res, ex)
 
     sys.exit(app.exec_())

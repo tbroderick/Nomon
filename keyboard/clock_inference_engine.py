@@ -5,7 +5,7 @@ Created on Wed Aug  1 15:28:48 2018
 @author: TiffMin
 """
 from __future__ import division
-import numpy
+from numpy import log, exp, sqrt, pi, std, argmin, e
 from clock_util import ClockUtil
 import config
 
@@ -15,18 +15,18 @@ class Entropy:
     def __init__(self, clock_inf):
         self.clock_inf = clock_inf
         self.num_bits = 0
-        self.bits_per_select = numpy.log(len(self.clock_inf.clocks_on)) / numpy.log(2)
+        self.bits_per_select = log(len(self.clock_inf.clocks_on)) / log(2)
 
     def update_bits(self):
         K = len(self.clock_inf.clocks_on)
-        self.bits_per_select = numpy.log(K) / numpy.log(2)
+        self.bits_per_select = log(K) / log(2)
         self.num_bits += self.bits_per_select
         return self.num_bits
 
 
 class KernelDensityEstimation:
     
-    def __init__(self, time_rotate, past_data = None):
+    def __init__(self, time_rotate, past_data=None):
         self.dens_li = []
         self.Z = 0
         self.ksigma =0
@@ -53,8 +53,8 @@ class KernelDensityEstimation:
         for x in self.x_li:
             diff = x - config.mu0
 
-            dens = numpy.exp(-1/(2*config.sigma0_sq) * diff*diff)
-            dens /= numpy.sqrt(2*numpy.pi*config.sigma0_sq)
+            dens = exp(-1/(2*config.sigma0_sq) * diff*diff)
+            dens /= sqrt(2*pi*config.sigma0_sq)
             dens *= self.n_ksigma
             self.dens_li.append(dens)
             self.Z += dens
@@ -80,11 +80,11 @@ class KernelDensityEstimation:
     
     # helper functions
     def normal(self, x, mu, sig_sq):
-        return numpy.exp(-((x-mu)**2)/(2*sig_sq)) / float(numpy.sqrt(2*numpy.pi*sig_sq))
+        return exp(-((x-mu)**2)/(2*sig_sq)) / float(sqrt(2*pi*sig_sq))
     
     def optimal_bandwith(self, things):
         n = len(things)
-        return 1.06 * (n ** -0.2) * numpy.std(things)
+        return 1.06 * (n ** -0.2) * std(things)
 
     def ave_sigma_sq(self, eff_num_points, yLenEff):
         ysum = sum([y for y in self.y_li[0:yLenEff]])
@@ -102,7 +102,7 @@ class KernelDensityEstimation:
         ave_sigma_sq = self.ave_sigma_sq(eff_num_points, yLenEff)
 
         # optimal bandwidth
-        self.ksigma = self.ns_factor * numpy.sqrt(ave_sigma_sq)
+        self.ksigma = self.ns_factor * sqrt(ave_sigma_sq)
         return self.ksigma
 
     # When a new yin comes in, add that yin to kernel density estimation
@@ -111,8 +111,8 @@ class KernelDensityEstimation:
         ksigma_sq = ksigma * ksigma
         for index in self.index_li:
             diff = self.x_li[index] - yin
-            dens = numpy.exp(-1 / (2 * ksigma_sq) * diff * diff)
-            dens /= numpy.sqrt(2 * numpy.pi * ksigma_sq)
+            dens = exp(-1 / (2 * ksigma_sq) * diff * diff)
+            dens /= sqrt(2 * pi * ksigma_sq)
             self.dens_li[index] = self.damp * self.dens_li[index] + dens
             # summing Z again to keep it fresh (& since have to anyway)
             self.Z += self.dens_li[index]
@@ -144,7 +144,7 @@ class ClockInference:
         self.kde = KernelDensityEstimation(self.time_rotate)
         
         # how many pts to save (0.02: threshold for accuracy)
-        self.n_hist = min(200, int(numpy.log(0.02) / numpy.log(self.kde.damp)))
+        self.n_hist = min(200, int(log(0.02) / log(self.kde.damp)))
         
         self.past_data = past_data
 
@@ -157,14 +157,14 @@ class ClockInference:
     def get_score_inc(self, yin):
         index = int(config.num_divs_click * (yin / self.time_rotate + 0.5)) % config.num_divs_click
         if self.kde.Z != 0: 
-            return numpy.log(self.kde.dens_li[index] / self.kde.Z)
+            return log(self.kde.dens_li[index] / self.kde.Z)
         # Not super sure tho
         else:
             return 1
 
     def reverse_index_gsi(self, log_dens_val):
-        dens_val = numpy.e ** log_dens_val
-        most_likely_index = numpy.argmin([abs(x - dens_val) for x in self.kde.dens_li])
+        dens_val = e ** log_dens_val
+        most_likely_index = argmin([abs(x - dens_val) for x in self.kde.dens_li])
         return most_likely_index
     
     # increments and adds the new x to the ksigma calculation

@@ -6,7 +6,6 @@ Created on Thu Aug  2 16:00:14 2018
 """
 from __future__ import division
 from clock_inference_engine import *
-from clock_util import *
 import time
 
 from pickle_util import PickleUtil
@@ -122,9 +121,10 @@ class NewBroderClocks:
         
         #Save all click time by the user
         last_gap_time = (time_in - self.last_press_time) % self.time_rotate
-        self.save_click_time(last_gap_time, ind_in_histo)
-        self.last_press_time = time_in
-        print "click time was recorded!"
+        if self.parent.is_write_data:
+            self.save_click_time(last_gap_time, ind_in_histo)
+            self.last_press_time = time_in
+            print "click time was recorded!"
 
         
         # proceed based on whether there was a winner
@@ -149,7 +149,7 @@ class NewBroderClocks:
          
     #CAN DO BETTER FOR THIS PART
     def init_bits(self):
-        self.bits_per_select = numpy.log(len(self.clock_inf.clocks_on)) / numpy.log(2)
+        self.bits_per_select = log(len(self.clock_inf.clocks_on)) / log(2)
         self.start_time = time.time()
         self.last_win_time = self.start_time
         self.num_bits = 0

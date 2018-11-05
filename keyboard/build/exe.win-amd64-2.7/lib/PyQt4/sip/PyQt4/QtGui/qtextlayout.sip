@@ -117,7 +117,7 @@ public:
     qreal minimumWidth() const;
     qreal maximumWidth() const;
 %If (Qt_4_4_0 -)
-    void clear_layout();
+    void clearLayout();
 %End
 %If (Qt_4_8_0 -)
     void setCursorMoveStyle(Qt::CursorMoveStyle style);

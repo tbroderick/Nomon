@@ -1,11 +1,13 @@
-from PyQt4 import QtGui, QtCore
+from PyQt4.QtCore import Qt, QBasicTimer, QTimer
+from PyQt4.QtGui import QMainWindow, QWidget, QIcon, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPixmap, QSound, \
+    QPushButton
 
 from widgets import OldClockWidgit, VerticalSeparator, HorizontalSeparator
 from pretraininginference import PreBroderClocks
 
 import sys
 import os
-import math
+from numpy import pi
 import time
 import config
 from pickle_util import PickleUtil
@@ -13,7 +15,7 @@ from pickle_util import PickleUtil
 sys.path.insert(0, os.path.realpath('../KernelDensityEstimation'))
 
 
-class StartWindow(QtGui.QMainWindow):
+class StartWindow(QMainWindow):
 
     def __init__(self, screen_res, splash):
         super(StartWindow, self).__init__()
@@ -46,7 +48,7 @@ class StartWindow(QtGui.QMainWindow):
 
         self.setGeometry((self.screen_res[0] - w) / 2, (self.screen_res[1] - h) / 2, w, h)
         self.setWindowTitle('Nomon Keyboard')
-        self.setWindowIcon(QtGui.QIcon('icons/nomon.png'))
+        self.setWindowIcon(QIcon('icons/nomon.png'))
 
         self.show()
 
@@ -61,13 +63,13 @@ class StartWindow(QtGui.QMainWindow):
         self.setGeometry((self.screen_res[0] - w) / 2, (self.screen_res[1] - h) / 2, w, h)
 
         self.setWindowTitle('Nomon Keyboard')
-        self.setWindowIcon(QtGui.QIcon('icons/nomon.png'))
+        self.setWindowIcon(QIcon('icons/nomon.png'))
 
         self.show()
 
     def keyPressEvent(self, e):
         if not self.splash:
-            if e.key() == QtCore.Qt.Key_Space:
+            if e.key() == Qt.Key_Space:
                 self.screen_num += 1  # cycle through the multiple welcome/help screens
                 if self.screen_num == 1:
                     self.mainWidgit.close()
@@ -105,7 +107,7 @@ class StartWindow(QtGui.QMainWindow):
                     self.on_press()
 
 
-class SplashScreen(QtGui.QWidget):
+class SplashScreen(QWidget):
 
     def __init__(self, parent):
         super(SplashScreen, self).__init__()
@@ -118,23 +120,23 @@ class SplashScreen(QtGui.QWidget):
         self.initUI()
 
     def initUI(self):
-        vbox = QtGui.QVBoxLayout()
+        vbox = QVBoxLayout()
 
-        hbox = QtGui.QHBoxLayout()
+        hbox = QHBoxLayout()
 
         self.loading_clock = OldClockWidgit('', self)
         self.loading_clock.highlighted = True
         self.loading_clock.setMinimumSize(200, 200)
 
-        self.quotes_label = QtGui.QLabel(loading_text)
+        self.quotes_label = QLabel(loading_text)
         self.quotes_label.setWordWrap(True)
 
-        loading_label = QtGui.QLabel("LOADING NOMON...")
+        loading_label = QLabel("LOADING NOMON...")
 
         self.quotes_label.setFont(config.splash_font[self.parent.font_scale])
         loading_label.setFont(config.splash_font[self.parent.font_scale])
 
-        self.timer = QtCore.QBasicTimer()
+        self.timer = QBasicTimer()
         self.timer.start(100, self)
         self.step = 0
 
@@ -149,16 +151,16 @@ class SplashScreen(QtGui.QWidget):
         self.setLayout(vbox)
 
     def timerEvent(self, e):
-        if self.step >= math.pi * 2:
+        if self.step >= pi * 2:
             self.parent.close()
 
-        self.step += math.pi / 7 * 2
+        self.step += pi / 7 * 2
         self.loading_clock.angle = self.step
         self.quotes_label.setText(loading_text)
         self.loading_clock.repaint()
 
 
-class WelcomeScreen(QtGui.QWidget):
+class WelcomeScreen(QWidget):
 
     def __init__(self, parent):
         super(WelcomeScreen, self).__init__()
@@ -169,24 +171,24 @@ class WelcomeScreen(QtGui.QWidget):
         self.color_index = self.parent.high_contrast
 
     def init_ui1(self):
-        vbox = QtGui.QVBoxLayout()
+        vbox = QVBoxLayout()
 
-        hbox = QtGui.QHBoxLayout()
+        hbox = QHBoxLayout()
 
         self.loading_clock = OldClockWidgit('a', self)
         self.loading_clock.highlighted = True
         self.loading_clock.setMinimumSize(200, 200)
-        self.sub_label_1 = QtGui.QLabel("To select an option, find the adjacent clock and press when the moving hand "
+        self.sub_label_1 = QLabel("To select an option, find the adjacent clock and press when the moving hand "
                                         "is near Noon.")
-        self.sub_label_2 = QtGui.QLabel("<i>(press to continue)</i>")
+        self.sub_label_2 = QLabel("<i>(press to continue)</i>")
 
         self.sub_label_1.setWordWrap(True)
-        loading_label = QtGui.QLabel("<b>Welcome to the Nomon Keyboard!</b>")
+        loading_label = QLabel("<b>Welcome to the Nomon Keyboard!</b>")
         loading_label.setFont(config.welcome_main_font[self.parent.font_scale])
 
         self.sub_label_1.setFont(config.welcome_sub_font[self.parent.font_scale])
         self.sub_label_2.setFont(config.welcome_sub_font[self.parent.font_scale])
-        self.timer = QtCore.QBasicTimer()
+        self.timer = QBasicTimer()
         self.timer.start(30, self)
         self.step = 0
 
@@ -197,16 +199,16 @@ class WelcomeScreen(QtGui.QWidget):
         vbox.addLayout(hbox)
         vbox.addStretch(1)
         vbox.addWidget(self.sub_label_1, 1)
-        vbox.addWidget(self.sub_label_2, 1, QtCore.Qt.AlignRight)
+        vbox.addWidget(self.sub_label_2, 1, Qt.AlignRight)
 
         self.setLayout(vbox)
 
     def init_ui2(self):
-        self.header_label = QtGui.QLabel("<b>There are 2 types of clocks..</b>")
-        self.sub_label_1 = QtGui.QLabel("<b>Highlighted</b>")
-        self.sub_label_2 = QtGui.QLabel("<b>Regular</b>")
-        self.sub_label_3 = QtGui.QLabel("<b>&</b>")
-        self.sub_label_4 = QtGui.QLabel("<i>(press to continue)</i>")
+        self.header_label = QLabel("<b>There are 2 types of clocks..</b>")
+        self.sub_label_1 = QLabel("<b>Highlighted</b>")
+        self.sub_label_2 = QLabel("<b>Regular</b>")
+        self.sub_label_3 = QLabel("<b>&</b>")
+        self.sub_label_4 = QLabel("<i>(press to continue)</i>")
 
         self.header_label.setFont(config.welcome_main_font[self.parent.font_scale])
         self.sub_label_1.setFont(config.welcome_main_font[self.parent.font_scale])
@@ -222,7 +224,7 @@ class WelcomeScreen(QtGui.QWidget):
         self.regular_clock.angle = 1
         self.regular_clock.setMinimumSize(150, 150)
 
-        self.main_text_label = QtGui.QLabel(
+        self.main_text_label = QLabel(
             "Nomon believes <b>highlighted clocks</b> have a higher probability of being "
             "selected next--so they take <b>fewer presses</b> to select. If you wish to "
             "select a <b>regular clock</b>, then you should press as <b>accurately</b> as "
@@ -232,15 +234,15 @@ class WelcomeScreen(QtGui.QWidget):
         self.main_text_label.setWordWrap(True)
         self.sub_label_4.setFont(config.welcome_sub_font[self.parent.font_scale])
 
-        grid = QtGui.QGridLayout()
+        grid = QGridLayout()
         grid.addWidget(self.header_label, 0, 0, 1, 5)
 
         grid.addWidget(self.highlighted_clock, 1, 1)
-        grid.addWidget(self.sub_label_3, 1, 2, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom)
-        grid.addWidget(self.regular_clock, 1, 3, QtCore.Qt.AlignHCenter)
+        grid.addWidget(self.sub_label_3, 1, 2, Qt.AlignHCenter | Qt.AlignBottom)
+        grid.addWidget(self.regular_clock, 1, 3, Qt.AlignHCenter)
 
-        grid.addWidget(self.sub_label_1, 2, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom)
-        grid.addWidget(self.sub_label_2, 2, 3, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom)
+        grid.addWidget(self.sub_label_1, 2, 1, Qt.AlignHCenter | Qt.AlignBottom)
+        grid.addWidget(self.sub_label_2, 2, 3, Qt.AlignHCenter | Qt.AlignBottom)
 
         grid.addWidget(self.main_text_label, 3, 0, 1, 5)
         grid.addWidget(self.sub_label_4, 4, 3, 1, 2)
@@ -249,23 +251,23 @@ class WelcomeScreen(QtGui.QWidget):
         self.setLayout(grid)
 
     def init_ui3(self):
-        self.header_label = QtGui.QLabel("<b>Alternate Clock designs are located in the View Menu</b>")
+        self.header_label = QLabel("<b>Alternate Clock designs are located in the View Menu</b>")
 
         self.header_label.setFont(config.welcome_main_font[self.parent.font_scale])
         self.header_label.setWordWrap(True)
 
-        self.picture_timer = QtCore.QTimer()
+        self.picture_timer = QTimer()
         self.picture_timer.start(4000)
         self.picture_timer.timeout.connect(self.change_picture)
-        self.picture_label = QtGui.QLabel()
-        self.menu_picture = QtGui.QPixmap('icons/clock_menu.png')
+        self.picture_label = QLabel()
+        self.menu_picture = QPixmap('icons/clock_menu.png')
         self.pic_width = self.geometry().width()
         self.pic_cycle = 0
         self.menu_picture = self.menu_picture.scaledToWidth(self.pic_width)
 
         self.picture_label.setPixmap(self.menu_picture)
 
-        vbox = QtGui.QVBoxLayout()
+        vbox = QVBoxLayout()
         vbox.addWidget(self.header_label, 1)
         vbox.addWidget(self.picture_label, 10)
         self.setLayout(vbox)
@@ -276,30 +278,30 @@ class WelcomeScreen(QtGui.QWidget):
             self.pic_cycle = 0
         if self.pic_cycle == 0:
             self.header_label.setText("<b>Alternate clock designs are located in the View Menu</b>")
-            self.menu_picture = QtGui.QPixmap('icons/clock_menu.png')
+            self.menu_picture = QPixmap('icons/clock_menu.png')
             self.menu_picture = self.menu_picture.scaledToWidth(self.pic_width)
             self.picture_label.setPixmap(self.menu_picture)
         elif self.pic_cycle == 1:
             self.header_label.setText("<b>Alternate keyboard layouts are also located in the View Menu</b>")
-            self.menu_picture = QtGui.QPixmap('icons/layout_menu.png')
+            self.menu_picture = QPixmap('icons/layout_menu.png')
             self.menu_picture = self.menu_picture.scaledToWidth(self.pic_width)
             self.picture_label.setPixmap(self.menu_picture)
         elif self.pic_cycle == 2:
             self.header_label.setText("<b>A profanity filter and retrain option are available in the Tools Menu</b>")
-            self.menu_picture = QtGui.QPixmap('icons/tools_menu.png')
+            self.menu_picture = QPixmap('icons/tools_menu.png')
             self.menu_picture = self.menu_picture.scaledToWidth(self.pic_width)
             self.picture_label.setPixmap(self.menu_picture)
 
         self.picture_timer.start(4000)
 
     def init_ui4(self):
-        self.header_label = QtGui.QLabel("<b>You're almost ready to start using Nomon!</b>")
-        self.sub_label_1 = QtGui.QLabel(
+        self.header_label = QLabel("<b>You're almost ready to start using Nomon!</b>")
+        self.sub_label_1 = QLabel(
             "<b>>></b>Before we begin, we need some information about your pressing accuracy "
             "so that we can better predict your selections.")
-        self.sub_label_2 = QtGui.QLabel("<b>>></b>A grid of clocks will appear on the next screen, please press when "
+        self.sub_label_2 = QLabel("<b>>></b>A grid of clocks will appear on the next screen, please press when "
                                         "the <span style='color:#00aa00;'>GREEN CLOCK</span> reaches Noon in each round.")
-        self.sub_label_3 = QtGui.QLabel("<i>(press to continue)</i>")
+        self.sub_label_3 = QLabel("<i>(press to continue)</i>")
 
         self.header_label.setFont(config.welcome_main_font[self.parent.font_scale])
         self.header_label.setWordWrap(True)
@@ -309,7 +311,7 @@ class WelcomeScreen(QtGui.QWidget):
         self.sub_label_2.setWordWrap(True)
         self.sub_label_3.setFont(config.welcome_sub_font[self.parent.font_scale])
 
-        grid = QtGui.QGridLayout()
+        grid = QGridLayout()
         grid.addWidget(self.header_label, 0, 0, 1, 10)
         grid.addWidget(self.sub_label_1, 1, 1, 1, 9)
         grid.addWidget(self.sub_label_2, 3, 1, 1, 9)
@@ -319,10 +321,10 @@ class WelcomeScreen(QtGui.QWidget):
         self.setLayout(grid)
 
     def timerEvent(self, e):  # timer to redraw clock for animation
-        self.step += math.pi / 32
+        self.step += pi / 32
 
-        if self.step >= math.pi * 2:
-            self.step = -math.pi
+        if self.step >= pi * 2:
+            self.step = -pi
             self.loading_clock.angle = 0
             self.loading_clock.repaint()
 
@@ -332,7 +334,7 @@ class WelcomeScreen(QtGui.QWidget):
 
 
 # noinspection PyUnresolvedReferences
-class PretrainScreen(QtGui.QWidget):
+class PretrainScreen(QWidget):
 
     def __init__(self, parent):
         super(PretrainScreen, self).__init__()
@@ -346,9 +348,9 @@ class PretrainScreen(QtGui.QWidget):
 
     def init_ui(self):
 
-        vbox = QtGui.QVBoxLayout()
+        vbox = QVBoxLayout()
 
-        self.key_grid = QtGui.QGridLayout()
+        self.key_grid = QGridLayout()
 
         self.clock = OldClockWidgit('', self)
         self.clock.highlighted = True
@@ -356,16 +358,16 @@ class PretrainScreen(QtGui.QWidget):
         self.generate_dummy_clocks()
         self.layout_clocks()
 
-        self.main_label = QtGui.QLabel("Please press when the moving hand on the <span style='color:#00aa00;'>"
+        self.main_label = QLabel("Please press when the moving hand on the <span style='color:#00aa00;'>"
                                        "GREEN CLOCK</span> reaches Noon <b>" + str(
             self.parent.total_presses) + "</b> more"
                                          " times...")
-        self.sub_label_1 = QtGui.QLabel("<i>(or press to continue)</i>")
+        self.sub_label_1 = QLabel("<i>(or press to continue)</i>")
         self.main_label.setFont(config.welcome_main_font[self.parent.font_scale])
         self.main_label.setWordWrap(True)
         self.sub_label_1.setFont(config.welcome_sub_font[self.parent.font_scale])
 
-        self.start_button = QtGui.QPushButton("Start Training!")
+        self.start_button = QPushButton("Start Training!")
         self.start_button.pressed.connect(self.start_buttton_func)
 
         vbox.addWidget(self.main_label, 1)
@@ -373,14 +375,14 @@ class PretrainScreen(QtGui.QWidget):
         vbox.addLayout(self.key_grid)
         vbox.addStretch(3)
 
-        hbox = QtGui.QHBoxLayout()
+        hbox = QHBoxLayout()
         hbox.addStretch(1)
         hbox.addWidget(self.start_button, 1)
         hbox.addStretch(1)
 
         vbox.addLayout(hbox, 1)
         vbox.addStretch(2)
-        vbox.addWidget(self.sub_label_1, 1, QtCore.Qt.AlignRight)
+        vbox.addWidget(self.sub_label_1, 1, Qt.AlignRight)
         vbox.addStretch(1)
 
         self.setLayout(vbox)
@@ -411,7 +413,7 @@ class PretrainScreen(QtGui.QWidget):
 #             clock.setText("not me")
 #             clock.selected = False
 #             clock.highlighted = (random.random() < random.random())
-#             clock.dummy_angle_offset = random.random() * math.pi * -1
+#             clock.dummy_angle_offset = random.random() * pi * -1
 #             angle = self.clock.angle + clock.dummy_angle_offset
 #             clock.angle = angle
 #             clock.repaint()
@@ -493,7 +495,7 @@ class Pretraining(StartWindow):
 
     def play(self):
         sound_file = "icons/bell.wav"
-        QtGui.QSound(sound_file).play()
+        QSound(sound_file).play()
 
     def on_press(self):
 
@@ -541,7 +543,7 @@ class Pretraining(StartWindow):
             self.mainWidgit.start_pretrain = True
 
         if self.started == 0:
-            self.train_timer = QtCore.QTimer()
+            self.train_timer = QTimer()
             self.train_timer.timeout.connect(self.on_timer)
             self.train_timer.start(config.ideal_wait_s * 1000)
             self.started = 1
@@ -562,7 +564,7 @@ class Pretraining(StartWindow):
         self.sister.bc.get_prev_data()
 
     def save(self):
-        if self.consent and config.is_write_data:
+        if self.consent and self.is_write_data:
             self.pbc.quit_pbc()
         else:
             pass

@@ -1,5 +1,5 @@
 from __future__ import division
-import numpy as np
+from numpy import pi, zeros, ceil, cos, sin, where
 import math
 import time
 import config
@@ -16,7 +16,7 @@ class HourLocs:
         self.hour_locs = []
         self.hl_base = []
         for index in range(0, num_divs_time):
-            base = - np.pi / 2.0 + (2.0 * np.pi * index) / num_divs_time
+            base = - pi / 2.0 + (2.0 * pi * index) / num_divs_time
             theta = -config.theta0 + base
             self.hour_locs.append([theta])
             self.hl_base.append(base)
@@ -25,7 +25,7 @@ class HourLocs:
     def set(self, theta):
         for index in range(0, self.num_divs_time):
             base = self.hl_base[index]
-            self.hour_locs[index] = [self.radius * np.cos(-theta + base), self.radius * np.sin(-theta + base)]
+            self.hour_locs[index] = [self.radius * cos(-theta + base), self.radius * sin(-theta + base)]
 
 
 # an array where the smallest integers (with 0 in front) are arranged
@@ -65,10 +65,10 @@ class ClockUtil:
             self.cur_hours = [0.0]*len(self.parent.clock_centers)
         except:
             self.cur_hours = [0.0]*len(self.parent.mainWidgit.dummy_clocks)
-        self.clock_angles = np.zeros(len(self.cur_hours))
+        self.clock_angles = zeros(len(self.cur_hours))
         self.time_rotate = self.parent.time_rotate 
         # LOOKATHERE
-        self.num_divs_time = int(np.ceil(parent.time_rotate / config.ideal_wait_s))
+        self.num_divs_time = int(ceil(parent.time_rotate / config.ideal_wait_s))
         self.spaced = SpacedArray(self.num_divs_time)
         self.hl = HourLocs(self.num_divs_time)
 
@@ -107,7 +107,7 @@ class ClockUtil:
 
         # related quantities
         # number of unique clock positions in the animation
-        self.num_divs_time = int(np.ceil(self.time_rotate / config.ideal_wait_s))
+        self.num_divs_time = int(ceil(self.time_rotate / config.ideal_wait_s))
         # reset wait_s so num_divs_time is integer
         # BUT DON"T REALLY SEEM TO USE THIS SO DON"T KNOW
         self.wait_s = self.time_rotate / self.num_divs_time
@@ -130,36 +130,36 @@ class ClockUtil:
                 self.bc.parent.clock_params[:, 1] = self.bc.parent.clock_spaces[:, 1] / 2 * 0.85
 
         if clock_type == 'default':
-            # clock_params = np.array([[center_x = center_y, outer_radius, minute_x, minute_y] x num_clocks])
+            # clock_params = array([[center_x = center_y, outer_radius, minute_x, minute_y] x num_clocks])
             self.bc.parent.clock_params[:, 2] = self.bc.parent.clock_params[:, 0] * (
-                        1 + 0.7 * np.cos(self.clock_angles))
+                        1 + 0.7 * cos(self.clock_angles))
             self.bc.parent.clock_params[:, 3] = self.bc.parent.clock_params[:, 0] * (
-                        1 + 0.7 * np.sin(self.clock_angles))
+                        1 + 0.7 * sin(self.clock_angles))
 
         elif clock_type == 'ball':
-            # clock_params = np.array([[center_x = center_y, outer_radius, inner_radius] x num_clocks])
-            self.bc.parent.clock_params[:, 2] = self.bc.parent.clock_params[:, 1]*(1-np.abs(self.clock_angles/np.pi + 0.5))
+            # clock_params = array([[center_x = center_y, outer_radius, inner_radius] x num_clocks])
+            self.bc.parent.clock_params[:, 2] = self.bc.parent.clock_params[:, 1]*(1-abs(self.clock_angles/pi + 0.5))
 
         elif clock_type == 'radar':
-            # clock_params = np.array([[center_x = center_y, outer_radius, minute_angle1 ... minute_anglen] x num_clocks])
+            # clock_params = array([[center_x = center_y, outer_radius, minute_angle1 ... minute_anglen] x num_clocks])
             inc_angle = 30
             self.bc.parent.clock_params[:, 2] = (90 - self.clock_angles * 180. / math.pi)
-            angle_correction = np.where(self.bc.parent.clock_params[:, 2] > 0, -360, 0)
+            angle_correction = where(self.bc.parent.clock_params[:, 2] > 0, -360, 0)
             self.bc.parent.clock_params[:, 2] += angle_correction
             self.bc.parent.clock_params[:, 2] *= 16
             for i in range(1, 6):
                 self.bc.parent.clock_params[:, 2 + i] = self.bc.parent.clock_params[:, 2] - inc_angle * i * 16
 
         elif clock_type == 'pac_man':
-            # clock_params = np.array([[center_x = center_y, outer_radius, minute_angle1] x num_clocks])
+            # clock_params = array([[center_x = center_y, outer_radius, minute_angle1] x num_clocks])
             self.bc.parent.clock_params[:, 2] = -90 - (self.clock_angles * 180.) / math.pi
-            angle_correction = np.where(self.bc.parent.clock_params[:, 2] > 0, -360, 0)
+            angle_correction = where(self.bc.parent.clock_params[:, 2] > 0, -360, 0)
             self.bc.parent.clock_params[:, 2] += angle_correction
             self.bc.parent.clock_params[:, 2] *= 16
 
         elif clock_type == 'bar':
-            # clock_params = np.array([[center_x = center_y, bar_length, bar_position] x num_clocks])
-            self.bc.parent.clock_params[:, 2] = self.bc.parent.clock_params[:, 1]*(1-np.abs(self.clock_angles/np.pi + 0.5))
+            # clock_params = array([[center_x = center_y, bar_length, bar_position] x num_clocks])
+            self.bc.parent.clock_params[:, 2] = self.bc.parent.clock_params[:, 1]*(1-abs(self.clock_angles/pi + 0.5))
 
     def increment(self, clock_index_list):
         if self.bc.parent.update_radii:
