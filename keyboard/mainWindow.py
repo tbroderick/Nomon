@@ -96,7 +96,7 @@ class MainWindow(QMainWindow):
 
         # Keyboard Layout Menu Actions
         self.default_layout_action = QAction('&Alphabetical (Default)', self, checkable=True)
-        self.default_layout_action.triggered.connect(lambda: self.layout_change_event('alphabetical'))
+        self.default_layout_action.triggered.connect(lambda: self.layout_change_event('alpha'))
 
         self.qwerty_layout_action = QAction('&QWERTY', self, checkable=True)
         self.qwerty_layout_action.triggered.connect(lambda: self.layout_change_event('qwerty'))
@@ -313,9 +313,7 @@ class MainWindow(QMainWindow):
             self.clock_text_align('auto', message=False)
             self.check_filemenu()
 
-        for clock in self.mainWidgit.clocks:
-            clock.calculate_clock_size()
-            self.update_clock_radii()
+        QTimer.singleShot(100, self.init_clocks)
 
     def layout_change_event(self, layout):
         message_box = QMessageBox(QMessageBox.Warning, "Change Keyboard Layout", "This will change the clock "
@@ -328,7 +326,7 @@ class MainWindow(QMainWindow):
         message_box.setWindowIcon(self.icon)
 
         self.up_handel = PickleUtil("user_preferences/user_preferences.p")
-        if layout == 'alphabetical':
+        if layout == 'alpha':
             self.up_handel.safe_save([self.clock_type, self.font_scale, self.high_contrast, 'alpha',
                                       self.pf_preference, self.start_speed, self.is_write_data])
             self.target_layout = kconfig.alpha_target_layout
@@ -351,8 +349,6 @@ class MainWindow(QMainWindow):
         self.mainWidgit.layout_clocks()
 
         QTimer.singleShot(100, self.init_clocks)
-        self.update_radii = True
-
 
     def clock_text_align(self, alignment, message=True):
         if alignment == "auto":

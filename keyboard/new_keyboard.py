@@ -883,7 +883,7 @@ def main():
     user_preferences = up_handel.safe_load()
     if user_preferences is None:
         first_load = True
-        user_preferences = ['default', 1, False, 'alpha', 'off', 12, False]
+        user_preferences = ['default', 1, False, 'alpha', 'off', 12, True]
         up_handel.safe_save(user_preferences)
     else:
         first_load = False
