@@ -2,14 +2,15 @@ from PyQt4.QtCore import Qt, QBasicTimer, QTimer
 from PyQt4.QtGui import QMainWindow, QWidget, QIcon, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPixmap, QSound, \
     QPushButton
 
-from widgets import OldClockWidgit, VerticalSeparator, HorizontalSeparator
+from widgets import ClockWidgit, OldClockWidgit, VerticalSeparator, HorizontalSeparator
 from pretraininginference import PreBroderClocks
 
 import sys
 import os
-from numpy import pi
+from numpy import pi, zeros, array
 import time
 import config
+import kconfig
 from pickle_util import PickleUtil
 
 sys.path.insert(0, os.path.realpath('../KernelDensityEstimation'))
@@ -372,7 +373,7 @@ class PretrainScreen(QWidget):
 
         vbox.addWidget(self.main_label, 1)
         vbox.addStretch(1)
-        vbox.addLayout(self.key_grid)
+        vbox.addLayout(self.keyboard_grid)
         vbox.addStretch(3)
 
         hbox = QHBoxLayout()
@@ -388,49 +389,61 @@ class PretrainScreen(QWidget):
         self.setLayout(vbox)
 
     def generate_dummy_clocks(self):
-        self.dummy_clocks = [OldClockWidgit("not me", self) for i in range(64)]
+        self.dummy_clocks = [ClockWidgit("a", self) for i in range(80)]
 
     def layout_clocks(self):
         index = 0
-        for row in range(4):
-            self.key_grid.addWidget(HorizontalSeparator(), row * 4, 0, 1, 13)
-            for col in range(4):
-                for sub_index in range(4):
-                    if sub_index == 0:
-                        self.key_grid.addWidget(VerticalSeparator(), row * 4, col * 3, 5, 1)
-                        self.key_grid.addWidget(self.dummy_clocks[index], row * 4 + 1, col * 3 + 1, 3, 1)
-                        index += 1
-                    else:
-                        self.key_grid.addWidget(self.dummy_clocks[index], row * 4 + sub_index, col * 3 + 2)
-                        index += 1
-                if col == 3:
-                    self.key_grid.addWidget(VerticalSeparator(), row * 4, col * 4, 5, 1)
-        self.key_grid.addWidget(HorizontalSeparator(), row * 5 + 1, 0, 1, 13)
+        # for row in range(4):
+        #     self.key_grid.addWidget(HorizontalSeparator(), row * 4, 0, 1, 13)
+        #     for col in range(4):
+        #         for sub_index in range(4):
+        #             if sub_index == 0:
+        #                 self.key_grid.addWidget(VerticalSeparator(), row * 4, col * 3, 5, 1)
+        #                 self.key_grid.addWidget(self.dummy_clocks[index], row * 4 + 1, col * 3 + 1, 3, 1)
+        #                 index += 1
+        #             else:
+        #                 self.key_grid.addWidget(self.dummy_clocks[index], row * 4 + sub_index, col * 3 + 2)
+        #                 index += 1
+        #         if col == 3:
+        #             self.key_grid.addWidget(VerticalSeparator(), row * 4, col * 4, 5, 1)
+        # self.key_grid.addWidget(HorizontalSeparator(), row * 5 + 1, 0, 1, 13)
 
-# =============================================================================
-#     def redraw_clocks(self):
-#         for clock in self.dummy_clocks:
-#             clock.setText("not me")
-#             clock.selected = False
-#             clock.highlighted = (random.random() < random.random())
-#             clock.dummy_angle_offset = random.random() * pi * -1
-#             angle = self.clock.angle + clock.dummy_angle_offset
-#             clock.angle = angle
-#             clock.repaint()
-#         self.selected_clock = random.randint(0, 63)
-#         self.dummy_clocks[self.selected_clock].dummy_angle_offset = 0
-#         self.dummy_clocks[self.selected_clock].selected = True
-#         self.dummy_clocks[self.selected_clock].setText("Click Me!")
-#         if self.parent.num_presses > 0:
-#             self.highlight_clock = True
-#             self.start_time = time.time()
-# =============================================================================
+        def make_grid_unit(main_clock, sub_clocks=None):
+            key_grid = QGridLayout()
+            key_grid.addWidget(VerticalSeparator(), 0, 0, 4, 1)
+            key_grid.addWidget(VerticalSeparator(), 0, 3, 4, 1)
+            key_grid.addWidget(HorizontalSeparator(), 0, 0, 1, 3)
+            key_grid.addWidget(HorizontalSeparator(), 4, 0, 1, 3)
+            key_grid.addWidget(main_clock, 1, 1, 3, 1)
+            clock_index = 0
+            for sub_clock in sub_clocks:
+                key_grid.addWidget(sub_clock, 1+clock_index, 2)
+                clock_index += 1
+            key_grid.setColumnStretch(1, 4)
+            key_grid.setColumnStretch(2, 5)
+            return key_grid
+
+        self.keyboard_grid = QGridLayout()
+
+        self.grid_units = [make_grid_unit(self.dummy_clocks[4*i], self.dummy_clocks[4*i + 1:4*i + 4]) for i in
+                           range(len(self.dummy_clocks) // 4)]
+        self.layout_from_target(kconfig.pretrain_target_layout)
+
+    def layout_from_target(self, target_layout):
+        row_num = 0
+        for row in target_layout:
+            col_num = 0
+            for key in row:
+                self.keyboard_grid.addLayout(self.grid_units[key], row_num, col_num)
+                col_num += 1
+            self.keyboard_grid.setRowStretch(row_num, 1)
+            row_num += 1
 
     def highlight(self):
         if time.time()-self.start_time < .500:
-            self.dummy_clocks[self.parent.pbc.clock_inf.clockutil.selected_clock].background = True
+            self.dummy_clocks[self.parent.pbc.clock_inf.pre_clock_util.selected_clock].background = True
         else:
-            self.dummy_clocks[self.parent.pbc.clock_inf.clockutil.selected_clock].background = False
+            self.dummy_clocks[self.parent.pbc.clock_inf.pre_clock_util.selected_clock].background = False
             self.highlight_clock = False
 
     def start_buttton_func(self):
@@ -468,8 +481,11 @@ class Pretraining(StartWindow):
         self.started = 0
         self.training_ended = 0
         self.consent = True
-
         self.retrain = False
+
+        self.clock_params = zeros((80, 8))
+        self.clock_spaces = zeros((80, 2))
+
 
     def re_init(self):
         self.sister.pretrain = True
@@ -492,6 +508,22 @@ class Pretraining(StartWindow):
         self.started = 0
         self.training_ended = 0
         self.consent = True
+        self.init_clocks()
+
+    def init_clocks(self):
+        self.update_clock_radii()
+
+        self.pbc.clock_inf.pre_clock_util.calcualte_clock_params(self.clock_type, recompute=True)
+        for clock in range(len(self.mainWidgit.dummy_clocks)):
+            self.mainWidgit.dummy_clocks[clock].calculate_clock_size()
+            self.mainWidgit.dummy_clocks[clock].set_params(self.clock_params[clock, :], recompute=True)
+            self.mainWidgit.dummy_clocks[clock].draw = True
+
+    def update_clock_radii(self):
+        for clock in range(len(self.mainWidgit.dummy_clocks)):
+            self.clock_spaces[clock, :] = array([self.mainWidgit.dummy_clocks[clock].w, self.mainWidgit.dummy_clocks[clock].h])
+        self.pbc.clock_inf.pre_clock_util.calcualte_clock_params(self.clock_type, recompute=True)
+        self.update_radii = False
 
     def play(self):
         sound_file = "icons/bell.wav"
@@ -548,11 +580,11 @@ class Pretraining(StartWindow):
             self.train_timer.start(config.ideal_wait_s * 1000)
             self.started = 1
             self.mainWidgit.start_button.hide()
+        self.init_clocks()
 
     def on_timer(self):
         if not (self.in_pause) and not (self.deactivate_press) and self.num_presses < self.total_presses:
-            self.pbc.clock_inf.clockutil.increment()
-
+            self.pbc.clock_inf.pre_clock_util.increment()
 
         elif self.num_presses == self.total_presses:
 

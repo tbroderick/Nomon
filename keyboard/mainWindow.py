@@ -704,14 +704,14 @@ class MainKeyboardWidget(QWidget):
                     if self.parent.word_pred_on == 1:
                         word_clocks += [self.clocks[index]]
                     self.clocks[index].filler_clock = False
-                    self.clocks[index].setText(word)
+                    self.clocks[index].set_text(word)
                     index += 1
                 for i in range(len(words), 3):
-                    self.clocks[index].setText('')
+                    self.clocks[index].set_text('')
                     self.clocks[index].filler_clock = True
                     self.clocks[index].repaint()
                     index += 1
-                self.clocks[index].setText(text)
+                self.clocks[index].set_text(text)
                 index += 1
         if self.parent.word_pred_on == 1:
             if self.laid_out:
@@ -735,10 +735,10 @@ class MainKeyboardWidget(QWidget):
         self.punctuation_grid = QGridLayout()
         self.back_clear_vbox = QVBoxLayout()
 
-        def make_grid_unit(main_clock, sub_clocks=False):
+        def make_grid_unit(main_clock, sub_clocks=None):
             key_grid = QGridLayout()
             if self.parent.word_pred_on == 2:
-                if sub_clocks != []:
+                if sub_clocks is not None:
                     if qwerty:
                         key_grid.addWidget(VerticalSeparator(), 0, 0, 6, 1)
                         key_grid.addWidget(VerticalSeparator(), 0, 2, 6, 1)
@@ -777,14 +777,13 @@ class MainKeyboardWidget(QWidget):
                 key_grid.setRowStretch(1, 4)
             return key_grid
 
-        if self.parent.word_pred_on != 2:
-                for clock in self.clocks:
-                    clock.maxSize = round(80 * clock.size_factor)
-                    clock.setMaximumHeight(clock.maxSize)
-                    clock.calculate_clock_size()
-                    self.parent.update_clock_radii()
-                    clock.repaint()
-
+        if self.parent.word_pred_on != 2:  # allow clocks to take up more space if fewer words on
+            for clock in self.clocks:
+                clock.maxSize = round(80 * clock.size_factor)
+                clock.setMaximumHeight(clock.maxSize)
+                clock.calculate_clock_size()
+                self.parent.update_clock_radii()
+                clock.repaint()
 
         self.grid_units=[]
         clock_index = 0
@@ -876,9 +875,9 @@ class MainKeyboardWidget(QWidget):
             back_unit.addLayout(vbox, 2, 1)
 
         def layout_from_target(target_layout):
-            row_num=0
+            row_num = 0
             for row in target_layout:
-                col_num=0
+                col_num = 0
                 for key in row:
                     if key in self.parent.key_chars:
                         if key == kconfig.back_char or key == kconfig.space_char:

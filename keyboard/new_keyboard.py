@@ -167,8 +167,6 @@ class Keyboard(MainWindow):
 
         # draw histogram
         self.init_histogram()
-        # bring word text to the front
-        self.raise_words()
 
         self.consent = True
         # animate
@@ -181,9 +179,7 @@ class Keyboard(MainWindow):
         self.update_radii = False
         self.on_timer()
 
-
     def init_clocks(self):
-
         self.update_clock_radii()
 
         self.bc.clock_inf.clock_util.calcualte_clock_params(self.clock_type, recompute=True)
@@ -459,9 +455,6 @@ class Keyboard(MainWindow):
         self.typed_versions = ['']
 
 
-    def raise_words(self):
-        pass
-
     def draw_words(self):
         (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq,
          self.prefix) = self.dt.get_words(
@@ -621,12 +614,12 @@ class Keyboard(MainWindow):
             if self.typed_versions[-1] != '':
                 self.typed_versions += [previous_text[:-1]]
                 self.mainWidgit.text_box.setText("<span style='color:#000000;'>" + format_punct(self.typed_versions[-1])
-                                                 + "</span>")
+                                                  + "</span>")
         elif undo:
             if len(self.typed_versions) > 1:
                 self.typed_versions = self.typed_versions[:-1]
                 self.mainWidgit.text_box.setText("<span style='color:#000000;'>" + format_punct(self.typed_versions[-1])
-                                                 + "</span>")
+                                                  + "</span>")
         else:
             self.typed_versions += [previous_text + new_text]
             self.mainWidgit.text_box.setText(
@@ -677,7 +670,6 @@ class Keyboard(MainWindow):
 
         if self.bc_init:
             if not self.in_pause:
-                start_t = time.time()
                 self.bc.clock_inf.clock_util.increment(self.words_on)
         if not self.pretrain:
             if self.first_load:
@@ -715,13 +707,6 @@ class Keyboard(MainWindow):
             self.mainWidgit.clocks[index].repaint()
             self.mainWidgit.highlight_timer.stop()
 
-    def clock_index_to_text(self, index):
-        letter_num = int(index / 4)
-        letter_rem = index - letter_num * 4
-        if index < 26 * 4:
-            if letter_rem < 3:
-                return self.words_li[letter_num][letter_rem]
-            return string.lowercase[letter_num]
 
     def talk_winner(self, talk_string):
         pass

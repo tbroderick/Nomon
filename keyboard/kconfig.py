@@ -53,6 +53,12 @@ qwerty_target_layout = [['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
                     ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', break_chars[3]],
                     ['z', 'x', 'c', 'v', 'b', 'n', 'm', break_chars[0], break_chars[1], break_chars[2]],
                     [ back_char, space_char, clear_char, 'UNDOUNIT']]
+
+pretrain_target_layout = [  [0,  1,  2,  3,  4],
+                            [5,  6,  7,  8,  9],
+                            [10, 11, 12, 13, 14],
+                            [15, 16, 17, 18, 19]]
+
 # get gaussian distribution
 bars = [4.1731209137640166e-11, 1.5674042704727563e-10, 5.702330790217924e-10, 2.009440319647259e-09,
         6.858815826469396e-09, 2.2676420114286876e-08, 7.261915168381362e-08, 2.2525745454100865e-07,
