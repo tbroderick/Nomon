@@ -89,7 +89,7 @@ class NewBroderClocks:
     #ALL THE SAVES AND DUMPS THEY DO WHEN THEY QUIT KEYBOARD SHOULD BE HERE TOO
     def save_when_quit(self):
         
-        if self.parent.consent and config.is_write_data:
+        if self.parent.consent and self.parent.is_write_data:
             self.prev_data_path = "data/preconfig_user_id"+ str(self.parent.user_id)+ ".pickle"
             self.click_data_path = "data/click_time_log_user_id" + str(self.parent.user_id) + ".pickle"
             self.last_id_path = "data/last_id.pickle"

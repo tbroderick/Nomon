@@ -14,7 +14,6 @@ class ClockWidgit(QWidget):
         self.text = text
         self.redraw_text = True
         self.start_angle = 0.
-        self.hand_loc = array([0, 0])
         self.parent = parent
         self.filler_clock = filler_clock  # filler clock is transparent, but saves space in layout for later use
         self.highlighted = False
@@ -22,7 +21,6 @@ class ClockWidgit(QWidget):
         self.selected = False
         self.previous_angle = -360.  # used in pac-man clock to compare if hand passed noon (- to + angle)
         self.color_switch = False  # used in pac-man clock to alternate color fill
-        self.dummy_angle_offset = 0.  # used in pretraining
 
         self.draw = False
 
@@ -30,6 +28,7 @@ class ClockWidgit(QWidget):
         self.h = 1
 
         self.outer_radius = 0
+        self.hand_loc = array([0, 0])
         self.minute_hand_point = QPoint(0, 0)
         self.hour_hand_point = QPoint(0, 0)
         self.minute_hand_angles = [0, 0, 0, 0, 0, 0]
@@ -38,14 +37,11 @@ class ClockWidgit(QWidget):
 
         self.initUI()
 
-        try:
-            if self.parent.alignment[0] != 'c':
-                self.constraint_factor = 0.5
-            else:
-                self.constraint_factor = 1
-            self.radius = self.size().height() * self.constraint_factor / 2
-        except:
-            pass
+        if self.parent.alignment[0] != 'c':
+               self.constraint_factor = 0.5
+        else:
+            self.constraint_factor = 1
+        self.radius = self.size().height() * self.constraint_factor / 2
         self.calculate_clock_size()
 
     def initUI(self):
@@ -59,11 +55,11 @@ class ClockWidgit(QWidget):
         self.setBaseSize(self.minSize, self.minSize)
         self.angle = 0
 
-    def setText(self, text):
+    def set_text(self, text):
         self.text = text
         self.redraw_text = True
 
-    def setAngle(self, angle):
+    def set_angle(self, angle):
         self.angle = angle
 
     def set_params(self, clock_params, recompute=False):
@@ -91,7 +87,6 @@ class ClockWidgit(QWidget):
         elif self.parent.parent.clock_type == 'bar':
             self.inner_radius = clock_params[2]
 
-
     def paintEvent(self, e):
         size = self.size()
         if self.w != size.width() or self.h != size.height():
@@ -101,7 +96,7 @@ class ClockWidgit(QWidget):
             qp = QPainter()
             qp.begin(self)
             if not self.filler_clock:
-                self.drawClock(e, qp)
+                self.draw_clock(e, qp)
             qp.end()
         self.redraw_text = False
         
@@ -135,7 +130,7 @@ class ClockWidgit(QWidget):
         self.center = QPointF(constraint / 2 + center_offset_x, constraint / 2 + center_offset_y)
         self.redraw_text = True
 
-    def drawClock(self, e, qp):
+    def draw_clock(self, e, qp):
 
         colored_pen = QPen()
         colored_pen.setWidth(4)
@@ -492,11 +487,11 @@ class OldClockWidgit(QWidget):
         self.setBaseSize(self.minSize, self.minSize)
         self.angle = 0
 
-    def setText(self, text):
+    def set_text(self, text):
         self.text = text
         self.redraw_text = True
 
-    def setAngle(self, angle):
+    def set_angle(self, angle):
         self.angle = angle
 
     def paintEvent(self, e):
@@ -507,7 +502,7 @@ class OldClockWidgit(QWidget):
         qp = QPainter()
         qp.begin(self)
         if not self.filler_clock:
-            self.drawClock(e, qp)
+            self.draw_clock(e, qp)
         qp.end()
         self.redraw_text = False
 
@@ -541,7 +536,7 @@ class OldClockWidgit(QWidget):
         self.center = QPointF(constraint / 2 + center_offset_x, constraint / 2 + center_offset_y)
         self.redraw_text = True
 
-    def drawClock(self, e, qp):
+    def draw_clock(self, e, qp):
         if self.parent.parent.clock_type == 'ball':  # initialize functions for drawing "min hand" based on clock design
             def minute_hand_from_angle(angle, radius):
                 radius *= 1.22

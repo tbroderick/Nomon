@@ -120,7 +120,6 @@ class ClockUtil:
         # IS THIS JUST UPDATING CURHOURS OR ALSO CSCORES= JUST CURHOURS
         self.init_round(self.clock_inf.clocks_on)
 
-
     def calcualte_clock_params(self, clock_type, recompute=False):
         if recompute:
             self.bc.parent.clock_params[:, 0] = self.bc.parent.clock_spaces[:, 1]/2
@@ -187,9 +186,9 @@ class ClockUtil:
                 elif self.bc.parent.clock_type == 'bar':
                     self.bc.parent.mainWidgit.clocks[clock].set_params(self.bc.parent.clock_params[clock, :3])
                 self.parent.mainWidgit.clocks[clock].repaint()
-        self.adt = [(self.adt[0] * self.adt[1] + time.time()-self.bc.latest_time) / (self.adt[1] + 1), self.adt[1] + 1]
-        if self.adt[1] % 1000 == 0:
-            print("AVERAGE DRAW TIME: "+str(self.adt[0]))
+        # self.adt = [(self.adt[0] * self.adt[1] + time.time()-self.bc.latest_time) / (self.adt[1] + 1), self.adt[1] + 1]
+        # if self.adt[1] % 1000 == 0:
+        #     print("AVERAGE DRAW TIME: "+str(self.adt[0]))
 
     def set_radius(self, radius):
         self.radius = radius

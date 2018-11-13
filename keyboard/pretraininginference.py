@@ -8,7 +8,7 @@ Created on Thu Aug  2 16:09:10 2018
 from __future__ import division
 import random
 import math
-import numpy
+from numpy import sin, cos, pi, argmin, ceil, where
 import time
 from clock_inference_engine import KernelDensityEstimation
 from clock_util import ClockUtil
@@ -21,7 +21,7 @@ class PreClockUtil(ClockUtil):
     def __init__(self, parent, bc, clock_inf):
         ClockUtil.__init__(self, parent, bc, clock_inf)
         self.cur_hour = 0
-        self.bc = None
+        self.pbc = None
         self.pbc = bc
 
     def closest_in_hourloc(self, x, y):
@@ -34,7 +34,7 @@ class PreClockUtil(ClockUtil):
         #         return ind1
         # =============================================================================
         dist_list = [(h[0] - x) ** 2 + (h[1] - y) ** 2 for h in self.hl.hour_locs]
-        return numpy.argmin(dist_list)
+        return argmin(dist_list)
 
     # DOESNT MATTER WHERE YOU ROUND TO BECAUSE ANGLE RANDOM ANYWAYS
     # Find the index in hourloc
@@ -51,26 +51,75 @@ class PreClockUtil(ClockUtil):
 
         return cur_hour
 
+    def calcualte_clock_params(self, clock_type, recompute=False):
+
+        if recompute:
+            self.pbc.parent.clock_params[:, 0] = self.pbc.parent.clock_spaces[:, 1] / 2
+            if clock_type == 'bar':
+                self.pbc.parent.clock_params[:, 1] = self.pbc.parent.clock_spaces[:, 0] - 15
+            else:
+                self.pbc.parent.clock_params[:, 1] = self.pbc.parent.clock_spaces[:, 1] / 2 * 0.85
+                
+        if clock_type == 'default':
+            # clock_params = array([[center_x = center_y, outer_radius, minute_x, minute_y] x num_clocks])
+            self.pbc.parent.clock_params[:, 2] = self.pbc.parent.clock_params[:, 0] * (
+                    1 + 0.7 * cos(self.clock_angles))
+            self.pbc.parent.clock_params[:, 3] = self.pbc.parent.clock_params[:, 0] * (
+                    1 + 0.7 * sin(self.clock_angles))
+
+        elif clock_type == 'ball':
+            # clock_params = array([[center_x = center_y, outer_radius, inner_radius] x num_clocks])
+            self.pbc.parent.clock_params[:, 2] = self.pbc.parent.clock_params[:, 1]*(1-abs(self.clock_angles/pi + 0.5))
+
+        elif clock_type == 'radar':
+            # clock_params = array([[center_x = center_y, outer_radius, minute_angle1 ... minute_anglen] x num_clocks])
+            inc_angle = 30
+            self.pbc.parent.clock_params[:, 2] = (90 - self.clock_angles * 180. / math.pi)
+            angle_correction = where(self.pbc.parent.clock_params[:, 2] > 0, -360, 0)
+            self.pbc.parent.clock_params[:, 2] += angle_correction
+            self.pbc.parent.clock_params[:, 2] *= 16
+            for i in range(1, 6):
+                self.pbc.parent.clock_params[:, 2 + i] = self.pbc.parent.clock_params[:, 2] - inc_angle * i * 16
+
+        elif clock_type == 'pac_man':
+            # clock_params = array([[center_x = center_y, outer_radius, minute_angle1] x num_clocks])
+            self.pbc.parent.clock_params[:, 2] = -90 - (self.clock_angles * 180.) / math.pi
+            angle_correction = where(self.pbc.parent.clock_params[:, 2] > 0, -360, 0)
+            self.pbc.parent.clock_params[:, 2] += angle_correction
+            self.pbc.parent.clock_params[:, 2] *= 16
+
+        elif clock_type == 'bar':
+            # clock_params = array([[center_x = center_y, bar_length, bar_position] x num_clocks])
+            self.pbc.parent.clock_params[:, 2] = self.pbc.parent.clock_params[:, 1]*(1-abs(self.clock_angles/pi + 0.5))
+
     def increment(self):
-        # for all the dummy clocks
-        count = 0
         if self.parent.mainWidgit.highlight_clock:
             self.parent.mainWidgit.highlight()
-        for clock in self.parent.mainWidgit.dummy_clocks:
-            self.cur_hours[count] = (self.cur_hours[count] + 1) % self.num_divs_time
-            if count == self.selected_clock:
+        for clock in range(80):
+            # update time indices
+            self.cur_hours[clock] = (self.cur_hours[clock] + 1) % self.num_divs_time
+            if clock == self.selected_clock:
                 self.cur_hour = (self.cur_hour + 1) % self.num_divs_time
-                self.cur_hours[count] = self.cur_hour
+                self.cur_hours[clock] = self.cur_hour
                 self.latest_time = time.time()
-            # clock.angle = self.parent.mainWidgit.clock.angle + clock.dummy_angle_offset
-            # register in coordinates of hour hand
-            v = self.hl.hour_locs[self.cur_hours[count]]
-            angle = v[0]
-            self.repaint_one_clock(count, angle)
-            count += 1
 
-        # for selected clock
+            self.clock_angles[clock] = self.hl.hour_locs[self.cur_hours[clock]][0]
+            # self.repaint_one_clock(clock, clock_angles[clock])
 
+        self.calcualte_clock_params(self.parent.clock_type)
+
+        for clock in range(80):
+            if self.parent.clock_type == 'default':
+                self.parent.mainWidgit.dummy_clocks[clock].set_params(self.pbc.parent.clock_params[clock, :4])
+            elif self.parent.clock_type == 'ball':
+                self.parent.mainWidgit.dummy_clocks[clock].set_params(self.pbc.parent.clock_params[clock, :4])
+            elif self.parent.clock_type == 'radar':
+                self.parent.mainWidgit.dummy_clocks[clock].set_params(self.pbc.parent.clock_params[clock, :])
+            elif self.parent.clock_type == 'pac_man':
+                self.parent.mainWidgit.dummy_clocks[clock].set_params(self.pbc.parent.clock_params[clock, :4])
+            elif self.parent.clock_type == 'bar':
+                self.parent.mainWidgit.dummy_clocks[clock].set_params(self.pbc.parent.clock_params[clock, :3])
+            self.parent.mainWidgit.dummy_clocks[clock].repaint()
     # NONEED FOR CHANGE PERIOD
 
     def repaint_one_clock(self, clock_index, angle):
@@ -84,7 +133,7 @@ class PreClockUtil(ClockUtil):
         # self.selected_clock = 0
         count = 0
         for clock in self.pbc.parent.mainWidgit.dummy_clocks:
-            clock.setText("not me")
+            clock.set_text("not me")
             clock.selected = False
             clock.highlighted = (random.random() < random.random())
             # 나중에 여기 CHECK
@@ -100,7 +149,7 @@ class PreClockUtil(ClockUtil):
                 clock.angle = v[0] + math.pi * 0.5
                 # clock.angle = 0
                 clock.selected = True
-                clock.setText("Click Me!")
+                clock.set_text("Click Me!")
             clock.repaint()
             count += 1
         self.latest_time = time.time()
@@ -128,10 +177,10 @@ class PreClockUtil(ClockUtil):
 
 class PretrainingInference:
 
-    def __init__(self, parent, bc, past_data=None):
+    def __init__(self, parent, pbc, past_data=None):
         self.parent = parent
-        self.bc = bc
-        self.clockutil = PreClockUtil(self.parent, self.bc, self)
+        self.pbc = pbc
+        self.pre_clock_util = PreClockUtil(self.parent, self.pbc, self)
         self.parent = parent
         self.time_rotate = self.parent.time_rotate
         self.kde = KernelDensityEstimation(self.time_rotate)
@@ -179,9 +228,9 @@ class PreBroderClocks:
         self.clock_inf = PretrainingInference(self.parent, self)
 
         self.time_rotate = self.parent.time_rotate
-        self.num_divs_time = int(numpy.ceil(self.time_rotate / config.ideal_wait_s))
+        self.num_divs_time = int(ceil(self.time_rotate / config.ideal_wait_s))
         self.latest_time = time.time()
-        self.clock_inf.clockutil.redraw_clocks()
+        self.clock_inf.pre_clock_util.redraw_clocks()
 
     def select(self):
         # CLOCKUTIL에서 달라진 INCREMTNT, 달라진 KDE, 달라진 SCOREFUNCTION 갖다 바꾸기
@@ -194,9 +243,9 @@ class PreBroderClocks:
             # NEEDS CHECKING
             # config.frac_period used nowhere but let's just do it cause they do it in the original code
             time_in = time.time()
-            time_diff_in = time_in - self.clock_inf.clockutil.latest_time
+            time_diff_in = time_in - self.clock_inf.pre_clock_util.latest_time
             print "how much TIME tho" + str(time_diff_in / self.time_rotate)
-            percent = self.clock_inf.clockutil.cur_hour / len(self.clock_inf.clockutil.hl.hour_locs) \
+            percent = self.clock_inf.pre_clock_util.cur_hour / len(self.clock_inf.pre_clock_util.hl.hour_locs) \
                       + time_diff_in / self.time_rotate
             index = int((percent * len(self.clock_inf.kde.dens_li)) % len(self.clock_inf.kde.dens_li))
             click_time = self.clock_inf.kde.x_li[index]
@@ -206,11 +255,11 @@ class PreBroderClocks:
             print "y_li will be appended by" + str(click_time)
             self.clock_inf.kde.y_li.append(click_time)
             print "y_li is now" + str(self.clock_inf.kde.y_li)
-            print "CURHOUR IS" + str(self.clock_inf.clockutil.cur_hour / len(self.clock_inf.clockutil.hl.hour_locs))
+            print "CURHOUR IS" + str(self.clock_inf.pre_clock_util.cur_hour / len(self.clock_inf.pre_clock_util.hl.hour_locs))
         self.init_round()
 
     def init_round(self):
-        self.clock_inf.clockutil.redraw_clocks()
+        self.clock_inf.pre_clock_util.redraw_clocks()
         self.latest_time = time.time()
 
     # NEED TO FIX HERE LATER DEPENDING ON WHETHER PRETRAIN AGAIN WAS PRESSED OR NOT
