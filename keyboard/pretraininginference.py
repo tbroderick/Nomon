@@ -10,6 +10,7 @@ import random
 import math
 from numpy import sin, cos, pi, argmin, ceil, where
 import time
+import os
 from clock_inference_engine import KernelDensityEstimation
 from clock_util import ClockUtil
 
@@ -119,12 +120,8 @@ class PreClockUtil(ClockUtil):
                 self.parent.mainWidgit.dummy_clocks[clock].set_params(self.pbc.parent.clock_params[clock, :4])
             elif self.parent.clock_type == 'bar':
                 self.parent.mainWidgit.dummy_clocks[clock].set_params(self.pbc.parent.clock_params[clock, :3])
-            self.parent.mainWidgit.dummy_clocks[clock].repaint()
+            self.parent.mainWidgit.dummy_clocks[clock].update()
     # NONEED FOR CHANGE PERIOD
-
-    def repaint_one_clock(self, clock_index, angle):
-        self.parent.mainWidgit.dummy_clocks[clock_index].angle = angle + math.pi * 0.5
-        self.parent.mainWidgit.dummy_clocks[clock_index].repaint()
 
     # THIS IS EQUIVALENT TO THE CURHOUR만 하는 INITROUND
     # IT REALLY IS EQUIVALENT TO INITROUND
@@ -150,7 +147,7 @@ class PreClockUtil(ClockUtil):
                 # clock.angle = 0
                 clock.selected = True
                 clock.set_text("Click Me!")
-            clock.repaint()
+            clock.redraw_text = True
             count += 1
         self.latest_time = time.time()
 
@@ -261,14 +258,28 @@ class PreBroderClocks:
     def init_round(self):
         self.clock_inf.pre_clock_util.redraw_clocks()
         self.latest_time = time.time()
+        self.parent.init_clocks()
 
     # NEED TO FIX HERE LATER DEPENDING ON WHETHER PRETRAIN AGAIN WAS PRESSED OR NOT
     def save_when_quit(self):
         if self.clock_inf.calc_density_called:
-            self.pretrain_data_path = "data/preconfig_user_id" + str(self.parent.sister.user_id) + ".pickle"
+            if self.parent.sister.user_cal_num == 0 and self.parent.sister.use_num == 0:
+                new_cal_dir = self.parent.sister.data_handel
+            else:
+                new_cal_dir = self.parent.sister.user_handel+"\\cal"+str(self.parent.sister.user_cal_num+1)
+                self.parent.sister.data_handel = new_cal_dir
+                self.parent.sister.user_cal_num += 1
+                os.mkdir(new_cal_dir)
+                self.parent.sister.use_num = 0
+
+            self.pretrain_data_path = new_cal_dir + "\\preconfig.p"
             PickleUtil(self.pretrain_data_path).safe_save({'li': self.clock_inf.kde.dens_li, 'z': self.clock_inf.kde.Z,
                                                            'opt_sig': self.clock_inf.kde.ksigma, 'y_li': [],
                                                            'yksigma': self.clock_inf.kde.y_ksigma})
 
     def quit_pbc(self):
+        if not self.parent.sister.consent:
+            if self.parent.sister.user_cal_num == 0 and self.parent.sister.use_num == 0:
+                self.parent.sister.log_data_event()
+                self.parent.sister.consent = True
         self.save_when_quit()

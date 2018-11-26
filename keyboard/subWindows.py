@@ -27,9 +27,8 @@ class StartWindow(QMainWindow):
 
         # self.clock_type = PickleUtil("user_preferences/clock_preference.p").safe_load()
         # self.high_contrast = PickleUtil("user_preferences/high_contrast.p").safe_load()
-        
-        self.up_handel = PickleUtil("user_preferences/user_preferences.p")
-        self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference, self.start_speed, self.is_write_data = self.up_handel.safe_load()
+
+        self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference, self.start_speed, self.is_write_data = ['default', 1, False, 'alpha', 'off', 12, True]
 
         self.splash = splash
         self.help_screen = False  # if triggered under help menu adjust number of follow up screens
@@ -158,7 +157,7 @@ class SplashScreen(QWidget):
         self.step += pi / 7 * 2
         self.loading_clock.angle = self.step
         self.quotes_label.setText(loading_text)
-        self.loading_clock.repaint()
+        self.loading_clock.update()
 
 
 class WelcomeScreen(QWidget):
@@ -327,11 +326,11 @@ class WelcomeScreen(QWidget):
         if self.step >= pi * 2:
             self.step = -pi
             self.loading_clock.angle = 0
-            self.loading_clock.repaint()
+            self.loading_clock.update()
 
         if self.step > 0:
             self.loading_clock.angle = self.step
-            self.loading_clock.repaint()
+            self.loading_clock.update()
 
 
 # noinspection PyUnresolvedReferences
@@ -459,9 +458,11 @@ class Pretraining(StartWindow):
         super(Pretraining, self).__init__(screen_res, False)
         self.sister = sister
         self.sister.pretrain = True
-        
+        self.pretrain_window = True
+        self.saved_data = False
+
         self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference, \
-            self.start_speed, self.is_write_data = self.up_handel.safe_load()
+            self.start_speed, self.is_write_data = self.sister.up_handel.safe_load()
 
         self.num_presses = 0
         self.total_presses = 10
@@ -485,6 +486,7 @@ class Pretraining(StartWindow):
 
         self.clock_params = zeros((80, 8))
         self.clock_spaces = zeros((80, 2))
+        self.sister.update()
 
 
     def re_init(self):
@@ -518,12 +520,16 @@ class Pretraining(StartWindow):
             self.mainWidgit.dummy_clocks[clock].calculate_clock_size()
             self.mainWidgit.dummy_clocks[clock].set_params(self.clock_params[clock, :], recompute=True)
             self.mainWidgit.dummy_clocks[clock].draw = True
+            self.mainWidgit.dummy_clocks[clock].redraw_text = True
 
     def update_clock_radii(self):
         for clock in range(len(self.mainWidgit.dummy_clocks)):
             self.clock_spaces[clock, :] = array([self.mainWidgit.dummy_clocks[clock].w, self.mainWidgit.dummy_clocks[clock].h])
         self.pbc.clock_inf.pre_clock_util.calcualte_clock_params(self.clock_type, recompute=True)
         self.update_radii = False
+
+        for clock in range(len(self.mainWidgit.dummy_clocks)):
+            self.mainWidgit.dummy_clocks[clock].redraw_text = True
 
     def play(self):
         sound_file = "icons/bell.wav"
@@ -592,7 +598,6 @@ class Pretraining(StartWindow):
             self.deactivate_press = True
 
     def load_saved_density_keyboard(self):
-
         self.sister.bc.get_prev_data()
 
     def save(self):
@@ -603,35 +608,30 @@ class Pretraining(StartWindow):
 
     def on_finish(self):
         print "quitting"
+        self.saved_data = True
         self.training_ended = 1
 
-        try:
-            if self.retrain == False:
-                self.save()
-                self.load_saved_density_keyboard()
-            elif self.retrain == True and self.pbc.clock_inf.calc_density_called == True:
-                self.sister.bc.save_when_quit()
+        if self.retrain == False:
+            self.save()
+            self.load_saved_density_keyboard()
+        elif self.retrain == True and self.pbc.clock_inf.calc_density_called == True:
+            self.sister.bc.save_when_quit()
 
-                self.sister.use_num = 0
-                self.sister.user_id += 1
-                self.save()
-                self.load_saved_density_keyboard()
+            self.save()
+            self.load_saved_density_keyboard()
 
-            else:
+        else:
                 pass
-
-        except:
-            print "THERE was an error in saving pretraining data"
 
         self.sister.pretrain = False
         self.sister.draw_histogram(bars=None)
-        self.sister.mainWidgit.histogram.repaint()
-        self.sister.mainWidgit.text_box.setStyleSheet("background-color:;")
-        self.sister.mainWidgit.in_focus = True
+        self.sister.mainWidgit.histogram.update()
+        self.sister.mainWidgit.update()
 
         self.close()
 
     # Is this used at all?
     def closeEvent(self, event):
-        self.on_finish()
+        if not self.saved_data:
+            self.on_finish()
         event.accept()

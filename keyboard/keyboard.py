@@ -20,10 +20,10 @@
 
 from numpy import zeros, array, log
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QSound, QApplication
+from PyQt4.QtGui import QSound, QApplication, QInputDialog, QPushButton, QMessageBox
 
 from mainWindow import MainWindow
-from new_subWindows import Pretraining, PretrainScreen, WelcomeScreen, SplashScreen, StartWindow
+from subWindows import Pretraining, PretrainScreen, WelcomeScreen, SplashScreen, StartWindow
 import dtree
 from pickle_util import PickleUtil
 
@@ -33,7 +33,7 @@ import string
 import kconfig
 import config
 import time
-from newbroderclocks import NewBroderClocks
+from broderclocks import BroderClocks
 
 sys.path.insert(0, os.path.realpath('../KernelDensityEstimation'))
 
@@ -48,21 +48,29 @@ class Keyboard(MainWindow):
         super(Keyboard, self).__init__(screen_res)
 
         self.app = app
+        self.pretrain_window = False
 
         # 2 is turn fully on, 1 is turn on but reduce, 0 is turn off
         self.word_pred_on = 2
         # Number of word clocks to display in case word prediction == 1 (reduced)
         self.reduce_display = 5
 
-        # just for initialization
-        self.use_num = 0
 
-        print "use_num is " + str(self.use_num)
-        self.user_id = 0
+        # get user data before initialization
+        self.gen_data_handel()
 
-        self.up_handel = PickleUtil("user_preferences/user_preferences.p")
+        self.up_handel = PickleUtil(self.user_handel + "\\user_preferences.p")
         user_preferences = self.up_handel.safe_load()
-        self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference, self.start_speed, self.is_write_data = user_preferences
+        if user_preferences is None:
+            first_load = True
+            user_preferences = ['default', 1, False, 'alpha', 'off', 12, True]
+            self.up_handel.safe_save(user_preferences)
+        else:
+            first_load = False
+
+        self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference, \
+            self.start_speed, self.is_write_data = user_preferences
+
         if self.layout_preference == 'alpha':
             self.target_layout = kconfig.alpha_target_layout
         elif self.layout_preference == 'qwerty':
@@ -74,7 +82,14 @@ class Keyboard(MainWindow):
         elif self.pf_preference == 'on':
             self.train_file_name = kconfig.train_file_name_censored
 
-        # initialize
+        # set up dictionary tree
+        splash = StartWindow(screen_res, True)
+        self.pause_animation = False
+
+        train_handle = open(self.train_file_name, 'rb')
+        self.dt = dtree.DTree(train_handle, self)
+        train_handle.close()
+
         # initialize pygame and joystick
         if kconfig.target_evt is kconfig.joy_evt:
             pygame.init()
@@ -118,36 +133,24 @@ class Keyboard(MainWindow):
         # set up "talked" text
         self.talk_file = "talk.txt"
         self.sound_set=True
-        # set up dictionary tree
 
-        self.pause_animation = False
-
-        train_handle = open(self.train_file_name, 'rb')
-        self.dt = dtree.DTree(train_handle, self)
-
-        train_handle.close()
         # check for speech
         talk_fid = open(self.talk_file, 'wb')
         # write words
         self.init_words()
 
-        self.first_load_handel = PickleUtil("user_preferences/first_load.p")
-        self.first_load = self.first_load_handel.safe_load()
-
-        if self.first_load:
-            self.pretrain = True
 
         self.bars = kconfig.bars
 
         self.bc_init = False
-        
+
         self.previous_undo_text = ''
         self.previous_winner = 0
         self.wpm_data = config.Stack(config.wpm_history_length)
         self.wpm_time = 0
         self.clear_text = False
         self.pretrain = False
-        
+
         self.init_ui()
 
         self.time_rotate = config.period_li[self.start_speed]
@@ -156,7 +159,7 @@ class Keyboard(MainWindow):
 
         self.clock_spaces = zeros((len(self.clock_centers), 2))
 
-        self.bc = NewBroderClocks(self)
+        self.bc = BroderClocks(self)
         self.mainWidgit.change_value(self.start_speed)
 
         self.bc.init_follow_up(self.word_score_prior)
@@ -168,7 +171,12 @@ class Keyboard(MainWindow):
         # draw histogram
         self.init_histogram()
 
-        self.consent = True
+        self.consent = False
+
+        if first_load:
+            first_load = True
+            welcome = Pretraining(screen_res, self)
+
         # animate
 
         # record to prevent double tap
@@ -179,12 +187,78 @@ class Keyboard(MainWindow):
         self.update_radii = False
         self.on_timer()
 
+    def gen_data_handel(self):
+        self.cwd = os.getcwd()
+        if os.path.exists(self.cwd+'\\data'):
+            user_files = list(os.walk(self.cwd+'\\data'))
+            users = user_files[0][1]
+        else:
+            os.mkdir(self.cwd+'\\data')
+            user_files = None
+            users = []
+        input_method = 'text'
+        if user_files is not None and len(users) != 0:
+            message = QMessageBox(QMessageBox.Information, "Load User Data", "You can either create a new user profile or "
+                                                                             "load an existing user profile.")
+            message.addButton(QPushButton('Create New User'), QMessageBox.YesRole)
+            message.addButton(QPushButton('Load Previous User'), QMessageBox.NoRole)
+            message.setDefaultButton(QMessageBox.Yes)
+            response = message.exec_()
+            if response == 0:
+                input_method = 'text'
+            else:
+                input_method = 'list'
+
+        if input_method == 'text':
+            valid_user_id = False
+            input_text = "Please input a Number that will be used to save your user information"
+            while not valid_user_id:
+                num, ok = QInputDialog.getInt(self, "User ID Number Input", input_text)
+                if str(num) not in users:
+                    valid_user_id = True
+                else:
+                    input_text = "The user ID you inputed already exists! \n please input a valid user ID or press " \
+                                 "\"cancel\" to choose an existing one from a list"
+                if ok == 0:
+                    input_method = 'list'
+                    break
+            if input_method == 'text':
+                self.user_id = num
+                os.mkdir(self.cwd+'\\data\\'+str(self.user_id))
+
+        if input_method == 'list':
+            item, ok = QInputDialog.getItem(self, "Select User ID", "List of save User IDs:", users, 0, False)
+            self.user_id = item
+
+        self.user_handel = self.cwd + "\\data\\" + str(self.user_id)
+        user_id_files = list(os.walk(self.user_handel))
+        user_id_calibrations = user_id_files[0][1]
+        if len(user_id_calibrations) == 0:
+            self.data_handel = self.user_handel + "\\cal0"
+            os.mkdir(self.data_handel)
+            user_id_cal_files = None
+            self.user_cal_num = 0
+        else:
+            user_id_cal_files = user_id_files[-1][2]
+            self.data_handel = user_id_files[-1][0]
+            self.user_cal_num = len(user_id_calibrations)-1
+        if user_id_cal_files is not None:
+            self.use_num = sum([1 if 'params_data' in file_name else 0 for file_name in user_id_cal_files])
+        else:
+            self.use_num = 0
+        print(self.data_handel)
+
+
+
     def init_clocks(self):
         self.update_clock_radii()
 
         self.bc.clock_inf.clock_util.calcualte_clock_params(self.clock_type, recompute=True)
         for clock in self.words_on:
             self.mainWidgit.clocks[clock].set_params(self.clock_params[clock, :], recompute=True)
+            self.mainWidgit.clocks[clock].redraw_text = True
+        for clock in self.words_off:
+            self.mainWidgit.clocks[clock].redraw_text = True
 
     def update_clock_radii(self):
         for clock in self.words_on:
@@ -305,12 +379,6 @@ class Keyboard(MainWindow):
                 index += 1
                 key += 1
 
-    def gen_handle(self):
-        # file handle
-        # data_file = kconfig.file_pre + str(self.user_id) + "." + str(self.use_num) + kconfig.file_stuff
-        # self.params_handle = PickleUtil(data_file)
-        self.params_handle_dict = {'speed': [], 'params': [], 'start': [], 'press': [], 'choice': []}
-
     def gen_scale(self):
         scale_length = self.w_canvas / 2  # (len(kconfig.key_chars[0])-1)*kconfig.word_w
         tick_int = int((len(config.period_li) - 1) * kconfig.word_pt * 3 / (1.0 * scale_length)) + 1
@@ -362,7 +430,7 @@ class Keyboard(MainWindow):
             bars = self.bc.get_histogram()
         # bars = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.bars = bars
-        self.mainWidgit.histogram.repaint()
+        self.mainWidgit.histogram.update()
 
     def init_words(self):
         (self.words_li, self.word_freq_li, self.key_freq_li, self.top_freq, self.tot_freq,
@@ -649,12 +717,16 @@ class Keyboard(MainWindow):
         self.in_pause = True
         self.setStyleSheet("background-color:" + config.bg_color_highlt + ";")
         self.mainWidgit.text_box.setStyleSheet("background-color:#ffffff;")
+        for clock in self.mainWidgit.clocks:
+            clock.redraw_text = True
 
     def end_pause(self):
         self.mainWidgit.pause_timer.stop()
         self.in_pause = False
         self.setStyleSheet("")
         self.on_timer()
+        for clock in self.mainWidgit.clocks:
+            clock.redraw_text = True
 
     def on_timer(self):
         if self.wpm_time != 0:
@@ -671,10 +743,6 @@ class Keyboard(MainWindow):
         if self.bc_init:
             if not self.in_pause:
                 self.bc.clock_inf.clock_util.increment(self.words_on)
-        if not self.pretrain:
-            if self.first_load:
-                self.first_load = False
-                self.log_data_event()
 
     def on_press(self):
         # self.canvas.focus_set()
@@ -697,14 +765,14 @@ class Keyboard(MainWindow):
 
         if self.mainWidgit.clocks[index] != '':
             self.mainWidgit.clocks[index].selected = True
-            self.mainWidgit.clocks[index].repaint()
+            self.mainWidgit.clocks[index].update()
             self.mainWidgit.highlight_timer.start(2000)
 
     def end_highlight(self):
         index = self.previous_winner
         if self.mainWidgit.clocks[index] != '':
             self.mainWidgit.clocks[index].selected = False
-            self.mainWidgit.clocks[index].repaint()
+            self.mainWidgit.clocks[index].update()
             self.mainWidgit.highlight_timer.stop()
 
 
@@ -860,29 +928,23 @@ class Keyboard(MainWindow):
         retrain_window.setCentralWidget(retrain_window.mainWidgit)
 
         retrain_window.retrain = True
+        self.pretrain = True
+        self.mainWidgit.repaint()
 
 
 def main():
     print "****************************\n****************************\n[Loading...]"
-    up_handel = PickleUtil("user_preferences/user_preferences.p")
-    user_preferences = up_handel.safe_load()
-    if user_preferences is None:
-        first_load = True
-        user_preferences = ['default', 1, False, 'alpha', 'off', 12, True]
-        up_handel.safe_save(user_preferences)
-    else:
-        first_load = False
 
     app = QApplication(sys.argv)
     screen_res = (app.desktop().screenGeometry().width(), app.desktop().screenGeometry().height())
 
-    splash = StartWindow(screen_res, True)
+    # splash = StartWindow(screen_res, True)
     app.processEvents()
     ex = Keyboard(screen_res, app)
 
-    if first_load:
-        ex.first_load=True
-        welcome = Pretraining(screen_res, ex)
+    # if first_load:
+    #     ex.first_load = True
+    #     welcome = Pretraining(screen_res, ex)
 
     sys.exit(app.exec_())
 

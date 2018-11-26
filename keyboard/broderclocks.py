@@ -12,7 +12,7 @@ from pickle_util import PickleUtil
 import config
 
 
-class NewBroderClocks:
+class BroderClocks:
     def __init__(self, parent):
         self.parent = parent
         self.parent.bc_init = True
@@ -38,28 +38,20 @@ class NewBroderClocks:
         return self.clock_inf.kde.dens_li
     
     def get_all_data(self):
-        self.get_user_id()
         self.get_click_data()
         self.get_prev_data()
-    
-    def get_user_id(self):
-        self.last_id_path = "data/last_id.pickle"
-        self.parent.user_id = PickleUtil(self.last_id_path).safe_load()
-        if self.parent.user_id ==None:
-            self.parent.user_id = 0
-        
-    
+
     #get kde data from past use
     def get_prev_data(self):
-        self.prev_data_path = "data/preconfig_user_id"+ str(self.parent.user_id)+ ".pickle"
+        self.prev_data_path = self.parent.data_handel + "\\preconfig.p"
         print "USER ID is" + str(self.parent.user_id)
         load_dict = PickleUtil(self.prev_data_path).safe_load()
         if load_dict != None:
             self.clock_inf.kde.get_past_dens_li(load_dict)
     
     def get_click_data(self):
-        
-        self.click_data_path = "data/click_time_log_user_id" + str(self.parent.user_id) + ".pickle"
+
+        self.click_data_path = self.parent.data_handel + "\\click_time_log.p"
 
         load_click = PickleUtil(self.click_data_path).safe_load()
         if load_click != None:
@@ -67,13 +59,12 @@ class NewBroderClocks:
                 if load_click.has_key('user id') and load_click.has_key('use_num') and load_click.has_key('rotate index'):
                     if load_click['user id'] == self.parent.user_id:
                         self.click_time_list = load_click['click time list']
-                        self.parent.use_num = load_click['use_num']  +1
+                        # self.parent.use_num = load_click['use_num'] +1
                         self.parent.rotate_index = load_click['rotate index']
                         return
             except:
                 pass
         self.click_time_list = []
-        self.parent.use_num = 0
         self.parent.rotate_index = config.default_rotate_ind
         return
         
@@ -85,25 +76,27 @@ class NewBroderClocks:
     def save_when_quit_noconsent(self):
         PickleUtil(self.click_data_path).safe_save({'user id': self.parent.user_id, 'use_num': self.parent.use_num ,'click time list': [], 'rotate index': self.parent.rotate_index})
 
-    
     #ALL THE SAVES AND DUMPS THEY DO WHEN THEY QUIT KEYBOARD SHOULD BE HERE TOO
     def save_when_quit(self):
-        
-        if self.parent.consent and self.parent.is_write_data:
-            self.prev_data_path = "data/preconfig_user_id"+ str(self.parent.user_id)+ ".pickle"
-            self.click_data_path = "data/click_time_log_user_id" + str(self.parent.user_id) + ".pickle"
-            self.last_id_path = "data/last_id.pickle"
-            self.params_data_path = "data/params_data_user_id" + str(self.parent.user_id) + "use_num" + str(self.parent.use_num) +".pickle"
+
+            # self.prev_data_path = "data/preconfig_user_id" + str(self.parent.user_id) + ".pickle"
+            # self.click_data_path = "data/click_time_log_user_id" + str(self.parent.user_id) + ".pickle"
+            # self.last_id_path = "data/last_id.pickle"
+            # self.params_data_path = "data/params_data_user_id" + str(self.parent.user_id) + "use_num" + str(self.parent.use_num) +".pickle"
+            self.prev_data_path = self.parent.data_handel + "\\preconfig.p"
+            self.click_data_path = self.parent.data_handel + "\\click_time_log.p"
+            self.params_data_path = self.parent.data_handel + "\\params_data_use_num" + str(self.parent.use_num)+".p"
+            print(self.params_data_path)
             PickleUtil(self.click_data_path).safe_save({'user id': self.parent.user_id, 'use_num': self.parent.use_num ,'click time list': self.click_time_list, 'rotate index': self.parent.rotate_index})
             PickleUtil(self.prev_data_path).safe_save({'li': self.clock_inf.kde.dens_li, 'z': self.clock_inf.kde.Z, 'opt_sig': self.clock_inf.kde.ksigma, 'y_li': self.clock_inf.kde.y_li, 'yksigma':self.clock_inf.kde.y_ksigma})
-            PickleUtil(self.last_id_path).safe_save(self.parent.user_id)
             PickleUtil(self.params_data_path).safe_save(self.parent.params_handle_dict)
+
+    def quit_bc(self):
+
+        if self.parent.is_write_data:
+            self.save_when_quit()
         else:
             self.save_when_quit_noconsent()
-                
-    
-    def quit_bc(self):
-        self.save_when_quit()
 
     def select(self):
         ####CLOCKUTIL에서 달라진 INCREMTNT, 달라진 KDE, 달라진 SCOREFUNCTION 갖다 바꾸기
@@ -203,7 +196,7 @@ class NewBroderClocks:
                 self.parent.mainWidgit.clocks[clock].highlighted = True
             else:
                 self.parent.mainWidgit.clocks[clock].highlighted = False
-            self.parent.mainWidgit.clocks[clock].repaint()
+            self.parent.mainWidgit.clocks[clock].update()
             #HIGHLIGHT에 관한 부분 추가
             v = self.clock_inf.clock_util.hl.hour_locs[self.clock_inf.clock_util.cur_hours[clock] - 1]
             angle =v[0]
