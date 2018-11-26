@@ -246,7 +246,6 @@ class MainWindow(QMainWindow):
         self.mainWidgit.generate_clocks()
         self.draw_words()
         self.mainWidgit.layout_clocks()
-        QTimer.singleShot(100, self.init_clocks)
 
     def change_font_size(self, size):
         if size == 'small':
@@ -268,15 +267,16 @@ class MainWindow(QMainWindow):
         self.mainWidgit.cb_sound.setFont(config.top_bar_font[size])
         self.mainWidgit.text_box.setFont(config.text_box_font[size])
 
-        self.mainWidgit.wpm_label.repaint()
-        self.mainWidgit.cb_talk.repaint()
-        self.mainWidgit.cb_learn.repaint()
-        self.mainWidgit.cb_pause.repaint()
-        self.mainWidgit.sldLabel.repaint()
-        self.mainWidgit.speed_slider_label.repaint()
-        self.mainWidgit.text_box.repaint()
+        self.mainWidgit.wpm_label.update()
+        self.mainWidgit.cb_talk.update()
+        self.mainWidgit.cb_learn.update()
+        self.mainWidgit.cb_pause.update()
+        self.mainWidgit.sldLabel.update()
+        self.mainWidgit.speed_slider_label.update()
+        self.mainWidgit.text_box.update()
 
         self.check_filemenu()
+        QTimer.singleShot(500, self.init_clocks)
 
     def high_contrast_event(self):
 
@@ -325,7 +325,7 @@ class MainWindow(QMainWindow):
         message_box.setDefaultButton(QMessageBox.Cancel)
         message_box.setWindowIcon(self.icon)
 
-        self.up_handel = PickleUtil("user_preferences/user_preferences.p")
+        
         if layout == 'alpha':
             self.up_handel.safe_save([self.clock_type, self.font_scale, self.high_contrast, 'alpha',
                                       self.pf_preference, self.start_speed, self.is_write_data])
@@ -377,19 +377,15 @@ class MainWindow(QMainWindow):
                 alignment_name = 'Top Center'
 
             message_box = QMessageBox(QMessageBox.Warning, "Change Text Alignment", "This will change the "
-                                                                                               "text to be aligned on "
-                                                                                               "the <b>"
-                                            + alignment_name + "</b>  of the clocks",
-                                            QMessageBox.Cancel | QMessageBox.Ok)
+                                      "text to be aligned on the <b>" + alignment_name + "</b>  of the clocks",
+                                      QMessageBox.Cancel | QMessageBox.Ok)
         self.alignment = alignment
 
         self.mainWidgit.alignment = alignment
         self.resize_clocks()
         if message:
             self.check_filemenu()
-            for clock in self.mainWidgit.clocks:
-                clock.calculate_clock_size()
-                self.update_clock_radii()
+            QTimer.singleShot(100, self.init_clocks)
 
     def resize_clocks(self):
         if self.alignment[0] == 'b' or self.mainWidgit.alignment[0] == 't':
@@ -403,25 +399,17 @@ class MainWindow(QMainWindow):
 
     def log_data_event(self):
         message_box = QMessageBox(QMessageBox.Warning, "Data Logging Consent", "We would like to save "
-                                                                                           "some data regarding your "
-                                                                                           "clicking time relative to "
-                                                                                           "Noon to help us improve "
-                                                                                           "Nomon. All data collected "
-                                                                                           "is anonymous and only your "
-                                                                                           "click times will be saved. "
-                                                                                           "<b> Do you consent to "
-                                                                                           "allowing us to log click "
-                                                                                           "timing data locally?</b>"
-                                                                                           " (Note: you can change your"
-                                                                                           " preference anytime in the "
-                                                                                           "Tools menu).")
+                                  "some data regarding your clicking time relative to Noon to help us improve Nomon. "
+                                  "All data collected is anonymous and only your click times will be saved. <b> Do you"
+                                  " consent to allowing us to log click timing data locally?</b> (Note: you can change"
+                                  " your preference anytime in the Tools menu).")
         message_box.addButton(QMessageBox.Yes)
         message_box.addButton(QMessageBox.No)
         message_box.setDefaultButton(QMessageBox.No)
         message_box.setWindowIcon(self.icon)
 
         reply = message_box.exec_()
-        self.up_handel = PickleUtil("user_preferences/user_preferences.p")
+        
         if reply == QMessageBox.No:
             self.up_handel.safe_save(
                 [self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference,
@@ -448,7 +436,7 @@ class MainWindow(QMainWindow):
         messageBox.setWindowIcon(self.icon)
 
         reply = messageBox.exec_()
-        self.up_handel = PickleUtil("user_preferences/user_preferences.p")
+        
         if reply == 1:
             self.up_handel.safe_save(
                 [self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, 'off', self.start_speed,
@@ -632,7 +620,8 @@ class MainKeyboardWidget(QWidget):
                                   "the more precisely Nomon thinks you are clicking.")
 
     def paintEvent(self, e):
-        if self.parent.pretrain or self.parent.pause_animation:
+        if (self.parent.pretrain or self.parent.pause_animation) and self.in_focus:
+            print("grey")
             qp = QPainter()
             qp.begin(self)
             brush = qp.brush()
@@ -643,13 +632,27 @@ class MainKeyboardWidget(QWidget):
             self.text_box.setStyleSheet("background-color:#e6e6e6;")
             self.splitter1.setStyleSheet("background-color:#e0e0e0;")
             self.in_focus = False
+            for clock in self.clocks:
+                clock.in_focus = False
+                clock.redraw_text = True
+                clock.update()
+        elif not self.in_focus and not (self.parent.pretrain or self.parent.pause_animation):
+            print("reg")
+            self.text_box.setStyleSheet("background-color:;")
+            self.splitter1.setStyleSheet("background-color:;")
+            self.in_focus = True
+            for clock in self.clocks:
+                clock.in_focus = True
+                clock.redraw_text = True
+                clock.update()
+
 
     def change_value(self, value):  # Change clock speed
         self.sldLabel.setText(str(self.speed_slider.value()))
         self.parent.change_speed(value)
         self.parent.start_speed = value
-        self.up_handel = PickleUtil("user_preferences/user_preferences.p")
-        self.up_handel.safe_save([self.parent.clock_type, self.parent.font_scale, self.parent.high_contrast, self.parent.layout_preference,
+        
+        self.parent.up_handel.safe_save([self.parent.clock_type, self.parent.font_scale, self.parent.high_contrast, self.parent.layout_preference,
                                   self.parent.pf_preference, self.parent.start_speed, self.parent.is_write_data])
 
     def get_words(self, char):  # Reformat word list into blueprint for GUI construction
@@ -676,15 +679,21 @@ class MainKeyboardWidget(QWidget):
                 elif text == kconfig.clear_char:
                     text = "Clear"
                 clock = ClockWidgit(text, self)
+                clock.setAttribute(Qt.WA_OpaquePaintEvent)
                 words = self.get_words(clock.text.lower())
                 
                 word_clocks = ['' for i in range(kconfig.N_pred)]
                 i = 0
                 for word in words:
-                    word_clocks[i] = ClockWidgit(word, self)
+                    clockf = ClockWidgit(word, self)
+                    clockf.setAttribute(Qt.WA_OpaquePaintEvent)
+                    word_clocks[i] = clockf
+
                     i += 1
                 for n in range(i, 3):
-                    word_clocks[n] = ClockWidgit('', self, filler_clock=True)
+                    clockf = ClockWidgit('', self, filler_clock=True)
+                    clockf.setAttribute(Qt.WA_OpaquePaintEvent)
+                    word_clocks[n] = clockf
                 self.clocks += word_clocks
                 self.clocks += [clock]
 
@@ -709,7 +718,7 @@ class MainKeyboardWidget(QWidget):
                 for i in range(len(words), 3):
                     self.clocks[index].set_text('')
                     self.clocks[index].filler_clock = True
-                    self.clocks[index].repaint()
+                    self.clocks[index].update()
                     index += 1
                 self.clocks[index].set_text(text)
                 index += 1
@@ -783,7 +792,7 @@ class MainKeyboardWidget(QWidget):
                 clock.setMaximumHeight(clock.maxSize)
                 clock.calculate_clock_size()
                 self.parent.update_clock_radii()
-                clock.repaint()
+                clock.update()
 
         self.grid_units=[]
         clock_index = 0
@@ -840,79 +849,41 @@ class MainKeyboardWidget(QWidget):
                     clock_index = self.clocks.index(main_clock)-1-kconfig.N_pred
                     sub_clocks = [self.clocks[clock_index - i-1] for i in range(kconfig.N_pred)]
                     apostrophe_grid = make_grid_unit(main_clock, sub_clocks)
-            break_unit = QHBoxLayout()
-            break_unit.addLayout(sub_break_unit, 1)
-            break_unit.addLayout(apostrophe_grid, 3)
+            self.break_unit = QHBoxLayout()
+            self.break_unit.addLayout(sub_break_unit, 1)
+            self.break_unit.addLayout(apostrophe_grid, 3)
 
         # make undo unit
-        undo_unit = QGridLayout()
+        self.undo_unit = QGridLayout()
         self.undo_label = QLabel(self.parent.previous_undo_text)
         undo_font = QFont('Consolas', 20)
         undo_font.setStretch(80)
         self.undo_label.setFont(undo_font)
 
-        undo_unit.addWidget(VerticalSeparator(), 0, 0, 3, 1)
-        undo_unit.addWidget(VerticalSeparator(), 0, 2, 3, 1)
-        undo_unit.addWidget(HorizontalSeparator(), 0, 0, 1, 2)
-        undo_unit.addWidget(HorizontalSeparator(), 3, 0, 1, 2)
+        self.undo_unit.addWidget(VerticalSeparator(), 0, 0, 3, 1)
+        self.undo_unit.addWidget(VerticalSeparator(), 0, 2, 3, 1)
+        self.undo_unit.addWidget(HorizontalSeparator(), 0, 0, 1, 2)
+        self.undo_unit.addWidget(HorizontalSeparator(), 3, 0, 1, 2)
         if combine_back_clocks:
-            undo_unit.addWidget(undo_clocks[2], 1, 1)
+            self.undo_unit.addWidget(undo_clocks[2], 1, 1)
         else:
-            undo_unit.addWidget(undo_clocks[0], 1, 1)
-        undo_unit.addWidget(self.undo_label, 2, 1)
+            self.undo_unit.addWidget(undo_clocks[0], 1, 1)
+            self.undo_unit.addWidget(self.undo_label, 2, 1)
 
         # make back unit
         if combine_back_clocks:
-            back_unit = QGridLayout()
-            back_unit.addWidget(VerticalSeparator(), 0, 0, 4, 1)
-            back_unit.addWidget(VerticalSeparator(), 0, 2, 4, 1)
-            back_unit.addWidget(HorizontalSeparator(), 0, 0, 1, 2)
-            back_unit.addWidget(HorizontalSeparator(), 4, 0, 1, 2)
+            self.back_unit = QGridLayout()
+            self.back_unit.addWidget(VerticalSeparator(), 0, 0, 4, 1)
+            self.back_unit.addWidget(VerticalSeparator(), 0, 2, 4, 1)
+            self.back_unit.addWidget(HorizontalSeparator(), 0, 0, 1, 2)
+            self.back_unit.addWidget(HorizontalSeparator(), 4, 0, 1, 2)
             vbox = QVBoxLayout()
             vbox.addWidget(undo_clocks[0], 3)
             vbox.addStretch(1)
             vbox.addWidget(undo_clocks[1], 3)
-            back_unit.addLayout(vbox, 2, 1)
+            self.back_unit.addLayout(vbox, 2, 1)
 
-        def layout_from_target(target_layout):
-            row_num = 0
-            for row in target_layout:
-                col_num = 0
-                for key in row:
-                    if key in self.parent.key_chars:
-                        if key == kconfig.back_char or key == kconfig.space_char:
-                            if qwerty:
-                                self.keyboard_grid.addLayout(self.grid_units[self.parent.key_chars.index(key)], row_num,
-                                                             col_num,1,3)
-                                col_num += 2
-                            else:
-                                self.keyboard_grid.addLayout(self.grid_units[self.parent.key_chars.index(key)], row_num,
-                                                             col_num)
-                        if key == kconfig.clear_char:
-                            if qwerty:
-                                self.keyboard_grid.addLayout(self.grid_units[self.parent.key_chars.index(key)], row_num,
-                                                             col_num,1,2)
-                                col_num += 1
-                            else:
-                                self.keyboard_grid.addLayout(self.grid_units[self.parent.key_chars.index(key)], row_num,
-                                                             col_num)
-                        else:
-                            self.keyboard_grid.addLayout(self.grid_units[self.parent.key_chars.index(key)], row_num,
-                                                         col_num)
-                    elif key == 'BREAKUNIT':
-                        self.keyboard_grid.addLayout(break_unit, row_num, col_num)
-                    elif key == 'UNDOUNIT':
-                        if qwerty:
-                            self.keyboard_grid.addLayout(undo_unit, row_num, col_num, 1, 2)
-                            col_num += 1
-                        else:
-                            self.keyboard_grid.addLayout(undo_unit, row_num, col_num)
-                    elif key == 'BACKUNIT':
-                        self.keyboard_grid.addLayout(back_unit, row_num, col_num)
-                    col_num += 1
-                self.keyboard_grid.setRowStretch(row_num, 1)
-                row_num += 1
-        layout_from_target(self.parent.target_layout)
+        self.layout_from_target(self.parent.target_layout)
         self.vbox.insertLayout(3, self.keyboard_grid, 25)  # add keyboard grid to place in main layout
         self.words_hbox = QHBoxLayout()
         if self.parent.word_pred_on == 1:
@@ -921,6 +892,47 @@ class MainKeyboardWidget(QWidget):
                 self.words_hbox.addStretch(1)
             self.vbox.insertLayout(4, self.words_hbox, 4)
         self.laid_out = True
+        QTimer.singleShot(500, self.parent.init_clocks)
+
+    def layout_from_target(self, target_layout):
+        qwerty = (self.parent.layout_preference == 'qwerty')
+        row_num = 0
+        for row in target_layout:
+            col_num = 0
+            for key in row:
+                if key in self.parent.key_chars:
+                    if key == kconfig.back_char or key == kconfig.space_char:
+                        if qwerty:
+                            self.keyboard_grid.addLayout(self.grid_units[self.parent.key_chars.index(key)], row_num,
+                                                         col_num, 1, 3)
+                            col_num += 2
+                        else:
+                            self.keyboard_grid.addLayout(self.grid_units[self.parent.key_chars.index(key)], row_num,
+                                                         col_num)
+                    if key == kconfig.clear_char:
+                        if qwerty:
+                            self.keyboard_grid.addLayout(self.grid_units[self.parent.key_chars.index(key)], row_num,
+                                                         col_num, 1, 2)
+                            col_num += 1
+                        else:
+                            self.keyboard_grid.addLayout(self.grid_units[self.parent.key_chars.index(key)], row_num,
+                                                         col_num)
+                    else:
+                        self.keyboard_grid.addLayout(self.grid_units[self.parent.key_chars.index(key)], row_num,
+                                                     col_num)
+                elif key == 'BREAKUNIT':
+                    self.keyboard_grid.addLayout(self.break_unit, row_num, col_num)
+                elif key == 'UNDOUNIT':
+                    if qwerty:
+                        self.keyboard_grid.addLayout(self.undo_unit, row_num, col_num, 1, 2)
+                        col_num += 1
+                    else:
+                        self.keyboard_grid.addLayout(self.undo_unit, row_num, col_num)
+                elif key == 'BACKUNIT':
+                    self.keyboard_grid.addLayout(self.back_unit, row_num, col_num)
+                col_num += 1
+            self.keyboard_grid.setRowStretch(row_num, 1)
+            row_num += 1
 
     def clear_layout(self, layout):
         while layout.count():

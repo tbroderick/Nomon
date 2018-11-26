@@ -19,7 +19,7 @@
 ######################################
 
 import kconfig
-import new_subWindows
+import subWindows
 
 
 class dtree:
@@ -165,7 +165,7 @@ class DTree:
             if n_line % 20000 == 0:
                 if self.loading_text[n_line / 20000] != "":
                     print self.loading_text[n_line / 20000]
-                    new_subWindows.loading_text = self.loading_text[n_line / 20000]  # send messages to GUI splash screen
+                    subWindows.loading_text = self.loading_text[n_line / 20000]  # send messages to GUI splash screen
 
                     self.parent.app.processEvents()  # allow splash screen to refresh
         if self.parent.pause_animation:

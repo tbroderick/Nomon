@@ -61,9 +61,9 @@ class ClockUtil:
         self.bc = bc
         self.clock_inf = clock_inf
         self.radius = kconfig.clock_rad
-        try:
+        if not self.parent.pretrain_window:
             self.cur_hours = [0.0]*len(self.parent.clock_centers)
-        except:
+        else:
             self.cur_hours = [0.0]*len(self.parent.mainWidgit.dummy_clocks)
         self.clock_angles = zeros(len(self.cur_hours))
         self.time_rotate = self.parent.time_rotate 
@@ -164,6 +164,7 @@ class ClockUtil:
         if self.bc.parent.update_radii:
             self.bc.parent.update_clock_radii()
         # only update when pretrain=False (actual Nomon application)
+
         self.bc.latest_time = time.time()
         if not self.parent.pretrain:
             for clock in clock_index_list:
@@ -185,10 +186,7 @@ class ClockUtil:
                     self.bc.parent.mainWidgit.clocks[clock].set_params(self.bc.parent.clock_params[clock, :4])
                 elif self.bc.parent.clock_type == 'bar':
                     self.bc.parent.mainWidgit.clocks[clock].set_params(self.bc.parent.clock_params[clock, :3])
-                self.parent.mainWidgit.clocks[clock].repaint()
-        # self.adt = [(self.adt[0] * self.adt[1] + time.time()-self.bc.latest_time) / (self.adt[1] + 1), self.adt[1] + 1]
-        # if self.adt[1] % 1000 == 0:
-        #     print("AVERAGE DRAW TIME: "+str(self.adt[0]))
+                self.parent.mainWidgit.clocks[clock].update()
 
     def set_radius(self, radius):
         self.radius = radius
@@ -200,11 +198,11 @@ class ClockUtil:
             raise Exception("Arguments have different lengths!")
         else:
             for i in clock_index_list:
-                self.parent.mainWidgit.clocks[i].repaint()
+                self.parent.mainWidgit.clocks[i].update()
     
     def repaint_one_clock(self, clock_index, angle):        
         self.parent.mainWidgit.clocks[clock_index].angle = angle + math.pi*0.5
-        self.parent.mainWidgit.clocks[clock_index].repaint()
+        self.parent.mainWidgit.clocks[clock_index].update()
 
     # start the UI over
     # DOCUMENT THIS WELL
@@ -222,11 +220,11 @@ class ClockUtil:
     def highlight_clock(self, clock_index):
         if self.parent.mainWidgit.clocks[clock_index] != '':
             self.parent.mainWidgit.clocks[clock_index].selected = True
-            self.parent.mainWidgit.clocks[clock_index].repaint()
+            self.parent.mainWidgit.clocks[clock_index].update()
             self.parent.mainWidgit.highlight_timer.start(2000)
     
     def unhighlight_clock(self, clock_index):
         if self.parent.mainWidgit.clocks[clock_index] != '':
             self.parent.mainWidgit.clocks[clock_index].selected = False
-            self.parent.mainWidgit.clocks[clock_index].repaint()
+            self.parent.mainWidgit.clocks[clock_index].update()
             self.parent.mainWidgit.highlight_timer.stop()

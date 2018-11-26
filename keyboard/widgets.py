@@ -1,6 +1,6 @@
 from __future__ import division
 from PyQt4.QtCore import QPoint, QRect, QPointF, Qt
-from PyQt4.QtGui import QWidget, QPainter, QPen, QLabel, QFont, QBrush, QColor
+from PyQt4.QtGui import QWidget, QPainter, QPen, QLabel, QFont, QBrush, QColor, QPalette
 import math
 from numpy import array
 import config
@@ -23,6 +23,7 @@ class ClockWidgit(QWidget):
         self.color_switch = False  # used in pac-man clock to alternate color fill
 
         self.draw = False
+        self.in_focus = True
 
         self.w = 1
         self.h = 1
@@ -54,6 +55,8 @@ class ClockWidgit(QWidget):
         self.setMaximumHeight(self.maxSize)
         self.setBaseSize(self.minSize, self.minSize)
         self.angle = 0
+
+        self.setAttribute(Qt.WA_OpaquePaintEvent)
 
     def set_text(self, text):
         self.text = text
@@ -95,9 +98,17 @@ class ClockWidgit(QWidget):
         if self.draw:
             qp = QPainter()
             qp.begin(self)
+            if self.redraw_text:
+                self.draw_background(e, qp)
             if not self.filler_clock:
                 self.draw_clock(e, qp)
-            qp.end()
+        else:
+            qp = QPainter()
+            qp.begin(self)
+            if self.redraw_text:
+                self.draw_background(e, qp)
+
+        qp.end()
         self.redraw_text = False
         
     def calculate_clock_size(self):
@@ -130,16 +141,15 @@ class ClockWidgit(QWidget):
         self.center = QPointF(constraint / 2 + center_offset_x, constraint / 2 + center_offset_y)
         self.redraw_text = True
 
-    def draw_clock(self, e, qp):
-
-        colored_pen = QPen()
-        colored_pen.setWidth(4)
-        if self.selected:
-            colored_pen.setColor(config.default_selct_color[self.parent.color_index])
-        elif self.highlighted:
-            colored_pen.setColor(config.default_highlt_color[self.parent.color_index])
+    def draw_background(self, e, qp):
+        if self.background:
+            color = QColor(175, 255, 175)
+        elif not self.in_focus:
+            color = QColor(220,220,220)
         else:
-            colored_pen.setColor(config.default_reg_color[self.parent.color_index])
+            color = self.palette().color(QPalette.Background)
+        brush = QBrush(color)
+        qp.fillRect(0, 0, self.w, self.h, brush)
 
         # calculate size of text from leftover space
         if self.redraw_text:
@@ -153,15 +163,15 @@ class ClockWidgit(QWidget):
             text_width = label.fontMetrics().boundingRect(label.text()).width()
 
             if self.parent.parent.clock_type != "bar":
-                width = self.w - 2.1*self.radius
+                width = self.w - 2.1 * self.radius
             else:
-                width = self.w*0.7
+                width = self.w * 0.7
 
-            size_factor = float(text_width)/(float(width)+0.1)
+            size_factor = float(text_width) / (float(width) + 0.1)
 
             if size_factor > 1:
                 if size_factor < 1.3:
-                    self.text_font.setStretch(int(85./size_factor))
+                    self.text_font.setStretch(int(85. / size_factor))
 
                     label = QLabel(self.text)
                     label.setFont(self.text_font)
@@ -172,29 +182,69 @@ class ClockWidgit(QWidget):
                     label.setFont(self.text_font)
                     text_width = label.fontMetrics().boundingRect(label.text()).width()
 
-                    size_factor = float(text_width) / (float(width)+0.1)
-                    self.text_font.setPixelSize(max(1, int(float(self.h)/size_factor)))
+                    size_factor = float(text_width) / (float(width) + 0.1)
+                    self.text_font.setPixelSize(max(1, int(float(self.h) / size_factor)))
 
                     label = QLabel(self.text)
                     label.setFont(self.text_font)
                     text_width = label.fontMetrics().boundingRect(label.text()).width()
 
-        if self.background:
-            brush = QBrush(QColor(175, 255, 175))
-            qp.fillRect(0, 0, self.w, self.h, brush)
+            if self.parent.alignment == 'tc':  # align text according to text layout setting
+                x_offest = -text_width / 2
+                y_offest = -self.radius * 1.3
+            elif self.parent.alignment == 'cr':
+                x_offest = self.radius
+                y_offest = self.radius * .6
+            elif self.parent.alignment == 'cc':
+                x_offest = -text_width / 2
+                y_offest = self.radius * .6
+            elif self.parent.alignment == 'cl':
+                x_offest = -self.radius - text_width
+                y_offest = self.radius * .6
+            elif self.parent.alignment == 'bc':
+                x_offest = -text_width / 2
+                y_offest = self.radius * 2.3
+            self.text_x = self.center.x() + x_offest
+            self.text_y = self.center.y() + y_offest
+        # draw text
+        if self.parent.parent.high_contrast:
+            if self.parent.parent.clock_type == 'bar':
+                if self.highlighted:
+                    qp.setPen(config.clock_text_reg_color[self.parent.color_index])
+                elif self.selected:
+                    qp.setPen(config.clock_text_color[self.parent.color_index])
+                else:
+                    qp.setPen(config.clock_text_hl_color[self.parent.color_index])
+            else:
+                if self.highlighted:
+                    qp.setPen(config.clock_text_hl_color[self.parent.color_index])
+                elif self.selected:
+                    qp.setPen(config.clock_text_color[self.parent.color_index])
+                else:
+                    qp.setPen(config.clock_text_reg_color[self.parent.color_index])
+        else:
+            qp.setPen(config.clock_text_color[self.parent.color_index])
+        qp.setFont(self.text_font)
+
+        qp.drawText(self.text_x, self.text_y, self.text)
+
+    def draw_clock(self, e, qp):
+
+        colored_pen = QPen()
+        colored_pen.setWidth(4)
+        if self.selected:
+            colored_pen.setColor(config.default_selct_color[self.parent.color_index])
+        elif self.highlighted:
+            colored_pen.setColor(config.default_highlt_color[self.parent.color_index])
+        else:
+            colored_pen.setColor(config.default_reg_color[self.parent.color_index])
+
         # draw clock face
         qp.setPen(colored_pen)
 
         brush = QBrush(config.clock_bg_color[self.parent.color_index])
-        try:
-            if not self.parent.in_focus:
-                brush = QBrush(QColor(230, 230, 230))
-        except AttributeError:
-            pass
 
-        if self.parent.parent.clock_type == 'bar':
-            pass
-        else:
+        if self.parent.parent.clock_type != 'bar':
             qp.setPen(colored_pen)
             qp.setBrush(brush)
             qp.drawEllipse(self.center, self.outer_radius, self.outer_radius)
@@ -305,45 +355,7 @@ class ClockWidgit(QWidget):
 
             qp.drawRect(10, 1, self.w - 20, self.h - 1)
 
-        # draw text
-        if self.parent.parent.high_contrast:
-            if self.parent.parent.clock_type == 'bar':
-                if self.highlighted:
-                    qp.setPen(config.clock_text_reg_color[self.parent.color_index])
-                elif self.selected:
-                    qp.setPen(config.clock_text_color[self.parent.color_index])
-                else:
-                    qp.setPen(config.clock_text_hl_color[self.parent.color_index])
-            else:
-                if self.highlighted:
-                    qp.setPen(config.clock_text_hl_color[self.parent.color_index])
-                elif self.selected:
-                    qp.setPen(config.clock_text_color[self.parent.color_index])
-                else:
-                    qp.setPen(config.clock_text_reg_color[self.parent.color_index])
-        else:
-            qp.setPen(config.clock_text_color[self.parent.color_index])
-        qp.setFont(self.text_font)
-        if self.redraw_text:
-            if self.parent.alignment == 'tc':  # align text according to text layout setting
-                x_offest = -text_width / 2
-                y_offest = -self.radius * 1.3
-            elif self.parent.alignment == 'cr':
-                x_offest = self.radius
-                y_offest = self.radius * .6
-            elif self.parent.alignment == 'cc':
-                x_offest = -text_width / 2
-                y_offest = self.radius * .6
-            elif self.parent.alignment == 'cl':
-                x_offest = -self.radius - text_width
-                y_offest = self.radius * .6
-            elif self.parent.alignment == 'bc':
-                x_offest = -text_width / 2
-                y_offest = self.radius * 2.3
-            self.text_x = self.center.x() + x_offest
-            self.text_y = self.center.y() + y_offest
 
-        qp.drawText(self.text_x, self.text_y, self.text)
 
 
 class HistogramWidget(QWidget):

@@ -19,7 +19,7 @@ setup(name="Nomon",
       version="1.1",
       description = "Add description",
       options={"build_exe": build_exe_options},
-      executables=[Executable("new_keyboard.py", base=base,
+      executables=[Executable("keyboard.py", base=base,
                                 icon="nomon.ico",
                                 shortcutName="Nomon",
                                 shortcutDir="DesktopFolder",)])
