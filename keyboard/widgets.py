@@ -225,8 +225,8 @@ class ClockWidgit(QWidget):
         else:
             qp.setPen(config.clock_text_color[self.parent.color_index])
         qp.setFont(self.text_font)
-
         qp.drawText(self.text_x, self.text_y, self.text)
+
 
     def draw_clock(self, e, qp):
 
@@ -341,6 +341,10 @@ class ClockWidgit(QWidget):
             qp.setPen(pen)
             qp.drawRect(10, 2, self.inner_radius, self.h - 4)
 
+            brush.setColor(self.palette().color(QPalette.Background))  # redraw background from bar for 'emptying'
+            qp.setBrush(brush)
+            qp.drawRect(10+self.inner_radius, 2, self.w-10, self.h - 4)
+
             if self.selected:
                 pen.setColor(config.bar_hh_selct_color[self.parent.color_index])
 
@@ -355,7 +359,26 @@ class ClockWidgit(QWidget):
 
             qp.drawRect(10, 1, self.w - 20, self.h - 1)
 
-
+            # draw text over bar
+            if self.parent.parent.high_contrast:
+                if self.parent.parent.clock_type == 'bar':
+                    if self.highlighted:
+                        qp.setPen(config.clock_text_reg_color[self.parent.color_index])
+                    elif self.selected:
+                        qp.setPen(config.clock_text_color[self.parent.color_index])
+                    else:
+                        qp.setPen(config.clock_text_hl_color[self.parent.color_index])
+                else:
+                    if self.highlighted:
+                        qp.setPen(config.clock_text_hl_color[self.parent.color_index])
+                    elif self.selected:
+                        qp.setPen(config.clock_text_color[self.parent.color_index])
+                    else:
+                        qp.setPen(config.clock_text_reg_color[self.parent.color_index])
+            else:
+                qp.setPen(config.clock_text_color[self.parent.color_index])
+            qp.setFont(self.text_font)
+            qp.drawText(self.text_x, self.text_y, self.text)
 
 
 class HistogramWidget(QWidget):
