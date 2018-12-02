@@ -1,6 +1,6 @@
 from PyQt4.QtCore import QTimer, Qt
 from PyQt4.QtGui import QAction, QIcon, QMessageBox, QPixmap, QMainWindow, QPushButton, QWidget, QColor, QPainter, \
-    QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QFont, QSlider, QCheckBox, QTextEdit, QSplitter, QToolTip
+    QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QFont, QSlider, QCheckBox, QTextEdit, QSplitter, QToolTip, QSizePolicy
 import string
 
 import config
@@ -22,6 +22,7 @@ class MainWindow(QMainWindow):
         # Load User Preferences
 
     def init_ui(self):
+
         self.mainWidgit = MainKeyboardWidget(self, self.key_chars, self.screen_res)
         self.mainWidgit.init_ui()
         self.setCentralWidget(self.mainWidgit)
@@ -143,12 +144,12 @@ class MainWindow(QMainWindow):
         clock_menu.addAction(self.ball_clock_action)
         clock_menu.addAction(self.pacman_clock_action)
         clock_menu.addAction(self.bar_clock_action)
-        text_menu = view_menu.addMenu('&Text Alignment')
-        text_menu.addAction(self.auto_text_align_action)
-        center_text_menu = text_menu.addMenu('&Center')
-        center_text_menu.addAction(self.cl_text_align_action)
-        center_text_menu.addAction(self.cc_text_align_action)
-        center_text_menu.addAction(self.cr_text_align_action)
+        # text_menu = view_menu.addMenu('&Text Alignment')
+        # text_menu.addAction(self.auto_text_align_action)
+        # center_text_menu = text_menu.addMenu('&Center')
+        # center_text_menu.addAction(self.cl_text_align_action)
+        # center_text_menu.addAction(self.cc_text_align_action)
+        # center_text_menu.addAction(self.cr_text_align_action)
         font_menu = view_menu.addMenu('&Font Size')
         font_menu.addAction(self.small_font_action)
         font_menu.addAction(self.med_font_action)
@@ -178,6 +179,9 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(self.icon)
         self.setGeometry(self.screen_res[0] * 0.05, self.screen_res[1] * 0.0675, self.screen_res[0] * 0.9,
                          self.screen_res[1] * 0.85)
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy.setHeightForWidth(True)
+        self.setSizePolicy(sizePolicy)
         self.show()
 
         self.check_filemenu()
@@ -238,10 +242,10 @@ class MainWindow(QMainWindow):
         self.mainWidgit.clocks = []
 
         self.mainWidgit.clear_layout(self.mainWidgit.keyboard_grid)
-        self.mainWidgit.clear_layout(self.mainWidgit.words_hbox)
+        self.mainWidgit.clear_layout(self.mainWidgit.words_grid)
         self.mainWidgit.laid_out = False
         self.mainWidgit.clocks = []
-        self.mainWidgit.words_hbox.deleteLater()
+        self.mainWidgit.words_grid.deleteLater()
         self.mainWidgit.keyboard_grid.deleteLater()
         self.mainWidgit.generate_clocks()
         self.draw_words()
@@ -339,16 +343,18 @@ class MainWindow(QMainWindow):
         self.layout_preference = layout
         self.check_filemenu()
 
+        self.in_pause = True
         self.mainWidgit.clocks = []
 
         self.mainWidgit.clear_layout(self.mainWidgit.keyboard_grid)
-        self.mainWidgit.clear_layout(self.mainWidgit.words_hbox)
-        self.mainWidgit.words_hbox.deleteLater()
+        self.mainWidgit.clear_layout(self.mainWidgit.words_grid)
+        self.mainWidgit.words_grid.deleteLater()
         self.mainWidgit.keyboard_grid.deleteLater()
         self.mainWidgit.generate_clocks()
         self.mainWidgit.layout_clocks()
 
         QTimer.singleShot(100, self.init_clocks)
+        self.in_pause = False
 
     def clock_text_align(self, alignment, message=True):
         if alignment == "auto":
@@ -391,11 +397,11 @@ class MainWindow(QMainWindow):
         if self.alignment[0] == 'b' or self.mainWidgit.alignment[0] == 't':
             for clock in self.mainWidgit.clocks:
                 clock.setMaximumHeight(clock.maxSize*2)
-                clock.setMinimumSize(clock.minSize*2.1, clock.minSize*2.1)
+                # clock.setMinimumSize(clock.minSize*2.1, clock.minSize*2.1)
         else:
             for clock in self.mainWidgit.clocks:
                 clock.setMaximumHeight(clock.maxSize)
-                clock.setMinimumSize(clock.minSize, clock.minSize)
+                # clock.setMinimumSize(clock.minSize, clock.minSize)
 
     def log_data_event(self):
         message_box = QMessageBox(QMessageBox.Warning, "Data Logging Consent", "We would like to save "
@@ -484,6 +490,15 @@ class MainWindow(QMainWindow):
     def retrain_event(self):
         self.launch_retrain()
 
+    def resizeEvent(self, event):
+        self.in_pause = True
+        for clock in self.mainWidgit.clocks:
+            clock.redraw_text = True
+            clock.calculate_clock_size()
+        QTimer.singleShot(100, self.init_clocks)
+        QMainWindow.resizeEvent(self, event)
+        self.in_pause = False
+
 
 class MainKeyboardWidget(QWidget):
 
@@ -499,6 +514,7 @@ class MainKeyboardWidget(QWidget):
         self.alignment = 'cr'
         self.in_focus = True
         self.color_index = self.parent.high_contrast
+        self.reduced_word_clocks = [ClockWidgit('INIT', self) for i in range(self.parent.reduce_display)]
 
     # noinspection PyUnresolvedReferences
     def init_ui(self):
@@ -619,9 +635,10 @@ class MainKeyboardWidget(QWidget):
                                   "to noon on the clocks. The thinner the distribution, \n"
                                   "the more precisely Nomon thinks you are clicking.")
 
+        self.setMinimumWidth(800*self.size_factor)
+
     def paintEvent(self, e):
         if (self.parent.pretrain or self.parent.pause_animation) and self.in_focus:
-            print("grey")
             qp = QPainter()
             qp.begin(self)
             brush = qp.brush()
@@ -637,7 +654,6 @@ class MainKeyboardWidget(QWidget):
                 clock.redraw_text = True
                 clock.update()
         elif not self.in_focus and not (self.parent.pretrain or self.parent.pause_animation):
-            print("reg")
             self.text_box.setStyleSheet("background-color:;")
             self.splitter1.setStyleSheet("background-color:;")
             self.in_focus = True
@@ -669,6 +685,7 @@ class MainKeyboardWidget(QWidget):
         return output
 
     def generate_clocks(self):  # Generate the clock widgets according to blueprint from self.get_words
+        self.reduced_word_clocks = [ClockWidgit('INIT', self) for i in range(self.parent.reduce_display)]
         self.clocks = []
         for row in self.layout:
             for text in row:
@@ -723,16 +740,21 @@ class MainKeyboardWidget(QWidget):
                 self.clocks[index].set_text(text)
                 index += 1
         if self.parent.word_pred_on == 1:
-            if self.laid_out:
-                self.words_hbox.deleteLater()
-                self.words_hbox = QHBoxLayout()
-                for clock in word_clocks:
-                    self.words_hbox.addWidget(clock, 6)
-                    self.words_hbox.addStretch(1)
-                self.vbox.insertLayout(4, self.words_hbox, 4)
-        for clock in self.clocks:
-            clock.calculate_clock_size()
-            self.parent.update_clock_radii()
+            self.reduced_word_clock_indices = [self.clocks.index(clock) for clock in word_clocks]
+            for clock_num in range(len(word_clocks)):
+                shadow_clock = self.reduced_word_clocks[clock_num]
+                true_clock = self.clocks[self.reduced_word_clock_indices[clock_num]]
+
+                shadow_clock.set_text(true_clock.text)
+                shadow_clock.filler_clock = False
+            for clock_num in range(len(word_clocks), 5):
+                shadow_clock = self.reduced_word_clocks[clock_num]
+                shadow_clock.filler_clock = True
+                shadow_clock.set_text("")
+                shadow_clock.background = False
+                shadow_clock.repaint()
+
+        QTimer.singleShot(200, self.parent.init_clocks)
 
     def layout_clocks(self):  # called after self.generate_clocks, arranges clocks in grid
         qwerty = (self.parent.layout_preference == 'qwerty')
@@ -758,6 +780,8 @@ class MainKeyboardWidget(QWidget):
                         for sub_clock in sub_clocks:
                             key_grid.addWidget(sub_clock, 2 + clock_index, 1)
                             clock_index += 1
+                        for row in range(4):
+                            key_grid.setRowStretch(row+1, 2)
                     else:
                         key_grid.addWidget(VerticalSeparator(), 0, 0, 4, 1)
                         key_grid.addWidget(VerticalSeparator(), 0, 3, 4, 1)
@@ -829,7 +853,7 @@ class MainKeyboardWidget(QWidget):
                 main_clock = self.clocks[clock_index + kconfig.N_pred]
                 sub_clocks = []
                 clock_index += kconfig.N_pred + 1
-            word_clocks+=[clock for clock in sub_clocks if clock.text != '']
+            word_clocks += [clock for clock in sub_clocks if clock.text != '']
             self.grid_units += [make_grid_unit(main_clock, sub_clocks)]
 
         # make break unit:
@@ -843,6 +867,7 @@ class MainKeyboardWidget(QWidget):
                     sub_break_unit.addWidget(HorizontalSeparator(), 0, 0, 1, 2)
                     sub_break_unit.addWidget(HorizontalSeparator(), 5, 0, 1, 2)
                     sub_break_unit.addWidget(clock, i, 1)
+                    sub_break_unit.setRowStretch(i, 2)
                     i+=1
                 else:
                     main_clock = clock
@@ -872,6 +897,7 @@ class MainKeyboardWidget(QWidget):
 
         # make back unit
         if combine_back_clocks:
+
             self.back_unit = QGridLayout()
             self.back_unit.addWidget(VerticalSeparator(), 0, 0, 4, 1)
             self.back_unit.addWidget(VerticalSeparator(), 0, 2, 4, 1)
@@ -885,12 +911,15 @@ class MainKeyboardWidget(QWidget):
 
         self.layout_from_target(self.parent.target_layout)
         self.vbox.insertLayout(3, self.keyboard_grid, 25)  # add keyboard grid to place in main layout
-        self.words_hbox = QHBoxLayout()
+        self.words_grid = QHBoxLayout()
         if self.parent.word_pred_on == 1:
-            for clock in word_clocks:
-                self.words_hbox.addWidget(clock, 6)
-                self.words_hbox.addStretch(1)
-            self.vbox.insertLayout(4, self.words_hbox, 4)
+            for clock in self.reduced_word_clocks:
+                clock.maxSize = round(50 * clock.size_factor)
+                clock.setMaximumHeight(clock.maxSize)
+                self.words_grid.addWidget(clock)
+            self.vbox.insertLayout(4, self.words_grid, 4)
+            self.update_clocks()
+
         self.laid_out = True
         QTimer.singleShot(500, self.parent.init_clocks)
 
@@ -939,5 +968,14 @@ class MainKeyboardWidget(QWidget):
             child = layout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
+            elif child.layout():
+                self.clear_layout(child)
+
+    def clear_layout_without_delete(self, layout):
+        while layout.count():
+            child = layout.takeAt(0)
+            if child.widget():
+                layout.removeWidget(child.widget())
+                layout.update()
             elif child.layout():
                 self.clear_layout(child)

@@ -55,11 +55,10 @@ class Keyboard(MainWindow):
         # Number of word clocks to display in case word prediction == 1 (reduced)
         self.reduce_display = 5
 
-
         # get user data before initialization
         self.gen_data_handel()
 
-        self.up_handel = PickleUtil(self.user_handel + "\\user_preferences.p")
+        self.up_handel = PickleUtil(os.path.join(self.user_handel, 'user_preferences.p'))
         user_preferences = self.up_handel.safe_load()
         if user_preferences is None:
             first_load = True
@@ -189,11 +188,12 @@ class Keyboard(MainWindow):
 
     def gen_data_handel(self):
         self.cwd = os.getcwd()
-        if os.path.exists(self.cwd+'\\data'):
-            user_files = list(os.walk(self.cwd+'\\data'))
+        data_path = os.path.join(self.cwd, 'data')
+        if os.path.exists(data_path):
+            user_files = list(os.walk(data_path))
             users = user_files[0][1]
         else:
-            os.mkdir(self.cwd+'\\data')
+            os.mkdir(data_path)
             user_files = None
             users = []
         input_method = 'text'
@@ -224,17 +224,18 @@ class Keyboard(MainWindow):
                     break
             if input_method == 'text':
                 self.user_id = num
-                os.mkdir(self.cwd+'\\data\\'+str(self.user_id))
+                user_id_path = os.path.join(data_path, str(self.user_id))
+                os.mkdir(user_id_path)
 
         if input_method == 'list':
             item, ok = QInputDialog.getItem(self, "Select User ID", "List of save User IDs:", users, 0, False)
             self.user_id = item
 
-        self.user_handel = self.cwd + "\\data\\" + str(self.user_id)
+        self.user_handel = os.path.join(data_path, str(self.user_id))
         user_id_files = list(os.walk(self.user_handel))
         user_id_calibrations = user_id_files[0][1]
         if len(user_id_calibrations) == 0:
-            self.data_handel = self.user_handel + "\\cal0"
+            self.data_handel = os.path.join(self.user_handel, 'cal0')
             os.mkdir(self.data_handel)
             user_id_cal_files = None
             self.user_cal_num = 0
@@ -248,8 +249,6 @@ class Keyboard(MainWindow):
             self.use_num = 0
         print(self.data_handel)
 
-
-
     def init_clocks(self):
         self.update_clock_radii()
 
@@ -257,11 +256,19 @@ class Keyboard(MainWindow):
         for clock in self.words_on:
             self.mainWidgit.clocks[clock].set_params(self.clock_params[clock, :], recompute=True)
             self.mainWidgit.clocks[clock].redraw_text = True
+            if self.word_pred_on == 1:
+                if clock in self.mainWidgit.reduced_word_clock_indices:
+                    word_clock = self.mainWidgit.reduced_word_clocks[self.mainWidgit.reduced_word_clock_indices.index(clock)]
+                    word_clock.set_params(self.clock_params[clock, :], recompute=True)
         for clock in self.words_off:
             self.mainWidgit.clocks[clock].redraw_text = True
 
     def update_clock_radii(self):
         for clock in self.words_on:
+            if self.word_pred_on == 1:
+                if clock in self.mainWidgit.reduced_word_clock_indices:
+                    self.clock_spaces[clock, :] = array(
+                        [self.mainWidgit.reduced_word_clocks[0].w, self.mainWidgit.reduced_word_clocks[0].h])
             self.clock_spaces[clock, :] = array([self.mainWidgit.clocks[clock].w, self.mainWidgit.clocks[clock].h])
         self.bc.clock_inf.clock_util.calcualte_clock_params(self.clock_type, recompute=True)
         self.update_radii = False
@@ -292,9 +299,7 @@ class Keyboard(MainWindow):
         for row in range(0, self.N_rows):
             n_keys = len(self.key_chars[row])
             for col in range(0, n_keys):
-                if isinstance(self.key_chars[row][col], list):
-                    pass
-                else:
+                if not isinstance(self.key_chars[row][col], list):
                     if self.key_chars[row][col].isalpha() and (len(self.key_chars[row][col]) == 1):
                         self.N_alpha_keys = self.N_alpha_keys + 1
                     elif self.key_chars[row][col] == kconfig.space_char and (len(self.key_chars[row][col]) == 1):
@@ -762,7 +767,10 @@ class Keyboard(MainWindow):
         QSound(sound_file).play()
 
     def highlight_winner(self, index):
-
+        if self.word_pred_on == 1:
+            if index in self.mainWidgit.reduced_word_clock_indices:
+                word_clock = self.mainWidgit.reduced_word_clocks[self.mainWidgit.reduced_word_clock_indices.index(index)]
+                word_clock.selected = True
         if self.mainWidgit.clocks[index] != '':
             self.mainWidgit.clocks[index].selected = True
             self.mainWidgit.clocks[index].update()
@@ -770,6 +778,9 @@ class Keyboard(MainWindow):
 
     def end_highlight(self):
         index = self.previous_winner
+        if self.word_pred_on == 1:
+            for word_clock in self.mainWidgit.reduced_word_clocks:
+                word_clock.selected = False
         if self.mainWidgit.clocks[index] != '':
             self.mainWidgit.clocks[index].selected = False
             self.mainWidgit.clocks[index].update()
