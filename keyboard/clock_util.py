@@ -174,19 +174,28 @@ class ClockUtil:
                 self.clock_angles[clock] = self.hl.hour_locs[self.cur_hours[clock]][0]
                 # self.repaint_one_clock(clock, clock_angles[clock])
 
+
             self.calcualte_clock_params(self.bc.parent.clock_type)
-            for clock in clock_index_list:
+            for clock_index in clock_index_list:
+                clock = self.bc.parent.mainWidgit.clocks[clock_index]
+
+                if self.bc.parent.word_pred_on == 1:
+                    if clock_index in self.bc.parent.mainWidgit.reduced_word_clock_indices:
+                        clock = self.bc.parent.mainWidgit.reduced_word_clocks[
+                            self.bc.parent.mainWidgit.reduced_word_clock_indices.index(clock_index)]
+
                 if self.bc.parent.clock_type == 'default':
-                    self.bc.parent.mainWidgit.clocks[clock].set_params(self.bc.parent.clock_params[clock, :4])
+                    clock.set_params(self.bc.parent.clock_params[clock_index, :4])
                 elif self.bc.parent.clock_type == 'ball':
-                    self.bc.parent.mainWidgit.clocks[clock].set_params(self.bc.parent.clock_params[clock, :4])
+                    clock.set_params(self.bc.parent.clock_params[clock_index, :4])
                 elif self.bc.parent.clock_type == 'radar':
-                    self.bc.parent.mainWidgit.clocks[clock].set_params(self.bc.parent.clock_params[clock, :])
+                    clock.set_params(self.bc.parent.clock_params[clock_index, :])
                 elif self.bc.parent.clock_type == 'pac_man':
-                    self.bc.parent.mainWidgit.clocks[clock].set_params(self.bc.parent.clock_params[clock, :4])
+                    clock.set_params(self.bc.parent.clock_params[clock_index, :4])
                 elif self.bc.parent.clock_type == 'bar':
-                    self.bc.parent.mainWidgit.clocks[clock].set_params(self.bc.parent.clock_params[clock, :3])
-                self.parent.mainWidgit.clocks[clock].update()
+                    clock.set_params(self.bc.parent.clock_params[clock_index, :3])
+                clock.update()
+
 
     def set_radius(self, radius):
         self.radius = radius
@@ -219,12 +228,21 @@ class ClockUtil:
 
     def highlight_clock(self, clock_index):
         if self.parent.mainWidgit.clocks[clock_index] != '':
-            self.parent.mainWidgit.clocks[clock_index].selected = True
-            self.parent.mainWidgit.clocks[clock_index].update()
-            self.parent.mainWidgit.highlight_timer.start(2000)
+            clock = self.parent.mainWidgit.clocks[clock_index]
+            if self.bc.parent.word_pred_on == 1:
+                if clock_index in self.bc.parent.mainWidgit.reduced_word_clock_indices:
+                    clock = self.bc.parent.mainWidgit.reduced_word_clocks[
+                        self.bc.parent.mainWidgit.reduced_word_clock_indices.index(clock_index)]
+            clock.selected = True
+            clock.highlight_timer.start(2000)
     
     def unhighlight_clock(self, clock_index):
         if self.parent.mainWidgit.clocks[clock_index] != '':
-            self.parent.mainWidgit.clocks[clock_index].selected = False
-            self.parent.mainWidgit.clocks[clock_index].update()
-            self.parent.mainWidgit.highlight_timer.stop()
+            clock = self.parent.mainWidgit.clocks[clock_index]
+            if self.bc.parent.word_pred_on == 1:
+                if clock_index in self.bc.parent.mainWidgit.reduced_word_clock_indices:
+                    clock = self.bc.parent.mainWidgit.reduced_word_clocks[
+                        self.bc.parent.mainWidgit.reduced_word_clock_indices.index(clock_index)]
+            clock.selected = False
+            clock.update()
+            clock.stop()
