@@ -7,6 +7,7 @@ Created on Thu Aug  2 16:00:14 2018
 from __future__ import division
 from clock_inference_engine import *
 import time
+import os
 
 from pickle_util import PickleUtil
 import config
@@ -79,13 +80,9 @@ class BroderClocks:
     #ALL THE SAVES AND DUMPS THEY DO WHEN THEY QUIT KEYBOARD SHOULD BE HERE TOO
     def save_when_quit(self):
 
-            # self.prev_data_path = "data/preconfig_user_id" + str(self.parent.user_id) + ".pickle"
-            # self.click_data_path = "data/click_time_log_user_id" + str(self.parent.user_id) + ".pickle"
-            # self.last_id_path = "data/last_id.pickle"
-            # self.params_data_path = "data/params_data_user_id" + str(self.parent.user_id) + "use_num" + str(self.parent.use_num) +".pickle"
-            self.prev_data_path = self.parent.data_handel + "\\preconfig.p"
-            self.click_data_path = self.parent.data_handel + "\\click_time_log.p"
-            self.params_data_path = self.parent.data_handel + "\\params_data_use_num" + str(self.parent.use_num)+".p"
+            self.prev_data_path = os.path.join(self.parent.data_handel, 'preconfig.p')
+            self.click_data_path = os.path.join(self.parent.data_handel, 'click_time_log.p')
+            self.params_data_path = os.path.join(self.parent.data_handel, 'params_data_use_num' + str(self.parent.use_num)+'.p')
             print(self.params_data_path)
             PickleUtil(self.click_data_path).safe_save({'user id': self.parent.user_id, 'use_num': self.parent.use_num ,'click time list': self.click_time_list, 'rotate index': self.parent.rotate_index})
             PickleUtil(self.prev_data_path).safe_save({'li': self.clock_inf.kde.dens_li, 'z': self.clock_inf.kde.Z, 'opt_sig': self.clock_inf.kde.ksigma, 'y_li': self.clock_inf.kde.y_li, 'yksigma':self.clock_inf.kde.y_ksigma})
@@ -117,9 +114,8 @@ class BroderClocks:
         if self.parent.is_write_data:
             self.save_click_time(last_gap_time, ind_in_histo)
             self.last_press_time = time_in
-            print "click time was recorded!"
+            # print "click time was recorded!"
 
-        
         # proceed based on whether there was a winner
         if (self.clock_inf.is_winner()):
             # record winner
@@ -191,15 +187,20 @@ class BroderClocks:
         # highlight all clockfaces "near" the winning score
         bound_score = top_score - self.parent.win_diffs[self.clock_inf.sorted_inds[0]]
 
-        for clock in self.clock_inf.clocks_on:
-            if self.clock_inf.cscores[clock] > bound_score:
-                self.parent.mainWidgit.clocks[clock].highlighted = True
+        for clock_index in self.clock_inf.clocks_on:
+            clock = self.parent.mainWidgit.clocks[clock_index]
+            if self.parent.word_pred_on == 1:
+                if clock_index in self.parent.mainWidgit.reduced_word_clock_indices:
+                    clock = self.parent.mainWidgit.reduced_word_clocks[
+                        self.parent.mainWidgit.reduced_word_clock_indices.index(clock_index)]
+            if self.clock_inf.cscores[clock_index] > bound_score:
+                clock.highlighted = True
             else:
-                self.parent.mainWidgit.clocks[clock].highlighted = False
-            self.parent.mainWidgit.clocks[clock].update()
+                clock.highlighted = False
+            clock.update()
             #HIGHLIGHT에 관한 부분 추가
-            v = self.clock_inf.clock_util.hl.hour_locs[self.clock_inf.clock_util.cur_hours[clock] - 1]
+            v = self.clock_inf.clock_util.hl.hour_locs[self.clock_inf.clock_util.cur_hours[clock_index] - 1]
             angle =v[0]
-            self.clock_inf.clock_util.repaint_one_clock(clock, angle)
+            self.clock_inf.clock_util.repaint_one_clock(clock_index, angle)
 
        

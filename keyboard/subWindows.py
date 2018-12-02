@@ -372,8 +372,7 @@ class PretrainScreen(QWidget):
 
         vbox.addWidget(self.main_label, 1)
         vbox.addStretch(1)
-        vbox.addLayout(self.keyboard_grid)
-        vbox.addStretch(3)
+        vbox.addLayout(self.keyboard_grid, 10)
 
         hbox = QHBoxLayout()
         hbox.addStretch(1)
@@ -417,6 +416,7 @@ class PretrainScreen(QWidget):
             clock_index = 0
             for sub_clock in sub_clocks:
                 key_grid.addWidget(sub_clock, 1+clock_index, 2)
+                key_grid.setRowStretch(1 + clock_index, 2)
                 clock_index += 1
             key_grid.setColumnStretch(1, 4)
             key_grid.setColumnStretch(2, 5)
@@ -435,7 +435,7 @@ class PretrainScreen(QWidget):
             for key in row:
                 self.keyboard_grid.addLayout(self.grid_units[key], row_num, col_num)
                 col_num += 1
-            self.keyboard_grid.setRowStretch(row_num, 1)
+            self.keyboard_grid.setRowStretch(row_num, 2)
             row_num += 1
 
     def highlight(self):
@@ -599,6 +599,14 @@ class Pretraining(StartWindow):
 
     def load_saved_density_keyboard(self):
         self.sister.bc.get_prev_data()
+
+    def resizeEvent(self, event):
+        if isinstance(self.mainWidgit, PretrainScreen):
+            for clock in self.mainWidgit.dummy_clocks:
+                clock.redraw_text = True
+                clock.calculate_clock_size()
+            QTimer.singleShot(100, self.init_clocks)
+        QMainWindow.resizeEvent(self, event)
 
     def save(self):
         if self.consent and self.is_write_data:
