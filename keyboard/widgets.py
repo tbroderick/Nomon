@@ -28,6 +28,7 @@ class ClockWidgit(QWidget):
         self.w = 1
         self.h = 1
 
+        self.clock_params = None
         self.outer_radius = 0
         self.hand_loc = array([0, 0])
         self.minute_hand_point = QPoint(0, 0)
@@ -48,12 +49,12 @@ class ClockWidgit(QWidget):
     def initUI(self):
 
         self.size_factor = self.parent.size_factor
-        self.minSize = round(40 * self.size_factor)
+        self.minSize = round(20 * self.size_factor)
         self.maxSize = round(50 * self.size_factor)
 
-        self.setMinimumSize(self.minSize, self.minSize)
+        self.setMinimumSize(self.minSize*1.3, self.minSize)
         self.setMaximumHeight(self.maxSize)
-        self.setBaseSize(self.minSize, self.minSize)
+        # self.setBaseSize(self.minSize*1.3, self.minSize)
         self.angle = 0
 
         self.setAttribute(Qt.WA_OpaquePaintEvent)
@@ -66,6 +67,7 @@ class ClockWidgit(QWidget):
         self.angle = angle
 
     def set_params(self, clock_params, recompute=False):
+        self.clock_params = clock_params
         if recompute:
             self.center = QPoint(clock_params[0], clock_params[0])
             self.outer_radius = clock_params[1]
@@ -91,10 +93,6 @@ class ClockWidgit(QWidget):
             self.inner_radius = clock_params[2]
 
     def paintEvent(self, e):
-        size = self.size()
-        if self.w != size.width() or self.h != size.height():
-            self.calculate_clock_size()
-            self.parent.parent.update_radii = True
         if self.draw:
             qp = QPainter()
             qp.begin(self)
@@ -116,6 +114,13 @@ class ClockWidgit(QWidget):
         size = self.size()
         self.w = size.width()
         self.h = size.height()
+
+        if self.w < self.h * 1.3:
+            self.w = self.h
+            self.h = self.h/1.3
+            self.resize(self.w, self.h)
+
+
         if self.parent.alignment[0] != 'c':
             self.constraint_factor = 0.5
         else:
@@ -225,7 +230,6 @@ class ClockWidgit(QWidget):
         else:
             qp.setPen(config.clock_text_color[self.parent.color_index])
         qp.setFont(self.text_font)
-
         qp.drawText(self.text_x, self.text_y, self.text)
 
     def draw_clock(self, e, qp):
@@ -341,6 +345,10 @@ class ClockWidgit(QWidget):
             qp.setPen(pen)
             qp.drawRect(10, 2, self.inner_radius, self.h - 4)
 
+            brush.setColor(self.palette().color(QPalette.Background))  # redraw background from bar for 'emptying'
+            qp.setBrush(brush)
+            qp.drawRect(10+self.inner_radius, 2, self.w-10, self.h - 4)
+
             if self.selected:
                 pen.setColor(config.bar_hh_selct_color[self.parent.color_index])
 
@@ -355,7 +363,26 @@ class ClockWidgit(QWidget):
 
             qp.drawRect(10, 1, self.w - 20, self.h - 1)
 
-
+            # draw text over bar
+            if self.parent.parent.high_contrast:
+                if self.parent.parent.clock_type == 'bar':
+                    if self.highlighted:
+                        qp.setPen(config.clock_text_reg_color[self.parent.color_index])
+                    elif self.selected:
+                        qp.setPen(config.clock_text_color[self.parent.color_index])
+                    else:
+                        qp.setPen(config.clock_text_hl_color[self.parent.color_index])
+                else:
+                    if self.highlighted:
+                        qp.setPen(config.clock_text_hl_color[self.parent.color_index])
+                    elif self.selected:
+                        qp.setPen(config.clock_text_color[self.parent.color_index])
+                    else:
+                        qp.setPen(config.clock_text_reg_color[self.parent.color_index])
+            else:
+                qp.setPen(config.clock_text_color[self.parent.color_index])
+            qp.setFont(self.text_font)
+            qp.drawText(self.text_x, self.text_y, self.text)
 
 
 class HistogramWidget(QWidget):
@@ -491,7 +518,7 @@ class OldClockWidgit(QWidget):
     def initUI(self):
 
         self.size_factor = self.parent.size_factor
-        self.minSize = round(40 * self.size_factor)
+        self.minSize = round(15 * self.size_factor)
         self.maxSize = round(50 * self.size_factor)
 
         self.setMinimumSize(self.minSize, self.minSize)
