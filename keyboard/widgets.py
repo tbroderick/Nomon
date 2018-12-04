@@ -115,10 +115,11 @@ class ClockWidgit(QWidget):
         self.w = size.width()
         self.h = size.height()
 
-        if self.w < self.h * 1.3:
+        if self.w < self.h * 1.5:
             self.w = self.h
-            self.h = self.h/1.3
+            self.h = self.h/1.5
             self.resize(self.w, self.h)
+            self.redraw_text = True
 
 
         if self.parent.alignment[0] != 'c':
@@ -159,7 +160,7 @@ class ClockWidgit(QWidget):
         # calculate size of text from leftover space
         if self.redraw_text:
             self.text_font = QFont(config.clock_font)
-            self.text_font.setPixelSize(self.h)
+            self.text_font.setPixelSize(min(self.h, 50))
             self.text_font.setStretch(85)
             qp.setFont(self.text_font)
 
@@ -172,23 +173,23 @@ class ClockWidgit(QWidget):
             else:
                 width = self.w * 0.7
 
-            size_factor = float(text_width) / (float(width) + 0.1)
+            size_factor = float(text_width) / (float(width)*0.95)
 
             if size_factor > 1:
-                if size_factor < 1.3:
+                if size_factor < 1.2:
                     self.text_font.setStretch(int(85. / size_factor))
 
                     label = QLabel(self.text)
                     label.setFont(self.text_font)
                     text_width = label.fontMetrics().boundingRect(label.text()).width()
-                elif size_factor > 1.3:
-                    self.text_font.setStretch(65)
+                elif size_factor > 1.2:
+                    self.text_font.setStretch(int(85. / 1.2))
                     label = QLabel(self.text)
                     label.setFont(self.text_font)
                     text_width = label.fontMetrics().boundingRect(label.text()).width()
 
                     size_factor = float(text_width) / (float(width) + 0.1)
-                    self.text_font.setPixelSize(max(1, int(float(self.h) / size_factor)))
+                    self.text_font.setPixelSize(min(50,  max(1, int(float(self.h) / size_factor))))
 
                     label = QLabel(self.text)
                     label.setFont(self.text_font)
