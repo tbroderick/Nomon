@@ -131,7 +131,7 @@ class Keyboard(MainWindow):
         self.last_add_li = [0]
         # set up "talked" text
         self.talk_file = "talk.txt"
-        self.sound_set=True
+        self.sound_set = True
 
         # check for speech
         talk_fid = open(self.talk_file, 'wb')
@@ -265,11 +265,14 @@ class Keyboard(MainWindow):
 
     def update_clock_radii(self):
         for clock in self.words_on:
+            self.clock_spaces[clock, :] = array([self.mainWidgit.clocks[clock].w, self.mainWidgit.clocks[clock].h])
             if self.word_pred_on == 1:
                 if clock in self.mainWidgit.reduced_word_clock_indices:
+                    word_clock = self.mainWidgit.reduced_word_clocks[
+                        self.mainWidgit.reduced_word_clock_indices.index(clock)]
                     self.clock_spaces[clock, :] = array(
-                        [self.mainWidgit.reduced_word_clocks[0].w, self.mainWidgit.reduced_word_clocks[0].h])
-            self.clock_spaces[clock, :] = array([self.mainWidgit.clocks[clock].w, self.mainWidgit.clocks[clock].h])
+                        [word_clock.w, word_clock.h])
+
         self.bc.clock_inf.clock_util.calcualte_clock_params(self.clock_type, recompute=True)
         self.update_radii = False
 

@@ -930,7 +930,7 @@ class MainKeyboardWidget(QWidget):
             col_num = 0
             for key in row:
                 if key in self.parent.key_chars:
-                    if key == kconfig.back_char or key == kconfig.space_char:
+                    if key == kconfig.back_char:
                         if qwerty:
                             self.keyboard_grid.addLayout(self.grid_units[self.parent.key_chars.index(key)], row_num,
                                                          col_num, 1, 3)
@@ -960,6 +960,7 @@ class MainKeyboardWidget(QWidget):
                 elif key == 'BACKUNIT':
                     self.keyboard_grid.addLayout(self.back_unit, row_num, col_num)
                 col_num += 1
+
             self.keyboard_grid.setRowStretch(row_num, 1)
             row_num += 1
 
