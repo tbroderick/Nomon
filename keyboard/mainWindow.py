@@ -250,6 +250,7 @@ class MainWindow(QMainWindow):
         self.mainWidgit.generate_clocks()
         self.draw_words()
         self.mainWidgit.layout_clocks()
+        self.environment_change = True
 
     def change_font_size(self, size):
         if size == 'small':
@@ -294,6 +295,7 @@ class MainWindow(QMainWindow):
              self.is_write_data])
         self.high_contrast = hc_status
         self.mainWidgit.color_index = hc_status
+        self.environment_change = True
 
     def clock_change_event(self, design):
         message_box = QMessageBox(QMessageBox.Warning, "Change Clock Design", "This will change the clocks "
@@ -318,6 +320,7 @@ class MainWindow(QMainWindow):
             self.check_filemenu()
 
         QTimer.singleShot(100, self.init_clocks)
+        self.environment_change = True
 
     def layout_change_event(self, layout):
         message_box = QMessageBox(QMessageBox.Warning, "Change Keyboard Layout", "This will change the clock "
@@ -355,6 +358,7 @@ class MainWindow(QMainWindow):
 
         QTimer.singleShot(100, self.init_clocks)
         self.in_pause = False
+        self.environment_change = True
 
     def clock_text_align(self, alignment, message=True):
         if alignment == "auto":
@@ -491,6 +495,7 @@ class MainWindow(QMainWindow):
         self.launch_retrain()
 
     def resizeEvent(self, event):
+        self.environment_change = True
         self.in_pause = True
         for clock in self.mainWidgit.clocks:
             clock.redraw_text = True
@@ -498,6 +503,7 @@ class MainWindow(QMainWindow):
         QTimer.singleShot(100, self.init_clocks)
         QMainWindow.resizeEvent(self, event)
         self.in_pause = False
+
 
 
 class MainKeyboardWidget(QWidget):
@@ -534,12 +540,12 @@ class MainKeyboardWidget(QWidget):
         self.wpm_label.setFont(config.top_bar_font[self.parent.font_scale])
 
         # generate learn, speak, talk checkboxes
-        self.cb_talk = QCheckBox('Talk', self)
+        # self.cb_talk = QCheckBox('Talk', self)
         self.cb_learn = QCheckBox('Learn', self)
         self.cb_pause = QCheckBox('Pause', self)
         self.cb_sound = QCheckBox('Sound', self)
-        self.cb_talk.toggle()
-        self.cb_talk.setFont(config.top_bar_font[self.parent.font_scale])
+        # self.cb_talk.toggle()
+        # self.cb_talk.setFont(config.top_bar_font[self.parent.font_scale])
         self.cb_learn.toggle()
         self.cb_learn.setFont(config.top_bar_font[self.parent.font_scale])
         self.cb_pause.toggle()
@@ -559,12 +565,11 @@ class MainKeyboardWidget(QWidget):
         # generate histogram
         self.histogram = HistogramWidget(self)
 
-        if __name__ != '__main__':
-            self.speed_slider.valueChanged[int].connect(self.change_value)
-            self.cb_learn.toggled[bool].connect(self.parent.toggle_learn_button)
-            self.cb_pause.toggled[bool].connect(self.parent.toggle_pause_button)
-            self.cb_talk.toggled[bool].connect(self.parent.toggle_talk_button)
-            self.cb_sound.toggled[bool].connect(self.parent.toggle_sound_button)
+        self.speed_slider.valueChanged[int].connect(self.change_value)
+        self.cb_learn.toggled[bool].connect(self.parent.toggle_learn_button)
+        self.cb_pause.toggled[bool].connect(self.parent.toggle_pause_button)
+        # self.cb_talk.toggled[bool].connect(self.parent.toggle_talk_button)
+        self.cb_sound.toggled[bool].connect(self.parent.toggle_sound_button)
 
         # layout slider and checkboxes
         top_hbox = QHBoxLayout()
@@ -575,7 +580,7 @@ class MainKeyboardWidget(QWidget):
         top_hbox.addWidget(self.wpm_label, 1)
         top_hbox.addStretch(2)
 
-        top_hbox.addWidget(self.cb_talk, 1)
+        # top_hbox.addWidget(self.cb_talk, 1)
         top_hbox.addWidget(self.cb_learn, 1)
         top_hbox.addWidget(self.cb_pause, 1)
         top_hbox.addWidget(self.cb_sound, 1)
@@ -625,9 +630,9 @@ class MainKeyboardWidget(QWidget):
         self.cb_pause.setToolTip("If this button is checked, there will be a brief \n"
                                  "pause and minty screen flash after each selection \n"
                                  "you make.")
-        self.cb_talk.setToolTip("If this button is checked and if you have festival \n"
-                                "installed and working on your system, there will be \n"
-                                "spoken feedback after each selection you make.")
+        # self.cb_talk.setToolTip("If this button is checked and if you have festival \n"
+        #                         "installed and working on your system, there will be \n"
+        #                         "spoken feedback after each selection you make.")
         self.cb_learn.setToolTip("If this button is checked, the program will adapt \n"
                                  "to how you click around noon (illustrated in the \n"
                                  "histogram below).")
@@ -644,7 +649,7 @@ class MainKeyboardWidget(QWidget):
             brush = qp.brush()
             brush.setColor(QColor(0, 0, 0, 10))
             qp.setBrush(brush)
-            qp.fillRect(0,0,self.geometry().width(),self.geometry().height(),QColor(220,220,220))
+            qp.fillRect(0, 0, self.geometry().width(), self.geometry().height(),QColor(220,220,220))
             qp.end()
             self.text_box.setStyleSheet("background-color:#e6e6e6;")
             self.splitter1.setStyleSheet("background-color:#e0e0e0;")
