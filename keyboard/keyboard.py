@@ -167,6 +167,7 @@ class Keyboard(MainWindow):
 
         self.bc.clock_inf.clock_util.calcualte_clock_params('default', recompute=True)
 
+        self.save_environment()
         # draw histogram
         self.init_histogram()
 
@@ -185,6 +186,7 @@ class Keyboard(MainWindow):
         self.init_clocks()
         self.update_radii = False
         self.on_timer()
+        self.environment_change = False
 
     def gen_data_handel(self):
         self.cwd = os.getcwd()
@@ -248,6 +250,14 @@ class Keyboard(MainWindow):
         else:
             self.use_num = 0
         print(self.data_handel)
+
+    def save_environment(self):
+        self.rotate_index_past = self.rotate_index
+        self.window_size_past = self.frameGeometry()
+        self.clock_type_past = self.clock_type
+        self.layout_preference_past = self.layout_preference
+        self.high_contrast_past = self.high_contrast
+
 
     def init_clocks(self):
         self.update_clock_radii()
@@ -400,9 +410,9 @@ class Keyboard(MainWindow):
         self.sound_set = value
         self.mainWidgit.sldLabel.setFocus()
 
-    def toggle_talk_button(self, value):
-        self.talk_set = value
-        self.mainWidgit.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
+    # def toggle_talk_button(self, value):
+    #     self.talk_set = value
+    #     self.mainWidgit.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
 
     def toggle_learn_button(self, value):
         config.is_learning = value

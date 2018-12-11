@@ -24,6 +24,7 @@ class PreClockUtil(ClockUtil):
         self.cur_hour = 0
         self.pbc = None
         self.pbc = bc
+        self.selected_clock = random.randint(0, 63)
 
     def closest_in_hourloc(self, x, y):
         # 이 라인을 CHECK하려면 look at notes
@@ -126,7 +127,9 @@ class PreClockUtil(ClockUtil):
     # THIS IS EQUIVALENT TO THE CURHOUR만 하는 INITROUND
     # IT REALLY IS EQUIVALENT TO INITROUND
     def redraw_clocks(self):
-        self.selected_clock = random.randint(0, 63)
+        same_clock = random.randint(0, 5)
+        if same_clock < 3:
+            self.selected_clock = random.randint(0, 63)
         # self.selected_clock = 0
         count = 0
         for clock in self.pbc.parent.mainWidgit.dummy_clocks:

@@ -128,6 +128,7 @@ class ClockInference:
         
         self.clocks_on = self.parent.words_on
         self.cscores = [0] * len(self.parent.clock_centers)
+        self.clock_locs = []
         self.prev_cscores = list(self.cscores)
         # NOT SUPER SURE - > OKAY TO BE SURE. DONE IN KEYBOARD RIGHT NOW
         self.clock_history = [[]]
@@ -180,11 +181,13 @@ class ClockInference:
         self.kde.calc_ksigma(self.n_hist, min(self.kde.n_ksigma, len(self.kde.y_li)))
 
     def update_scores(self, time_diff_in):
+        clock_locs = [0] * len(self.cscores)
         for clock in self.clocks_on:
             time_in = self.clock_util.cur_hours[
                           clock] * self.time_rotate * 1.0 / self.clock_util.num_divs_time + time_diff_in - self.time_rotate * config.frac_period
             self.cscores[clock] += self.get_score_inc(time_in)
-        
+            clock_locs[clock] = time_in
+        self.clock_locs += [clock_locs]
         self.update_sorted_inds()
         
     def update_dens(self, new_time_rotate):

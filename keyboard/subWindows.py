@@ -486,6 +486,7 @@ class Pretraining(StartWindow):
 
         self.clock_params = zeros((80, 8))
         self.clock_spaces = zeros((80, 2))
+
         self.sister.update()
 
 
