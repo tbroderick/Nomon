@@ -141,12 +141,12 @@ class ClockUtil:
 
         elif clock_type == 'radar':
             # clock_params = array([[center_x = center_y, outer_radius, minute_angle1 ... minute_anglen] x num_clocks])
-            inc_angle = 30
+            inc_angle = 20
             self.bc.parent.clock_params[:, 2] = (90 - self.clock_angles * 180. / math.pi)
             angle_correction = where(self.bc.parent.clock_params[:, 2] > 0, -360, 0)
             self.bc.parent.clock_params[:, 2] += angle_correction
             self.bc.parent.clock_params[:, 2] *= 16
-            for i in range(1, 6):
+            for i in range(1, 4):
                 self.bc.parent.clock_params[:, 2 + i] = self.bc.parent.clock_params[:, 2] - inc_angle * i * 16
 
         elif clock_type == 'pac_man':
@@ -208,23 +208,19 @@ class ClockUtil:
         else:
             for i in clock_index_list:
                 self.parent.mainWidgit.clocks[i].update()
-    
-    def repaint_one_clock(self, clock_index, angle):        
-        self.parent.mainWidgit.clocks[clock_index].angle = angle + math.pi*0.5
-        self.parent.mainWidgit.clocks[clock_index].update()
+
+    def repaint_one_clock(self, clock_index, angle):
+        # self.parent.mainWidgit.clocks[clock_index].angle = angle + math.pi*0.5
+        # self.parent.mainWidgit.clocks[clock_index].update()
+        pass
 
     # start the UI over
     # DOCUMENT THIS WELL
     # whether is_win, is_start true or False, the locations , UI are all same
     def init_round(self, clock_index_list):
         self.update_curhours(clock_index_list)
-        for clock in clock_index_list:
-            # THINK THIS IS WRONG. The -1
-            # v = self.hl.hour_locs[self.cur_hours[clock]-1]
-            self.cur_hours[clock]-1
-            v = self.hl.hour_locs[self.cur_hours[clock]-1]
-            angle = v[0]
-            self.repaint_one_clock(clock, angle)
+        for clock in self.bc.parent.mainWidgit.clocks:
+            clock.new_round = True
 
     def highlight_clock(self, clock_index):
         if self.parent.mainWidgit.clocks[clock_index] != '':

@@ -21,6 +21,7 @@ class ClockWidgit(QWidget):
         self.selected = False
         self.previous_angle = -360.  # used in pac-man clock to compare if hand passed noon (- to + angle)
         self.color_switch = False  # used in pac-man clock to alternate color fill
+        self.new_round = True
 
         self.draw = False
         self.in_focus = True
@@ -74,7 +75,8 @@ class ClockWidgit(QWidget):
             self.hour_hand_point = QPointF(self.center.x(), self.center.x()-self.outer_radius)
             self.draw = True
             self.calculate_clock_size()
-            self.rect = QRect(self.h/2-self.outer_radius, self.h/2-self.outer_radius, self.outer_radius * 2 , self.outer_radius * 2 )
+            self.rect = QRect(self.h / 2 - self.outer_radius, self.h / 2 - self.outer_radius, self.outer_radius * 2,
+                              self.outer_radius * 2)
 
         if self.parent.parent.clock_type == 'default':
             self.minute_hand_point = QPoint(clock_params[2], clock_params[3])
@@ -84,7 +86,9 @@ class ClockWidgit(QWidget):
             self.inner_radius = min(self.outer_radius, self.inner_radius)
 
         elif self.parent.parent.clock_type == 'radar':
-            self.minute_hand_angles = clock_params[2:]
+            self.inner_rect = QRect(self.h / 2 - self.outer_radius*0.9, self.h / 2 - self.outer_radius*0.9, self.outer_radius * 2*0.9,
+                              self.outer_radius * 2*0.9)
+            self.minute_hand_angles = clock_params[2:7]
 
         elif self.parent.parent.clock_type == 'pac_man':
             self.minute_hand_angle = clock_params[2]
@@ -156,6 +160,20 @@ class ClockWidgit(QWidget):
             color = self.palette().color(QPalette.Background)
         brush = QBrush(color)
         qp.fillRect(0, 0, self.w, self.h, brush)
+
+        if self.parent.parent.clock_type == 'radar' and not self.filler_clock:
+            colored_pen = QPen()
+            colored_pen.setWidth(2)
+            if self.selected:
+                colored_pen.setColor(config.default_selct_color[self.parent.color_index])
+            elif self.highlighted:
+                colored_pen.setColor(config.default_highlt_color[self.parent.color_index])
+            else:
+                colored_pen.setColor(config.default_reg_color[self.parent.color_index])
+
+            qp.setPen(colored_pen)
+            qp.setBrush(brush)
+            qp.drawEllipse(self.center, self.outer_radius*1.05, self.outer_radius*1.05)
 
         # calculate size of text from leftover space
         if self.redraw_text:
@@ -250,9 +268,11 @@ class ClockWidgit(QWidget):
         brush = QBrush(config.clock_bg_color[self.parent.color_index])
 
         if self.parent.parent.clock_type != 'bar':
+            # if self.parent.parent.clock_type != 'radar' or self.new_round:
             qp.setPen(colored_pen)
             qp.setBrush(brush)
             qp.drawEllipse(self.center, self.outer_radius, self.outer_radius)
+
 
         # draw hands
         if self.parent.parent.clock_type == 'default':
@@ -281,25 +301,29 @@ class ClockWidgit(QWidget):
 
         elif self.parent.parent.clock_type == 'radar':
             pen = QPen()
+
+            pen.setColor(QColor(0, 0, 0, 0))
+            qp.setPen(pen)
+            brush.setColor(QColor(255, 255, 255, 255))
+            qp.setBrush(brush)
+            qp.drawPie(self.inner_rect, self.minute_hand_angles[-1]+20*16, 20 * 16*(len(self.minute_hand_angles)-1))
+            for i in range(len(self.minute_hand_angles)-1):
+                if self.selected:
+                    brush.setColor(QColor(0, 255, 0, 255 * i/4))
+                    qp.setBrush(brush)
+                elif self.highlighted:
+                    brush.setColor(QColor(0, 0, 255, 255 * i/4))
+                    qp.setBrush(brush)
+                else:
+                    brush.setColor(QColor(0, 0, 0, 255 * i/4))
+                    qp.setBrush(brush)
+                qp.drawPie(self.inner_rect, self.minute_hand_angles[i], 20*16)
+
             pen.setColor(config.default_hh_color[self.parent.color_index])
             pen.setWidth(2)
             qp.setPen(pen)
 
             qp.drawLine(self.center, self.hour_hand_point)  # Hour Hand
-            pen.setColor(QColor(0, 0, 0, 0))
-            qp.setPen(pen)
-            for i in range(len(self.minute_hand_angles)-1):
-                if self.selected:
-                    brush.setColor(QColor(0, 255, 0, 255 * i/6))
-                    qp.setBrush(brush)
-                elif self.highlighted:
-                    brush.setColor(QColor(0, 0, 255, 255 * i/6))
-                    qp.setBrush(brush)
-                else:
-                    brush.setColor(QColor(0, 0, 0, 255 * i/6))
-                    qp.setBrush(brush)
-
-                qp.drawPie(self.rect, self.minute_hand_angles[i], 30*16)
 
         elif self.parent.parent.clock_type == 'pac_man':
             pen = QPen()
@@ -384,6 +408,7 @@ class ClockWidgit(QWidget):
                 qp.setPen(config.clock_text_color[self.parent.color_index])
             qp.setFont(self.text_font)
             qp.drawText(self.text_x, self.text_y, self.text)
+        self.new_round = False
 
 
 class HistogramWidget(QWidget):
