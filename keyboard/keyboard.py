@@ -145,6 +145,7 @@ class Keyboard(MainWindow):
 
         self.previous_undo_text = ''
         self.previous_winner = 0
+        self.highlighted_clocks = []
         self.wpm_data = config.Stack(config.wpm_history_length)
         self.wpm_time = 0
         self.clear_text = False
@@ -663,9 +664,10 @@ class Keyboard(MainWindow):
         previous_text = self.mainWidgit.text_box.toPlainText()
 
         def format_punct(text):
-            text.replace('_.', '._')
-            text.replace('_,', ',_')
-            text.replace('_?', '?_')
+            text.replace('_', ' ')
+            text.replace(' .', '. ')
+            text.replace(' ,', ', ')
+            text.replace(' ?', '? ')
             return text
 
         if len(self.last_add_li) > 1:
@@ -790,14 +792,15 @@ class Keyboard(MainWindow):
             self.mainWidgit.highlight_timer.start(2000)
 
     def end_highlight(self):
-        index = self.previous_winner
-        if self.word_pred_on == 1:
-            for word_clock in self.mainWidgit.reduced_word_clocks:
-                word_clock.selected = False
-        if self.mainWidgit.clocks[index] != '':
-            self.mainWidgit.clocks[index].selected = False
-            self.mainWidgit.clocks[index].update()
-            self.mainWidgit.highlight_timer.stop()
+        for index in self.highlighted_clocks:
+            if self.word_pred_on == 1:
+                for word_clock in self.mainWidgit.reduced_word_clocks:
+                    word_clock.selected = False
+            if self.mainWidgit.clocks[index] != '':
+                self.mainWidgit.clocks[index].selected = False
+                self.mainWidgit.clocks[index].update()
+                self.mainWidgit.highlight_timer.stop()
+        self.highlighted_clocks = []
 
 
     def talk_winner(self, talk_string):
@@ -813,6 +816,7 @@ class Keyboard(MainWindow):
             self.mainWidgit.pause_timer.start(kconfig.pause_length)
 
         # highlight winner
+        self.highlighted_clocks += [index]
         self.previous_winner = index
         self.highlight_winner(index)
 

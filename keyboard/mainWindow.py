@@ -8,6 +8,7 @@ import kconfig
 import dtree
 from pickle_util import PickleUtil
 import os
+import zipfile
 
 from widgets import ClockWidgit, HistogramWidget, VerticalSeparator, HorizontalSeparator
 
@@ -122,6 +123,10 @@ class MainWindow(QMainWindow):
         self.log_data_action = QAction('&Data Logging', self, checkable=True)
         self.log_data_action.triggered.connect(self.log_data_event)
 
+        self.compress_data_action = QAction('&Compress Data', self, checkable=False)
+        self.compress_data_action.triggered.connect(self.compress_data_event)
+
+
 
         # Help Menu Actions
         help_action = QAction('&Help', self)
@@ -167,6 +172,7 @@ class MainWindow(QMainWindow):
         tools_menu.addAction(self.profanity_filter_action)
         tools_menu.addAction(self.log_data_action)
         tools_menu.addAction(self.retrain_action)
+        tools_menu.addAction(self.compress_data_action)
 
         help_menu = menubar.addMenu('&Help')
         help_menu.addAction(help_action)
@@ -431,6 +437,29 @@ class MainWindow(QMainWindow):
                  self.start_speed, True])
             self.is_write_data = True
         self.check_filemenu()
+
+    def compress_data_event(self):
+        zf = zipfile.ZipFile("nomon_data.zip", "w")
+        for dirname, subdirs, files in os.walk("data"):
+            zf.write(dirname)
+            for filename in files:
+                zf.write(os.path.join(dirname, filename))
+        zf.close()
+
+        data_file_path = os.path.join(os.getcwd(), 'nomon_data.zip')
+
+        message_box = QMessageBox(QMessageBox.Warning, "Data Compression", "We have compressed your data into a ZIP"
+                                                                           " archive accessible in the location"
+                                                                           "listed under \"Details\". Please press \""
+                                                                           "Show Details\", and email the "
+                                                                           "ZIP archive to the listed email address. We"
+                                                                           " greatly appreciate your willingness to "
+                                                                           "help us make Nomon better!")
+        message_box.setDetailedText("File Path: \n" + data_file_path + "\n\n Email: \nnomonstudy@gmail.com")
+        message_box.addButton(QMessageBox.Ok)
+        message_box.setWindowIcon(self.icon)
+
+        reply = message_box.exec_()
 
     def profanity_filter_event(self):
         profanity_status = self.pf_preference
