@@ -1,0 +1,14 @@
+# Punctuations as represented in the word language model
+# This file is subject to change according to the language model provided
+
+
+
+
+
+
+# NB- The class will read this file and first 10 lines are skipped 
+# for convenience. Additional comments can be added in line 1- 10
+,	,comma
+.	.period
+!	!exclamation-point
+?	?question-mark

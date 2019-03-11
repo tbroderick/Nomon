@@ -201,7 +201,7 @@ class PretrainingInference:
     def calculate_density(self):
         # THIS PART NEEDS TO BE FIXED? THIS CHECKING CONDITION. WHAT IF YOU NEED TO RETRAIN
         if self.n_training < len(self.kde.y_li):
-            print "density already calculated; density needs to be reinitilazed if you want to recalculate"
+            print("density already calculated; density needs to be reinitilazed if you want to recalculate")
             return [self.kde.dens_li, self.kde.Z]
         else:
             self.kde.initialize_dens()
@@ -244,7 +244,7 @@ class PreBroderClocks:
             # config.frac_period used nowhere but let's just do it cause they do it in the original code
             time_in = time.time()
             time_diff_in = time_in - self.clock_inf.pre_clock_util.latest_time
-            print "how much TIME tho" + str(time_diff_in / self.time_rotate)
+            print("how much TIME tho" + str(time_diff_in / self.time_rotate))
             percent = self.clock_inf.pre_clock_util.cur_hour / len(self.clock_inf.pre_clock_util.hl.hour_locs) \
                       + time_diff_in / self.time_rotate
             index = int((percent * len(self.clock_inf.kde.dens_li)) % len(self.clock_inf.kde.dens_li))
@@ -252,10 +252,10 @@ class PreBroderClocks:
 
             # click_time = (self.clock_inf.clock_util.cur_hour*self.time_rotate*1.0/self.num_divs_time + time_diff_in -
             # self.time_rotate*config.frac_period + 0.5) % 1 - 0.5
-            print "y_li will be appended by" + str(click_time)
+            print("y_li will be appended by" + str(click_time))
             self.clock_inf.kde.y_li.append(click_time)
-            print "y_li is now" + str(self.clock_inf.kde.y_li)
-            print "CURHOUR IS" + str(self.clock_inf.pre_clock_util.cur_hour / len(self.clock_inf.pre_clock_util.hl.hour_locs))
+            print("y_li is now" + str(self.clock_inf.kde.y_li))
+            print("CURHOUR IS" + str(self.clock_inf.pre_clock_util.cur_hour / len(self.clock_inf.pre_clock_util.hl.hour_locs)))
         self.init_round()
 
     def init_round(self):

@@ -25,7 +25,7 @@ import pickle
 
 ### Keyboard setup ###
 # characters in the keys
-space_char = '_'
+space_char = ' '
 mybad_char = '@'
 # yourbad_char = 'Yours'
 yourbad_char = 'Undo+'
@@ -142,8 +142,8 @@ file_pre = "data/clocks."
 file_stuff = ".pickle"
 # train file name
 # TESTING:train_file_name = "../corpus/ANC-token-proc-small.txt"
-train_file_name_default = "corpus/merged_ce-0.2.txt"  # removed "../" from beginning
-train_file_name_censored = "corpus/merged_ce-0.2_censored.txt"
+# train_file_name_default = "corpus/merged_ce-0.2.txt"  # removed "../" from beginning
+# train_file_name_censored = "corpus/merged_ce-0.2_censored.txt"
 
 # phrases file
 base_file = "phrases/base_file_phrases.txt"

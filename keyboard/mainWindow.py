@@ -5,7 +5,6 @@ import string
 
 import config
 import kconfig
-import dtree
 from pickle_util import PickleUtil
 import os
 import zipfile
@@ -114,8 +113,8 @@ class MainWindow(QMainWindow):
         self.off_word_action.triggered.connect(lambda: self.word_change_event('off'))
 
         # Tools Menu Actions
-        self.profanity_filter_action = QAction('&Profanity Filter', self, checkable=True)
-        self.profanity_filter_action.triggered.connect(self.profanity_filter_event)
+        # self.profanity_filter_action = QAction('&Profanity Filter', self, checkable=True)
+        # self.profanity_filter_action.triggered.connect(self.profanity_filter_event)
 
         self.retrain_action = QAction('&Retrain', self)
         self.retrain_action.triggered.connect(self.retrain_event)
@@ -169,7 +168,7 @@ class MainWindow(QMainWindow):
         word_menu.addAction(self.off_word_action)
 
         tools_menu = menubar.addMenu('&Tools')
-        tools_menu.addAction(self.profanity_filter_action)
+        # tools_menu.addAction(self.profanity_filter_action)
         tools_menu.addAction(self.log_data_action)
         tools_menu.addAction(self.retrain_action)
         tools_menu.addAction(self.compress_data_action)
@@ -189,6 +188,7 @@ class MainWindow(QMainWindow):
         sizePolicy.setHeightForWidth(True)
         self.setSizePolicy(sizePolicy)
         self.show()
+        self.window_size = (self.size().width(), self.size().height())
 
         self.check_filemenu()
 
@@ -212,7 +212,7 @@ class MainWindow(QMainWindow):
         switch(self.auto_text_align_action, self.mainWidgit.text_alignment == 'auto')
 
         # check profanity
-        switch(self.profanity_filter_action, self.pf_preference == 'on')
+        # switch(self.profanity_filter_action, self.pf_preference == 'on')
 
         # check log data
         switch(self.log_data_action, self.is_write_data)
@@ -461,40 +461,40 @@ class MainWindow(QMainWindow):
 
         reply = message_box.exec_()
 
-    def profanity_filter_event(self):
-        profanity_status = self.pf_preference
-        messageBox = QMessageBox(QMessageBox.Warning, "Profanity Filter Settings", "The profanity filter is"
-                                                                                               " currently <b>"
-                                       + self.pf_preference.upper() + "</b>. Please select your desired setting "
-                                                                      "below. ")
-        messageBox.addButton(QPushButton('On'), QMessageBox.YesRole)
-        messageBox.addButton(QPushButton('Off'), QMessageBox.NoRole)
-        messageBox.setIconPixmap(QPixmap(os.path.join('icons/block.png')))
-
-        messageBox.setDefaultButton(QMessageBox.No)
-        messageBox.setWindowIcon(self.icon)
-
-        reply = messageBox.exec_()
-        
-        if reply == 1:
-            self.up_handel.safe_save(
-                [self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, 'off', self.start_speed,
-                 self.is_write_data])
-            if profanity_status == 'on':
-                train_handle = open(kconfig.train_file_name_default, 'r')
-                self.pause_animation = True
-                self.dt = dtree.DTree(train_handle, self)
-            self.pf_preference = 'off'
-        elif reply == 0:
-            self.up_handel.safe_save(
-                [self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, 'on', self.start_speed,
-                 self.is_write_data])
-            if profanity_status == 'off':
-                train_handle = open(kconfig.train_file_name_censored, 'r')
-                self.pause_animation = True
-                self.dt = dtree.DTree(train_handle, self)
-            self.pf_preference = 'on'
-        self.check_filemenu()
+    # def profanity_filter_event(self):
+    #     profanity_status = self.pf_preference
+    #     messageBox = QMessageBox(QMessageBox.Warning, "Profanity Filter Settings", "The profanity filter is"
+    #                                                                                            " currently <b>"
+    #                                    + self.pf_preference.upper() + "</b>. Please select your desired setting "
+    #                                                                   "below. ")
+    #     messageBox.addButton(QPushButton('On'), QMessageBox.YesRole)
+    #     messageBox.addButton(QPushButton('Off'), QMessageBox.NoRole)
+    #     messageBox.setIconPixmap(QPixmap(os.path.join('icons/block.png')))
+    #
+    #     messageBox.setDefaultButton(QMessageBox.No)
+    #     messageBox.setWindowIcon(self.icon)
+    #
+    #     reply = messageBox.exec_()
+    #
+    #     if reply == 1:
+    #         self.up_handel.safe_save(
+    #             [self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, 'off', self.start_speed,
+    #              self.is_write_data])
+    #         if profanity_status == 'on':
+    #             train_handle = open(kconfig.train_file_name_default, 'r')
+    #             self.pause_animation = True
+    #             self.dt = dtree.DTree(train_handle, self)
+    #         self.pf_preference = 'off'
+    #     elif reply == 0:
+    #         self.up_handel.safe_save(
+    #             [self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, 'on', self.start_speed,
+    #              self.is_write_data])
+    #         if profanity_status == 'off':
+    #             train_handle = open(kconfig.train_file_name_censored, 'r')
+    #             self.pause_animation = True
+    #             self.dt = dtree.DTree(train_handle, self)
+    #         self.pf_preference = 'on'
+    #     self.check_filemenu()
 
     def about_event(self):
         # noinspection PyTypeChecker
@@ -531,6 +531,7 @@ class MainWindow(QMainWindow):
             clock.calculate_clock_size()
         QTimer.singleShot(100, self.init_clocks)
         QMainWindow.resizeEvent(self, event)
+        self.window_size = (self.size().width(), self.size().height())
         self.in_pause = False
 
 
@@ -709,7 +710,7 @@ class MainKeyboardWidget(QWidget):
         i = 0
         output = []
         for word in self.parent.word_list:
-            index = len(self.parent.prefix)
+            index = len(self.parent.context)
             
             if word[index] == char:
                 i += 1

@@ -64,19 +64,19 @@ class KernelDensityEstimation:
     # Assumes that data is a dictionary
     # of key z, dens ..
     def get_past_dens_li(self, dens_dict):
-        if dens_dict.has_key('li') and dens_dict.has_key('z') and dens_dict.has_key('opt_sig') and dens_dict.has_key('y_li'):
-            print "HAS KEY THO"
+        if 'li' in dens_dict and 'z' in dens_dict and 'opt_sig' in dens_dict and 'y_li' in dens_dict:
+            print("HAS KEY THO")
 
             self.dens_li = dens_dict['li']
-            print "I'm starting(reading) and the self.dens_li" + str(dens_dict['li'])
+            print("I'm starting(reading) and the self.dens_li" + str(dens_dict['li']))
             self.Z =  dens_dict['z']
             self.ksigma = dens_dict['opt_sig']
-            print "Also the self.ksimga0" + str(dens_dict['opt_sig'])
+            print("Also the self.ksimga0" + str(dens_dict['opt_sig']))
             # THIS LINE ?????????
             # self.y_li_from_pre = dens_dict['y_li']
             self.y_li = dens_dict['y_li']
             self.y_ksigma = dens_dict['yksigma']
-            print "IS THIS LINE THE PROBLEM?"
+            print("IS THIS LINE THE PROBLEM?")
     
     # helper functions
     def normal(self, x, mu, sig_sq):
@@ -218,17 +218,12 @@ class ClockInference:
             else:
                 self.clock_history[0][-1].append(0)
     
-    def compare_score(self, index1, index2):
-        if self.cscores[index1] < self.cscores[index2]:
-            return 1
-        elif self.cscores[index1] > self.cscores[index2]:
-            return -1
-        else:
-            return 0
+    def compare_score(self, index):
+        return -self.cscores[index]
 
     def update_sorted_inds(self):
         self.sorted_inds = list(self.clocks_on)
-        self.sorted_inds.sort(self.compare_score)
+        self.sorted_inds.sort(key=self.compare_score)
 
     # Determines if there exists a winner at the current moment
     def is_winner(self):

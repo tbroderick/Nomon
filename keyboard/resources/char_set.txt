@@ -1,0 +1,6 @@
+########################################################################
+# A list of valid characters to predict. Enter characters or symbols 
+# that you want the CharacterPredictor class to predict in line 6. 
+# When reading this file the class skips the first 5 lines.
+########################################################################
+abcdefghijklmnopqrstuvwxyz '

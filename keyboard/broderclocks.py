@@ -46,7 +46,7 @@ class BroderClocks:
     #get kde data from past use
     def get_prev_data(self):
         self.prev_data_path = self.parent.data_handel + "\\preconfig.p"
-        print "USER ID is" + str(self.parent.user_id)
+        print("USER ID is" + str(self.parent.user_id))
         load_dict = PickleUtil(self.prev_data_path).safe_load()
         if load_dict != None:
             self.clock_inf.kde.get_past_dens_li(load_dict)

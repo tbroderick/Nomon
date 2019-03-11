@@ -549,7 +549,7 @@ class Pretraining(StartWindow):
                 self.pbc.select()
 
             if self.num_presses == self.total_presses:
-                print "finished calculating density"
+                print("finished calculating density")
 
                 self.pbc.clock_inf.calculate_density()
                 self.mainWidgit.main_label.setText("Training has finished!")
@@ -561,7 +561,7 @@ class Pretraining(StartWindow):
                 self.deactivate_press = True
 
             elif self.num_presses > self.total_presses:
-                print "finished calculating density"
+                print("finished calculating density")
                 self.mainWidgit.main_label.setText("Training has finished!")
 
                 self.mainWidgit.start_button.setText("Start Nomon")
@@ -616,7 +616,7 @@ class Pretraining(StartWindow):
             pass
 
     def on_finish(self):
-        print "quitting"
+        print("quitting")
         self.saved_data = True
         self.training_ended = 1
 

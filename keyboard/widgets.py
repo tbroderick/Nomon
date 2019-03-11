@@ -202,10 +202,10 @@ class ClockWidgit(QWidget):
                     text_width = label.fontMetrics().boundingRect(label.text()).width()
                 elif size_factor > 1.2:
                     self.text_font.setStretch(int(85. / 1.2))
+
                     label = QLabel(self.text)
                     label.setFont(self.text_font)
                     text_width = label.fontMetrics().boundingRect(label.text()).width()
-
                     size_factor = float(text_width) / (float(width) + 0.1)
                     self.text_font.setPixelSize(min(50,  max(1, int(float(self.h) / size_factor))))
 
