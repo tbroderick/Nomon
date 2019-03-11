@@ -1,0 +1,1095 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="SCOPE_TYPE" value="3" />
+  </component>
+  <component name="ChangeListManager">
+    <list id="aa6254be-35a7-4291-8536-037b7fa13556" name="restart no longer needed for high contrast, profanity filter. consolidated user preference pickles, prompt for data save" comment="" />
+    <list default="true" id="ac89ebe2-b77b-446b-80d2-81c517c20547" name="Default" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/corpus/._BNC-token-proc.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/keyboard/corpus/BNC-token-proc-CENSORED.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/keyboard/corpus/merged_ce-0.2.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/keyboard/corpus/merged_ce-0.2_censored.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/keyboard/data/0/user_preferences.p" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/keyboard/dist/Nomon-1.2-amd64.msi" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/keyboard/phrases/._base_file_phrases.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Nomon.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Nomon.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/keyboard/resources/lm_char_medium.kenlm" beforeDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FavoritesManager">
+    <favorites_list name="Nomon" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="keyboard.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/keyboard/keyboard.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="255">
+              <caret line="15" column="1" lean-forward="true" selection-start-line="15" selection-start-column="1" selection-end-line="18" selection-end-column="38" />
+              <folding>
+                <element signature="e#852#892#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="broderclocks.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/keyboard/broderclocks.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="170">
+              <caret line="10" selection-start-line="10" selection-end-line="10" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="kconfig.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/keyboard/kconfig.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="136">
+              <caret line="140" column="19" selection-start-line="140" selection-start-column="19" selection-end-line="140" selection-end-column="19" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="mainWindow.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/keyboard/mainWindow.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="54">
+              <caret line="495" column="39" selection-start-line="495" selection-start-column="39" selection-end-line="495" selection-end-column="39" />
+              <folding>
+                <element signature="e#0#35#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="pretraininginference.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/keyboard/pretraininginference.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="3553">
+              <caret line="219" column="43" selection-start-line="219" selection-start-column="43" selection-end-line="219" selection-end-column="43" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>clock_ut</find>
+      <find>clock_Centers</find>
+      <find>init_clock</find>
+      <find>lay</find>
+      <find>layout</find>
+      <find>cur_hou</find>
+      <find>params_data_user</find>
+      <find>text_fo</find>
+      <find>cur_hours</find>
+      <find>.bc</find>
+      <find>layout_c</find>
+      <find>repaint()</find>
+      <find>prob</find>
+      <find>print</find>
+      <find>dtre</find>
+      <find>self.dt</find>
+      <find>self.prefix</find>
+      <find>prefix</find>
+      <find>self.pref</find>
+      <find>pred</find>
+      <find>'_'</find>
+      <find>&quot;_&quot;</find>
+      <find>clocks</find>
+      <find>profanit</find>
+      <find>train</find>
+      <find>spla</find>
+      <find>rotate_index</find>
+      <find>self.envi</find>
+      <find>self.draw</find>
+      <find>self.init_his</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>if</replace>
+      <replace>#</replace>
+      <replace>self.grids</replace>
+      <replace>self.minSize</replace>
+      <replace>clock_type</replace>
+      <replace>brush</replace>
+      <replace>center_offset_X</replace>
+      <replace>center_offset_x</replace>
+      <replace>/</replace>
+      <replace>main_label</replace>
+      <replace>bar</replace>
+      <replace>pac_man</replace>
+      <replace>highlt</replace>
+      <replace>self.key_chars</replace>
+      <replace>self.parent.is_write_data</replace>
+      <replace>self.is_write_data</replace>
+      <replace>parent.color_index</replace>
+      <replace>font_scale</replace>
+      <replace>QAction</replace>
+      <replace>QFont</replace>
+      <replace>QTextEdit</replace>
+      <replace>QtGui.</replace>
+      <replace>setText</replace>
+      <replace>.pbc</replace>
+      <replace>update()</replace>
+    </replaceStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="Nicholas Bonaker" />
+      </list>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
+    <option name="RESET_MODE" value="HARD" />
+    <favorite-branches>
+      <branch-storage>
+        <map>
+          <entry type="LOCAL">
+            <value>
+              <list>
+                <branch-info repo="$PROJECT_DIR$" source="GUI_PyQt_test" />
+              </list>
+            </value>
+          </entry>
+        </map>
+      </branch-storage>
+    </favorite-branches>
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/keyboard/word_list.txt" />
+        <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_1.py" />
+        <option value="$PROJECT_DIR$/keyboard/safewords.txt" />
+        <option value="$PROJECT_DIR$/keyboard/corpus/BNC-token-proc.txt" />
+        <option value="$PROJECT_DIR$/keyboard/bad_words.txt" />
+        <option value="$PROJECT_DIR$/keyboard/bad_words_num.txt" />
+        <option value="$PROJECT_DIR$/keyboard/keyboard_GUI_PyQt.py" />
+        <option value="$PROJECT_DIR$/keyboard/corpus/merged_ce-0.2.txt" />
+        <option value="$PROJECT_DIR$/keyboard/user_preferences/font_scale.p" />
+        <option value="$PROJECT_DIR$/keyboard/user_preferences/first_load.p" />
+        <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_3.py" />
+        <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_2.py" />
+        <option value="$PROJECT_DIR$/hist_data_plot.py" />
+        <option value="$PROJECT_DIR$/keyboard/barsdump.p" />
+        <option value="$PROJECT_DIR$/keyboard/Clock test.py" />
+        <option value="$PROJECT_DIR$/keyboard/user_preferences/clock_preference.p" />
+        <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_4.py" />
+        <option value="$PROJECT_DIR$/keyboard/data/preconfig.pickle" />
+        <option value="$PROJECT_DIR$/keyboard/data/barsdump.pickle" />
+        <option value="$PROJECT_DIR$/keyboard/hist_data_plot.py" />
+        <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_5.py" />
+        <option value="$PROJECT_DIR$/keyboard/pre_broderclocks_pyqt.py" />
+        <option value="$PROJECT_DIR$/kernel_density_estimation/clock_inference_engine.py" />
+        <option value="$PROJECT_DIR$/keyboard/reset_preferences.py" />
+        <option value="$PROJECT_DIR$/keyboard/new_broderclocks.py" />
+        <option value="$PROJECT_DIR$/keyboard/pretraining_inference.py" />
+        <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_7.py" />
+        <option value="$PROJECT_DIR$/keyboard/new_keyboard.py" />
+        <option value="$PROJECT_DIR$/keyboard/new_subWindows.py" />
+        <option value="$PROJECT_DIR$/keyboard/newbroderclocks.py" />
+        <option value="$PROJECT_DIR$/keyboard/clock_util.py" />
+        <option value="$PROJECT_DIR$/keyboard/config.py" />
+        <option value="$PROJECT_DIR$/keyboard/widgets.py" />
+        <option value="$PROJECT_DIR$/keyboard/dtree_wrapper.py" />
+        <option value="$PROJECT_DIR$/keyboard/subWindows.py" />
+        <option value="$PROJECT_DIR$/keyboard/pretraininginference.py" />
+        <option value="$PROJECT_DIR$/keyboard/dtree.py" />
+        <option value="$PROJECT_DIR$/keyboard/clock_inference_engine.py" />
+        <option value="$PROJECT_DIR$/keyboard/setup.py" />
+        <option value="$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/cx_Freeze/windist.py" />
+        <option value="$PROJECT_DIR$/keyboard/predictor.py" />
+        <option value="$PROJECT_DIR$/keyboard/kenlm_lm.py" />
+        <option value="$PROJECT_DIR$/keyboard/mainWindow.py" />
+        <option value="$PROJECT_DIR$/keyboard/broderclocks.py" />
+        <option value="$PROJECT_DIR$/keyboard/keyboard.py" />
+        <option value="$PROJECT_DIR$/keyboard/kconfig.py" />
+        <option value="$PROJECT_DIR$/keyboard/pickle_util.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="102" />
+    <option name="y" value="57" />
+    <option name="width" value="1980" />
+    <option name="height" value="1239" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="Nomon" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Nomon" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Nomon" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Nomon" type="462c0819:PsiDirectoryNode" />
+              <item name="keyboard" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <expand>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="Nomon" type="cbb8eebc:String" user="Nomon" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="Nomon" type="cbb8eebc:String" user="Nomon" />
+              <item name="keyboard" type="cbb8eebc:String" user="keyboard" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="Python" />
+    <property name="full.screen.before.presentation.mode" value="false" />
+    <property name="last_opened_file_path" value="D:/Users/nickb/OneDrive/Documents/MIT/6009" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="PyConsoleOptionsProvider">
+    <option name="myPythonConsoleState">
+      <console-settings module-name="Nomon" is-module-sdk="true">
+        <option name="myUseModuleSdk" value="true" />
+        <option name="myModuleName" value="Nomon" />
+      </console-settings>
+    </option>
+    <option name="myShowVariablesByDefault" value="false" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard" />
+      <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard\data" />
+      <recent name="C:\Users\nickb\PycharmProjects\Nomon" />
+      <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard\corpus" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard" />
+      <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard\" />
+      <recent name="C:\Users\nickb\PycharmProjects\Nomon" />
+      <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard\icons" />
+      <recent name="C:\Users\nickb\OneDrive\Documents" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Python.keyboard">
+    <configuration name="broderclocks" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Nomon" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/keyboard" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/keyboard/broderclocks.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="kenlm_lm" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Nomon" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/keyboard" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/keyboard/kenlm_lm.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="keyboard" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Nomon" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Users\nickb\AppData\Local\Programs\Python\Python36\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/keyboard" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/keyboard/keyboard.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="mainWindow" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Nomon" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/keyboard" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/keyboard/mainWindow.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="setup" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Nomon" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/keyboard" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/keyboard/setup.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.keyboard" />
+      <item itemvalue="Python.mainWindow" />
+      <item itemvalue="Python.kenlm_lm" />
+      <item itemvalue="Python.setup" />
+      <item itemvalue="Python.broderclocks" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.keyboard" />
+        <item itemvalue="Python.broderclocks" />
+        <item itemvalue="Python.mainWindow" />
+        <item itemvalue="Python.setup" />
+        <item itemvalue="Python.kenlm_lm" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="ac89ebe2-b77b-446b-80d2-81c517c20547" name="Default" comment="" />
+      <changelist id="aa6254be-35a7-4291-8536-037b7fa13556" name="restart no longer needed for high contrast, profanity filter. consolidated user preference pickles, prompt for data save" comment="" />
+      <created>1528988610767</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1528988610767</updated>
+    </task>
+    <task id="LOCAL-00001" summary="First experimentation of new GUI using PyQt4">
+      <created>1529361516430</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1529361516430</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Reformatted code for readability and to adhere to current python conventions.">
+      <created>1529426285975</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1529426285975</updated>
+    </task>
+    <task id="LOCAL-00003" summary="First attempt at connecting PyQt GUI to main keyboard.py code. Up to this point, only the initialization of the clocks, histogram (including updates), space-bar events, and text output are connected.">
+      <created>1529522796385</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1529522796385</updated>
+    </task>
+    <task id="LOCAL-00004" summary="First fully-working GUI with PyQt. Code is still rough--will clean in later commit.">
+      <created>1529613332028</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1529613332028</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Fixed issue with undoing 'Delete', added undo text, stylized pause feature">
+      <created>1529698005715</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1529698005715</updated>
+    </task>
+    <task id="LOCAL-00006" summary="1) delay on clock hands fixed -- no more bimodal distribution&#10;2) text box un-editable and focus automatically shifted back to keyboard&#10;3) layout in perfect grid with equal clock size&#10;4) radar trails added&#10;5) working windows executable in dist folder">
+      <created>1530120027521</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1530120027521</updated>
+    </task>
+    <task id="LOCAL-00007" summary="--Added menu-bar, multiple clock design options, reinforcement color on default clock (as suggested in GNomon paper), improvements to layout. &#10;--executable mostly works, but has a few bugs--will fix for next commit (run keyboard.py for now)">
+      <created>1530552296825</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1530552296826</updated>
+    </task>
+    <task id="LOCAL-00008" summary="--splash screen and welcome screen for first run&#10;--shell window and GUI for pre-training addition&#10;--new clocks including progress bar&#10;--text alignment control&#10;--QWERTY keyboard option&#10;--profanity filter for younger users under tools&#10;--high contrast mode under view">
+      <created>1531007776274</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1531007776274</updated>
+    </task>
+    <task id="LOCAL-00009" summary="--timeout of 15 sec for deletion of erroneous clicks&#10;--clear screen clock&#10;--text entry rate label&#10;--check marks on menu selections&#10;--font size option&#10;--new chars: !?',.&#10;--new corpus from keith">
+      <created>1531711503346</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1531711503346</updated>
+    </task>
+    <task id="LOCAL-00010" summary="updated saving pickles on training histogram">
+      <created>1531860800607</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1531860800607</updated>
+    </task>
+    <task id="LOCAL-00011" summary="--new pretraining design to better simulate actual nomon interface&#10;--auto text sizing in the clocks to better display longer words&#10;--option to retrain in tool menu">
+      <created>1532357197801</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1532357197801</updated>
+    </task>
+    <task id="LOCAL-00012" summary="--new branch to work on with tiffany">
+      <created>1532547511676</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1532547511676</updated>
+    </task>
+    <task id="LOCAL-00013" summary="--first attempt to speed up clock drawing">
+      <created>1533328786840</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1533328786840</updated>
+    </task>
+    <task id="LOCAL-00014" summary="first attempt to make drawing clocks faster&#10;pickles fixed for installer&#10;new working installer">
+      <created>1533330923248</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1533330923248</updated>
+    </task>
+    <task id="LOCAL-00015" summary="restart no longer needed for high contrast, profanity filter. consolidated user preference pickles, prompt for data save">
+      <created>1533928498875</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1533928498875</updated>
+    </task>
+    <task id="LOCAL-00016" summary="restart no longer needed for high contrast, profanity filter. consolidated user preference pickles, prompt for data save">
+      <created>1533928560065</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1533928560065</updated>
+    </task>
+    <task id="LOCAL-00017" summary="restart no longer needed for high contrast, profanity filter. consolidated user preference pickles, prompt for data save">
+      <created>1533928717866</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1533928717866</updated>
+    </task>
+    <task id="LOCAL-00018" summary="restart no longer needed for high contrast, profanity filter. consolidated user preference pickles, prompt for data save">
+      <created>1533930092512</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1533930092512</updated>
+    </task>
+    <task id="LOCAL-00019" summary="minor bug fixes and working installer">
+      <created>1534128163379</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1534128163379</updated>
+    </task>
+    <task id="LOCAL-00020" summary="Merge branch 'workBranch' of https://github.com/tbroderick/Nomon into workBranch&#10;&#10;# Conflicts:&#10;#&#9;keyboard/pre_broderclocks_pyqt.py">
+      <created>1534129247669</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1534129247669</updated>
+    </task>
+    <task id="LOCAL-00021" summary="final gui updates before charity trial -- removed clock change messages,&#10;made auto text size for clocks more robust, minor bug fixes">
+      <created>1534195376381</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1534195376381</updated>
+    </task>
+    <task id="LOCAL-00022" summary="Merge branch 'master' of https://github.com/tbroderick/Nomon&#10;&#10;# Conflicts:&#10;#&#9;keyboard/barsdump.p&#10;#&#9;keyboard/keyboard.py&#10;#&#9;keyboard/subWindows.py">
+      <created>1534265806598</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1534265806598</updated>
+    </task>
+    <task id="LOCAL-00023" summary="Working Installer included">
+      <created>1534266749869</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1534266749869</updated>
+    </task>
+    <task id="LOCAL-00024" summary="**Complete redesign of the layout_clocks() function**&#10;--possible to switch between qwerty and alpha w/o restart&#10;--support for different, larger layouts with varying levels of words&#10;--added menu in GUI - no restart required to change word count">
+      <created>1534564374633</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1534564374633</updated>
+    </task>
+    <task id="LOCAL-00025" summary="--fixed a major bug that was occurring in the pickle save and reload files and causing an inability to save and reload distribution correctly&#10;  --happened after merge on commit 0b041fdc36fa4ef86213644b3dbee2d374b5a93c (last i could identify w/o bug)&#10;--rolled back broderclocks to above commit id&#10;--rolled back data saving to above commit id, but ported to PickleUtil">
+      <created>1534956214242</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1534956214242</updated>
+    </task>
+    <task id="LOCAL-00026" summary="addded updated installer">
+      <created>1534965035679</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1534965035679</updated>
+    </task>
+    <task id="LOCAL-00027" summary="Fixed minor bugs in click time message box displaying twice and window stuck in grey-out after profanity change">
+      <created>1535053716526</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1535053716526</updated>
+    </task>
+    <task id="LOCAL-00028" summary="Added Working Installer">
+      <created>1535055627990</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1535055627990</updated>
+    </task>
+    <task id="LOCAL-00029" summary="fixed addition of old files in git">
+      <created>1535135848491</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1535135848491</updated>
+    </task>
+    <task id="LOCAL-00030" summary="fixed addition of old files in git">
+      <created>1535136800442</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1535136800442</updated>
+    </task>
+    <task id="LOCAL-00031" summary="--refactored to pep8 style&#10;--greatly reduced # of pycharm warnings-not yet finished&#10;--untangled imports between files">
+      <created>1538501812768</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1538501812768</updated>
+    </task>
+    <task id="LOCAL-00032" summary="--redesigned clock drawing process to increase speed&#10;  --utilizes numpy matrices to mass compute hand positions">
+      <created>1539582901215</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1539582901215</updated>
+    </task>
+    <task id="LOCAL-00033" summary="made working installer and fixed layout change (clocks disappeared) bug">
+      <created>1540832747048</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1540832747048</updated>
+    </task>
+    <task id="LOCAL-00034" summary="reduced imports, fixed bug in installer skipping empty directories -- led to inability to save data">
+      <created>1541391556365</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1541391556365</updated>
+    </task>
+    <task id="LOCAL-00035" summary="minor bug fixs">
+      <created>1541732215444</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1541732215444</updated>
+    </task>
+    <task id="LOCAL-00036" summary="updated pretraining to new clock drawing">
+      <created>1542085515859</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1542085515859</updated>
+    </task>
+    <task id="LOCAL-00037" summary="minor bug fixes--qwerty">
+      <created>1543895288683</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1543895288683</updated>
+    </task>
+    <task id="LOCAL-00038" summary="------PORTED TO PYTHON 3------&#10;--D TREE REPLACED WITH KENLM--">
+      <created>1552274303742</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1552274303742</updated>
+    </task>
+    <task id="LOCAL-00039" summary="------PORTED TO PYTHON 3------&#10;--D TREE REPLACED WITH KENLM--">
+      <created>1552274992826</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1552274992826</updated>
+    </task>
+    <task id="LOCAL-00040" summary="------PORTED TO PYTHON 3------&#10;--D TREE REPLACED WITH KENLM--">
+      <created>1552280026128</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1552280026128</updated>
+    </task>
+    <option name="localTasksCounter" value="41" />
+    <servers />
+  </component>
+  <component name="TodoView" selected-index="4">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <layout>
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49891067" visible="true" weight="0.17175975" />
+      <window_info anchor="bottom" id="TODO" order="6" weight="0.3291592" />
+      <window_info anchor="bottom" id="Event Log" order="12" sideWeight="0.37758347" side_tool="true" weight="0.3094812" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.62241656" weight="0.22222222" />
+      <window_info anchor="bottom" id="Version Control" order="10" sideWeight="0.53418124" weight="0.291939" />
+      <window_info anchor="bottom" id="Python Console" order="7" weight="0.3291592" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Terminal" order="9" weight="0.32818073" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.5699523" weight="0.39357907" />
+      <window_info id="Favorites" order="2" sideWeight="0.50108933" side_tool="true" weight="0.14436248" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.2489339" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection Results" order="11" sideWeight="0.49960968" weight="0.3298969" />
+      <window_info anchor="bottom" id="Messages" order="8" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.3267974" />
+    </layout>
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="RECENTLY_FILTERED_USER_GROUPS">
+                <collection />
+              </option>
+              <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+                <collection />
+              </option>
+              <option name="COLUMN_ORDER">
+                <list>
+                  <option value="0" />
+                  <option value="1" />
+                  <option value="2" />
+                  <option value="3" />
+                </list>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_NEW_TODO" value="false" />
+    <MESSAGE value="--new pretraining design to better simulate actual nomon interface&#10;--auto text sizing in the clocks to better display longer words&#10;--option to retrain in tool menu" />
+    <MESSAGE value="--new branch to work on with tiffany" />
+    <MESSAGE value="--first attempt to speed up clock drawing" />
+    <MESSAGE value="first attempt to make drawing clocks faster&#10;pickles fixed for installer&#10;new working installer" />
+    <MESSAGE value="restart no longer needed for high contrast, profanity filter. consolidated user preference pickles, prompt for data save" />
+    <MESSAGE value="minor bug fixes and working installer" />
+    <MESSAGE value="Merge branch 'workBranch' of https://github.com/tbroderick/Nomon into workBranch&#10;&#10;# Conflicts:&#10;#&#9;keyboard/pre_broderclocks_pyqt.py" />
+    <MESSAGE value="final gui updates before charity trial -- removed clock change messages,&#10;made auto text size for clocks more robust, minor bug fixes" />
+    <MESSAGE value="Merge branch 'master' of https://github.com/tbroderick/Nomon&#10;&#10;# Conflicts:&#10;#&#9;keyboard/barsdump.p&#10;#&#9;keyboard/keyboard.py&#10;#&#9;keyboard/subWindows.py" />
+    <MESSAGE value="Working Installer included" />
+    <MESSAGE value="**Complete redesign of the layout_clocks() function**&#10;--possible to switch between qwerty and alpha w/o restart&#10;--support for different, larger layouts with varying levels of words&#10;--added menu in GUI - no restart required to change word count" />
+    <MESSAGE value="--fixed a major bug that was occurring in the pickle save and reload files and causing an inability to save and reload distribution correctly&#10;  --happened after merge on commit 0b041fdc36fa4ef86213644b3dbee2d374b5a93c (last i could identify w/o bug)&#10;--rolled back broderclocks to above commit id&#10;--rolled back data saving to above commit id, but ported to PickleUtil" />
+    <MESSAGE value="addded updated installer" />
+    <MESSAGE value="Fixed minor bugs in click time message box displaying twice and window stuck in grey-out after profanity change" />
+    <MESSAGE value="Added Working Installer" />
+    <MESSAGE value="fixed addition of old files in git" />
+    <MESSAGE value="--refactored to pep8 style&#10;--greatly reduced # of pycharm warnings-not yet finished&#10;--untangled imports between files" />
+    <MESSAGE value="--redesigned clock drawing process to increase speed&#10;  --utilizes numpy matrices to mass compute hand positions" />
+    <MESSAGE value="made working installer and fixed layout change (clocks disappeared) bug" />
+    <MESSAGE value="reduced imports, fixed bug in installer skipping empty directories -- led to inability to save data" />
+    <MESSAGE value="minor bug fixs" />
+    <MESSAGE value="updated pretraining to new clock drawing" />
+    <MESSAGE value="minor bug fixes--qwerty" />
+    <MESSAGE value="------PORTED TO PYTHON 3------&#10;--D TREE REPLACED WITH KENLM--" />
+    <MESSAGE value="Merge branch 'Refactored' of https://github.com/tbroderick/Nomon into Refactored&#10;&#10;# Conflicts:&#10;#&#9;.idea/Nomon.iml&#10;#&#9;.idea/misc.xml&#10;#&#9;keyboard/broderclocks.py&#10;#&#9;keyboard/clock_inference_engine.py&#10;#&#9;keyboard/corpus/BNC-token-proc.txt&#10;#&#9;keyboard/dtree.py&#10;#&#9;keyboard/kconfig.py&#10;#&#9;keyboard/keyboard.py&#10;#&#9;keyboard/mainWindow.py&#10;#&#9;keyboard/pickle_util.py&#10;#&#9;keyboard/pretraininginference.py&#10;#&#9;keyboard/resources/lm_char_medium.kenlm&#10;#&#9;keyboard/setup.py&#10;#&#9;keyboard/subWindows.py&#10;#&#9;keyboard/widgets.py" />
+    <option name="LAST_COMMIT_MESSAGE" value="Merge branch 'Refactored' of https://github.com/tbroderick/Nomon into Refactored&#10;&#10;# Conflicts:&#10;#&#9;.idea/Nomon.iml&#10;#&#9;.idea/misc.xml&#10;#&#9;keyboard/broderclocks.py&#10;#&#9;keyboard/clock_inference_engine.py&#10;#&#9;keyboard/corpus/BNC-token-proc.txt&#10;#&#9;keyboard/dtree.py&#10;#&#9;keyboard/kconfig.py&#10;#&#9;keyboard/keyboard.py&#10;#&#9;keyboard/mainWindow.py&#10;#&#9;keyboard/pickle_util.py&#10;#&#9;keyboard/pretraininginference.py&#10;#&#9;keyboard/resources/lm_char_medium.kenlm&#10;#&#9;keyboard/setup.py&#10;#&#9;keyboard/subWindows.py&#10;#&#9;keyboard/widgets.py" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints-dialog>
+        <breakpoints-dialog />
+      </breakpoints-dialog>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnlyOnFirst="true" notifyOnTerminate="true" ignoreLibraries="true" exception="BaseException">
+            <option name="ignoreLibraries" value="true" />
+            <option name="notifyOnTerminate" value="true" />
+            <option name="notifyOnlyOnFirst" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
+      <option name="time" value="190" />
+    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="event" />
+        <watch expression="prev_data" />
+      </configuration>
+    </watches-manager>
+  </component>
+  <component name="debuggerHistoryManager">
+    <expressions id="setValue">
+      <expression>
+        <expression-string>80</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>79</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+    </expressions>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/keyboard/user_preferences/start_speed.p" />
+    <entry file="file://$PROJECT_DIR$/keyboard/._pickle_util.py" />
+    <entry file="file://$PROJECT_DIR$/keyboard/._ToolTip.py" />
+    <entry file="file://$PROJECT_DIR$/keyboard/user_preferences/first_load.p" />
+    <entry file="file://$PROJECT_DIR$/keyboard/user_preferences/user_preferences.p" />
+    <entry file="file://$PROJECT_DIR$/keyboard/data/click_time_log0.0.pickle" />
+    <entry file="file://$PROJECT_DIR$/keyboard/data/barsdump.pickle" />
+    <entry file="file://$PROJECT_DIR$/keyboard/hist_data_plot.py" />
+    <entry file="file://$PROJECT_DIR$/keyboard/data/preconfig.pickle" />
+    <entry file="file://$PROJECT_DIR$/keyboard/data/.keep" />
+    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_5.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="215">
+          <caret line="17" selection-start-line="17" selection-end-line="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Python27/Lib/pickle.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="46">
+          <caret line="971" selection-start-line="971" selection-end-line="971" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/pre_broderclocks_pyqt.py" />
+    <entry file="file://$PROJECT_DIR$/keyboard/language_prior.py" />
+    <entry file="file://$PROJECT_DIR$/keyboard/build/exe.win-amd64-2.7/clock_util.py" />
+    <entry file="file://$USER_HOME$/.PyCharmCE2018.1/system/python_stubs/-817973147/PyQt4/QtGui/QMainWindow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="228">
+          <caret line="46" column="8" selection-start-line="46" selection-start-column="8" selection-end-line="46" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Users/nickb/OneDrive/Documents/MIT/6036/code_for_hw5/code_for_hw5/code_for_hw5.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-4063">
+          <caret line="13" column="84" lean-forward="true" selection-start-line="13" selection-start-column="84" selection-end-line="13" selection-end-column="84" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/user_preferences/a_place_holder.txt" />
+    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/pip/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_7.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="15" column="16" selection-start-line="15" selection-start-column="16" selection-end-line="15" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/data/a_place_holder.txt" />
+    <entry file="file://$PROJECT_DIR$/keyboard/reset_preferences.py" />
+    <entry file="file://$PROJECT_DIR$/keyboard/new_subWindows.py" />
+    <entry file="file://$PROJECT_DIR$/keyboard/newbroderclocks.py" />
+    <entry file="file://$PROJECT_DIR$/keyboard/new_keyboard.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/pkgs/sphinx-1.6.2-py36_0/Lib/site-packages/Sphinx-1.6.2-py3.6.egg/sphinx/pycode/pgen2/literals.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-676">
+          <caret line="23" lean-forward="true" selection-start-line="23" selection-end-line="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/dtree_wrapper.py" />
+    <entry file="file://$PROJECT_DIR$/keyboard/widgets.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="391">
+          <caret line="23" selection-start-line="23" selection-end-line="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/corpus/merged_ce-0.2.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="560">
+          <caret line="227430" lean-forward="true" selection-start-line="227430" selection-end-line="227430" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/clock_util.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2244">
+          <caret line="137" column="34" selection-start-line="137" selection-start-column="34" selection-end-line="137" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/resources/vocab_20k">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/vocabtrie.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/subWindows.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="112">
+          <caret line="571" lean-forward="true" selection-start-line="571" selection-end-line="571" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/config.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="527">
+          <caret line="34" column="42" selection-start-line="34" selection-start-column="42" selection-end-line="34" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/cx_Freeze/windist.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="63" column="53" lean-forward="true" selection-start-line="63" selection-start-column="53" selection-end-line="63" selection-end-column="53" />
+          <folding>
+            <element signature="e#0#34#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="7367">
+          <caret line="1663" selection-start-line="1663" selection-end-line="1663" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/pickle_util_tests.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/pretraining_test.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/broderclocks_test.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/kenlm_lm.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="111">
+          <caret line="39" column="28" selection-start-line="39" selection-start-column="28" selection-end-line="39" selection-end-column="28" />
+          <folding>
+            <element signature="e#364#378#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/setup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="323">
+          <caret line="19" column="19" selection-start-line="19" selection-start-column="19" selection-end-line="19" selection-end-column="19" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/clock_inference_engine.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="391">
+          <caret line="131" column="46" selection-start-line="131" selection-start-column="46" selection-end-line="131" selection-end-column="46" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/dtree.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1598">
+          <caret line="36" column="33" lean-forward="true" selection-start-line="36" selection-start-column="33" selection-end-line="36" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/kconfig.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="140" column="19" selection-start-line="140" selection-start-column="19" selection-end-line="140" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/pickle_util.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="14" column="29" lean-forward="true" selection-start-line="14" selection-start-column="29" selection-end-line="14" selection-end-column="29" />
+          <folding>
+            <element signature="e#110#132#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/broderclocks.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="10" selection-start-line="10" selection-end-line="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/mainWindow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="54">
+          <caret line="495" column="39" selection-start-line="495" selection-start-column="39" selection-end-line="495" selection-end-column="39" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/pretraininginference.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3553">
+          <caret line="219" column="43" selection-start-line="219" selection-start-column="43" selection-end-line="219" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/predictor.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="12" selection-start-line="12" selection-end-line="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/keyboard.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="15" column="1" lean-forward="true" selection-start-line="15" selection-start-column="1" selection-end-line="18" selection-end-column="38" />
+          <folding>
+            <element signature="e#852#892#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
