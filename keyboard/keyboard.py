@@ -168,9 +168,10 @@ class Keyboard(MainWindow):
 
         self.bc.clock_inf.clock_util.calcualte_clock_params('default', recompute=True)
 
-        self.save_environment()
         # draw histogram
         self.init_histogram()
+
+        self.save_environment()
 
         self.consent = False
 

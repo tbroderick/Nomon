@@ -1,11 +1,17 @@
-import sys
+import sys, os
 from cx_Freeze import setup, Executable
 
-build_exe_options = {"packages": ["broderclocks","dtree","config","kconfig","widgets","subWindows","mainWindow",
+import os.path
+PYTHON_INSTALL_DIR = os.path.dirname(os.path.dirname(os.__file__))
+os.environ['TCL_LIBRARY'] = os.path.join(PYTHON_INSTALL_DIR, 'tcl', 'tcl8.6')
+os.environ['TK_LIBRARY'] = os.path.join(PYTHON_INSTALL_DIR, 'tcl', 'tk8.6')
+
+
+build_exe_options = {"packages": ["broderclocks","kenlm_lm","predictor","vocabtrie","config","kconfig","widgets","subWindows","mainWindow",
                                   "string","time",'PyQt4.QtGui', 'PyQt4.QtCore',"numpy",
-                                  "sys","cPickle","pickle_util", "random",
-                                  "os","pretraininginference","clock_util","clock_inference_engine"],
-                     "include_files": ["corpus", "phrases", "icons"]}#"pygame",
+                                  "sys","Pickle","pickle_util", "random",
+                                  "os","pretraininginference","clock_util","clock_inference_engine", "kenlm"],
+                     "include_files": ["icons", "resources"]}#"pygame",
 
 base = None
 
@@ -16,7 +22,7 @@ elif sys.platform == "win64":
     base = "Win64GUI"
 
 setup(name="Nomon",
-      version="1.2",
+      version="2.0",
       description = "Add description",
       options={"build_exe": build_exe_options},
       executables=[Executable("keyboard.py", base=base,
