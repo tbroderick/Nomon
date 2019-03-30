@@ -19,11 +19,10 @@
 ######################################
 
 from numpy import zeros, array, log, exp
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QSound, QApplication, QInputDialog, QPushButton, QMessageBox
+from PyQt5 import QtCore, QtGui, QtWidgets, QtMultimedia
 
 from mainWindow import MainWindow
-from subWindows import Pretraining, PretrainScreen, WelcomeScreen, SplashScreen, StartWindow
+from subWindows import Pretraining, StartWindow
 # import dtree
 from kenlm_lm import LanguageModel
 from pickle_util import PickleUtil
@@ -38,6 +37,12 @@ from broderclocks import BroderClocks
 
 sys.path.insert(0, os.path.realpath('../KernelDensityEstimation'))
 
+sys._excepthook = sys.excepthook
+def exception_hook(exctype, value, traceback):
+    print(exctype, value, traceback)
+    sys._excepthook(exctype, value, traceback)
+    sys.exit(1)
+sys.excepthook = exception_hook
 
 if kconfig.target_evt == kconfig.joy_evt:
     import pygame
@@ -160,7 +165,7 @@ class Keyboard(MainWindow):
         self.clock_spaces = zeros((len(self.clock_centers), 2))
 
         self.bc = BroderClocks(self)
-        self.mainWidgit.change_value(self.start_speed)
+        self.mainWidget.change_value(self.start_speed)
 
         self.bc.init_follow_up(self.word_score_prior)
 
@@ -176,8 +181,9 @@ class Keyboard(MainWindow):
         self.consent = False
 
         if first_load:
-            first_load = True
-            welcome = Pretraining(screen_res, self)
+            self.pretrain = True
+            self.welcome = Pretraining(self, screen_res)
+
 
         # animate
 
@@ -188,6 +194,7 @@ class Keyboard(MainWindow):
         self.init_clocks()
         self.update_radii = False
         self.on_timer()
+
 
     def gen_data_handel(self):
         self.cwd = os.getcwd()
@@ -201,11 +208,11 @@ class Keyboard(MainWindow):
             users = []
         input_method = 'text'
         if user_files is not None and len(users) != 0:
-            message = QMessageBox(QMessageBox.Information, "Load User Data", "You can either create a new user profile or "
+            message = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "Load User Data", "You can either create a new user profile or "
                                                                              "load an existing user profile.")
-            message.addButton(QPushButton('Create New User'), QMessageBox.YesRole)
-            message.addButton(QPushButton('Load Previous User'), QMessageBox.NoRole)
-            message.setDefaultButton(QMessageBox.Yes)
+            message.addButton(QtWidgets.QPushButton('Create New User'), QtWidgets.QMessageBox.YesRole)
+            message.addButton(QtWidgets.QPushButton('Load Previous User'), QtWidgets.QMessageBox.NoRole)
+            message.setDefaultButton(QtWidgets.QMessageBox.Yes)
             response = message.exec_()
             if response == 0:
                 input_method = 'text'
@@ -216,7 +223,7 @@ class Keyboard(MainWindow):
             valid_user_id = False
             input_text = "Please input a Number that will be used to save your user information"
             while not valid_user_id:
-                num, ok = QInputDialog.getInt(self, "User ID Number Input", input_text)
+                num, ok = QtWidgets.QInputDialog.getInt(self, "User ID Number Input", input_text)
                 if str(num) not in users:
                     valid_user_id = True
                 else:
@@ -231,7 +238,7 @@ class Keyboard(MainWindow):
                 os.mkdir(user_id_path)
 
         if input_method == 'list':
-            item, ok = QInputDialog.getItem(self, "Select User ID", "List of save User IDs:", users, 0, False)
+            item, ok = QtWidgets.QInputDialog.getItem(self, "Select User ID", "List of save User IDs:", users, 0, False)
             self.user_id = item
 
         self.user_handel = os.path.join(data_path, str(self.user_id))
@@ -264,22 +271,22 @@ class Keyboard(MainWindow):
 
         self.bc.clock_inf.clock_util.calcualte_clock_params(self.clock_type, recompute=True)
         for clock in self.words_on:
-            self.mainWidgit.clocks[clock].set_params(self.clock_params[clock, :], recompute=True)
-            self.mainWidgit.clocks[clock].redraw_text = True
+            self.mainWidget.clocks[clock].set_params(self.clock_params[clock, :], recompute=True)
+            self.mainWidget.clocks[clock].redraw_text = True
             if self.word_pred_on == 1:
-                if clock in self.mainWidgit.reduced_word_clock_indices:
-                    word_clock = self.mainWidgit.reduced_word_clocks[self.mainWidgit.reduced_word_clock_indices.index(clock)]
+                if clock in self.mainWidget.reduced_word_clock_indices:
+                    word_clock = self.mainWidget.reduced_word_clocks[self.mainWidget.reduced_word_clock_indices.index(clock)]
                     word_clock.set_params(self.clock_params[clock, :], recompute=True)
         for clock in self.words_off:
-            self.mainWidgit.clocks[clock].redraw_text = True
+            self.mainWidget.clocks[clock].redraw_text = True
 
     def update_clock_radii(self):
         for clock in self.words_on:
-            self.clock_spaces[clock, :] = array([self.mainWidgit.clocks[clock].w, self.mainWidgit.clocks[clock].h])
+            self.clock_spaces[clock, :] = array([self.mainWidget.clocks[clock].w, self.mainWidget.clocks[clock].h])
             if self.word_pred_on == 1:
-                if clock in self.mainWidgit.reduced_word_clock_indices:
-                    word_clock = self.mainWidgit.reduced_word_clocks[
-                        self.mainWidgit.reduced_word_clock_indices.index(clock)]
+                if clock in self.mainWidget.reduced_word_clock_indices:
+                    word_clock = self.mainWidget.reduced_word_clocks[
+                        self.mainWidget.reduced_word_clock_indices.index(clock)]
                     self.clock_spaces[clock, :] = array(
                         [word_clock.w, word_clock.h])
 
@@ -299,7 +306,7 @@ class Keyboard(MainWindow):
         self.parent.after(20, self.find_events)
 
     def keyPressEvent(self, e):
-        if e.key() == Qt.Key_Space:
+        if e.key() == QtCore.Qt.Key_Space:
             self.on_press()
 
     def init_locs(self):
@@ -403,19 +410,19 @@ class Keyboard(MainWindow):
 
     def toggle_pause_button(self, value):
         self.pause_set = value
-        self.mainWidgit.sldLabel.setFocus()
+        self.mainWidget.sldLabel.setFocus()
 
     def toggle_sound_button(self, value):
         self.sound_set = value
-        self.mainWidgit.sldLabel.setFocus()
+        self.mainWidget.sldLabel.setFocus()
 
     def toggle_talk_button(self, value):
         self.talk_set = value
-        self.mainWidgit.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
+        self.mainWidget.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
 
     def toggle_learn_button(self, value):
         config.is_learning = value
-        self.mainWidgit.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
+        self.mainWidget.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
 
     def change_speed(self, index):
         # speed (as shown on scale)
@@ -447,7 +454,7 @@ class Keyboard(MainWindow):
             bars = self.bc.get_histogram()
         # bars = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.bars = bars
-        self.mainWidgit.histogram.update()
+        self.mainWidget.histogram.update()
 
     def init_words(self):
         (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(self.left_context, self.context,
@@ -611,7 +618,7 @@ class Keyboard(MainWindow):
             self.word_pair.append((key,))
             index += 1
 
-        self.mainWidgit.update_clocks()
+        self.mainWidget.update_clocks()
         self.init_clocks()
 
     def gen_word_prior(self, is_undo):
@@ -657,7 +664,7 @@ class Keyboard(MainWindow):
 
         delete = False
         undo = False
-        previous_text = self.mainWidgit.text_box.toPlainText()
+        previous_text = self.mainWidget.text_box.toPlainText()
 
         if len(self.last_add_li) > 1:
             last_add = self.last_add_li[-1]
@@ -677,8 +684,8 @@ class Keyboard(MainWindow):
             previous_text = previous_text[:-1]
 
         index = self.previous_winner
-        if self.mainWidgit.clocks[index] != '':
-            if self.mainWidgit.clocks[index].text in [kconfig.mybad_char, 'Undo']:
+        if self.mainWidget.clocks[index] != '':
+            if self.mainWidget.clocks[index].text in [kconfig.mybad_char, 'Undo']:
                 undo = True
                 delete = False
         if self.typed_versions[-1] == '' and len(self.typed_versions) > 1:
@@ -686,21 +693,21 @@ class Keyboard(MainWindow):
 
         if self.clear_text:
             self.typed_versions += ['']
-            self.mainWidgit.text_box.setText('')
+            self.mainWidget.text_box.setText('')
             self.clear_text = False
             undo_text = 'Clear'
         elif delete:
             # self.prefix = self.prefix[:-1]
             if self.typed_versions[-1] != '':
                 self.typed_versions += [previous_text[:-1]]
-                self.mainWidgit.text_box.setText("<span style='color:#000000;'>" + self.typed_versions[-1] + "</span>")
+                self.mainWidget.text_box.setText("<span style='color:#000000;'>" + self.typed_versions[-1] + "</span>")
         elif undo:
             if len(self.typed_versions) > 1:
                 self.typed_versions = self.typed_versions[:-1]
-                self.mainWidgit.text_box.setText("<span style='color:#000000;'>" + self.typed_versions[-1] + "</span>")
+                self.mainWidget.text_box.setText("<span style='color:#000000;'>" + self.typed_versions[-1] + "</span>")
         else:
             self.typed_versions += [previous_text + new_text]
-            self.mainWidgit.text_box.setText(
+            self.mainWidget.text_box.setText(
                 "<span style='color:#000000;'>" + previous_text + "</span><span style='color:#00dd00;'>"
                 + new_text + "</span>")
 
@@ -712,30 +719,30 @@ class Keyboard(MainWindow):
             undo_text = "Clear"
 
         self.previous_undo_text = undo_text
-        self.mainWidgit.undo_label.setText("<font color='green'>" + undo_text + "</font>")
+        self.mainWidget.undo_label.setText("<font color='green'>" + undo_text + "</font>")
 
     def wpm_update(self):
         time_diff = (time.time() - self.wpm_time)
         if time_diff < 15. * 10 / self.time_rotate:
             self.wpm_data + time_diff
             self.wpm_time = 0
-            self.mainWidgit.wpm_label.setText("Selections/Min: " + str(round(self.wpm_data.average(), 2)))
+            self.mainWidget.wpm_label.setText("Selections/Min: " + str(round(self.wpm_data.average(), 2)))
 
     def on_pause(self):
 
-        self.mainWidgit.pause_timer.start(kconfig.pause_length)
+        self.mainWidget.pause_timer.start(kconfig.pause_length)
         self.in_pause = True
         self.setStyleSheet("background-color:" + config.bg_color_highlt + ";")
-        self.mainWidgit.text_box.setStyleSheet("background-color:#ffffff;")
-        for clock in self.mainWidgit.clocks:
+        self.mainWidget.text_box.setStyleSheet("background-color:#ffffff;")
+        for clock in self.mainWidget.clocks:
             clock.redraw_text = True
 
     def end_pause(self):
-        self.mainWidgit.pause_timer.stop()
+        self.mainWidget.pause_timer.stop()
         self.in_pause = False
         self.setStyleSheet("")
         self.on_timer()
-        for clock in self.mainWidgit.clocks:
+        for clock in self.mainWidget.clocks:
             clock.redraw_text = True
 
     def on_timer(self):
@@ -747,8 +754,8 @@ class Keyboard(MainWindow):
                 self.bc.init_round(True, False, self.bc.clock_inf.prev_cscores)
                 self.wpm_time = 0
 
-        if self.focusWidget() == self.mainWidgit.text_box:
-            self.mainWidgit.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
+        if self.focusWidget() == self.mainWidget.text_box:
+            self.mainWidget.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
 
         if self.bc_init:
             if not self.in_pause:
@@ -769,27 +776,27 @@ class Keyboard(MainWindow):
 
     def play(self):
         sound_file = "icons/bell.wav"
-        QSound(sound_file).play()
+        QtMultimedia.QSound(sound_file).play()
 
     def highlight_winner(self, index):
         if self.word_pred_on == 1:
-            if index in self.mainWidgit.reduced_word_clock_indices:
-                word_clock = self.mainWidgit.reduced_word_clocks[self.mainWidgit.reduced_word_clock_indices.index(index)]
+            if index in self.mainWidget.reduced_word_clock_indices:
+                word_clock = self.mainWidget.reduced_word_clocks[self.mainWidget.reduced_word_clock_indices.index(index)]
                 word_clock.selected = True
-        if self.mainWidgit.clocks[index] != '':
-            self.mainWidgit.clocks[index].selected = True
-            self.mainWidgit.clocks[index].update()
-            self.mainWidgit.highlight_timer.start(2000)
+        if self.mainWidget.clocks[index] != '':
+            self.mainWidget.clocks[index].selected = True
+            self.mainWidget.clocks[index].update()
+            self.mainWidget.highlight_timer.start(2000)
 
     def end_highlight(self):
         index = self.previous_winner
         if self.word_pred_on == 1:
-            for word_clock in self.mainWidgit.reduced_word_clocks:
+            for word_clock in self.mainWidget.reduced_word_clocks:
                 word_clock.selected = False
-        if self.mainWidgit.clocks[index] != '':
-            self.mainWidgit.clocks[index].selected = False
-            self.mainWidgit.clocks[index].update()
-            self.mainWidgit.highlight_timer.stop()
+        if self.mainWidget.clocks[index] != '':
+            self.mainWidget.clocks[index].selected = False
+            self.mainWidget.clocks[index].update()
+            self.mainWidget.highlight_timer.stop()
 
     def talk_winner(self, talk_string):
         pass
@@ -801,7 +808,7 @@ class Keyboard(MainWindow):
         # now pause (if desired)
         if self.pause_set == 1:
             self.on_pause()
-            self.mainWidgit.pause_timer.start(kconfig.pause_length)
+            self.mainWidget.pause_timer.start(kconfig.pause_length)
 
         # highlight winner
         self.previous_winner = index
@@ -945,26 +952,29 @@ class Keyboard(MainWindow):
         self.close()
 
     def launch_help(self):
-        help_window = StartWindow(self.mainWidgit.screen_res, False)
-        help_window.help_screen = True
+        help_window = Pretraining(self, self.mainWidget.screen_res, help_screen=True)
+        help_window.show()
+
+        self.pretrain = True
+        self.mainWidget.repaint()
 
     def launch_retrain(self):
-        retrain_window = Pretraining(self.mainWidgit.screen_res, self)
-        retrain_window.screen_num = 3
-        retrain_window.mainWidgit.close()
-        retrain_window.mainWidgit = WelcomeScreen(retrain_window)
-        retrain_window.mainWidgit.init_ui4()
-        retrain_window.setCentralWidget(retrain_window.mainWidgit)
+        retrain_window = Pretraining(self, self.mainWidget.screen_res)
+        retrain_window.screen_num=3
+        retrain_window.next_screen()
+        retrain_window.show()
+        # retrain_window.setCentralWidget(retrain_window.mainWidget)
 
         retrain_window.retrain = True
         self.pretrain = True
-        self.mainWidgit.repaint()
+        self.mainWidget.repaint()
 
 
 def main():
     print("****************************\n****************************\n[Loading...]")
 
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(True)
     screen_res = (app.desktop().screenGeometry().width(), app.desktop().screenGeometry().height())
 
     # splash = StartWindow(screen_res, True)

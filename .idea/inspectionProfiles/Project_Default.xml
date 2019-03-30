@@ -10,11 +10,13 @@
         </value>
       </option>
     </inspection_tool>
-    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="false" level="WARNING" enabled_by_default="false">
       <option name="ignoredIdentifiers">
         <list>
           <option value="PyQt4.QtGui.triggered.connect" />
           <option value="PyQt4.QtCore.timeout.connect" />
+          <option value="PyQt5.QtWidgets.triggered.*" />
+          <option value="keyboard.keyboard.*" />
         </list>
       </option>
     </inspection_tool>

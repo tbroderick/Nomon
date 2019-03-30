@@ -95,8 +95,8 @@ class PreClockUtil(ClockUtil):
             self.pbc.parent.clock_params[:, 2] = self.pbc.parent.clock_params[:, 1]*(1-abs(self.clock_angles/pi + 0.5))
 
     def increment(self):
-        if self.parent.mainWidgit.highlight_clock:
-            self.parent.mainWidgit.highlight()
+        if self.parent.mainWidget.highlight_clock:
+            self.parent.mainWidget.highlight()
         for clock in range(80):
             # update time indices
             self.cur_hours[clock] = (self.cur_hours[clock] + 1) % self.num_divs_time
@@ -112,16 +112,16 @@ class PreClockUtil(ClockUtil):
 
         for clock in range(80):
             if self.parent.clock_type == 'default':
-                self.parent.mainWidgit.dummy_clocks[clock].set_params(self.pbc.parent.clock_params[clock, :4])
+                self.parent.mainWidget.dummy_clocks[clock].set_params(self.pbc.parent.clock_params[clock, :4])
             elif self.parent.clock_type == 'ball':
-                self.parent.mainWidgit.dummy_clocks[clock].set_params(self.pbc.parent.clock_params[clock, :4])
+                self.parent.mainWidget.dummy_clocks[clock].set_params(self.pbc.parent.clock_params[clock, :4])
             elif self.parent.clock_type == 'radar':
-                self.parent.mainWidgit.dummy_clocks[clock].set_params(self.pbc.parent.clock_params[clock, :])
+                self.parent.mainWidget.dummy_clocks[clock].set_params(self.pbc.parent.clock_params[clock, :])
             elif self.parent.clock_type == 'pac_man':
-                self.parent.mainWidgit.dummy_clocks[clock].set_params(self.pbc.parent.clock_params[clock, :4])
+                self.parent.mainWidget.dummy_clocks[clock].set_params(self.pbc.parent.clock_params[clock, :4])
             elif self.parent.clock_type == 'bar':
-                self.parent.mainWidgit.dummy_clocks[clock].set_params(self.pbc.parent.clock_params[clock, :3])
-            self.parent.mainWidgit.dummy_clocks[clock].update()
+                self.parent.mainWidget.dummy_clocks[clock].set_params(self.pbc.parent.clock_params[clock, :3])
+            self.parent.mainWidget.dummy_clocks[clock].update()
     # NONEED FOR CHANGE PERIOD
 
     # THIS IS EQUIVALENT TO THE CURHOUR만 하는 INITROUND
@@ -132,7 +132,7 @@ class PreClockUtil(ClockUtil):
             self.selected_clock = random.randint(0, 63)
         # self.selected_clock = 0
         count = 0
-        for clock in self.pbc.parent.mainWidgit.dummy_clocks:
+        for clock in self.pbc.parent.mainWidget.dummy_clocks:
             clock.set_text("not me")
             clock.selected = False
             clock.highlighted = (random.random() < random.random())
@@ -155,16 +155,16 @@ class PreClockUtil(ClockUtil):
         self.latest_time = time.time()
 
         if self.pbc.parent.num_presses > 0:
-            self.pbc.parent.mainWidgit.highlight_clock = True
-            self.pbc.parent.mainWidgit.start_time = time.time()
+            self.pbc.parent.mainWidget.highlight_clock = True
+            self.pbc.parent.mainWidget.start_time = time.time()
             # HERE
             # self.cur_hours[count] = self.angle_into_cur_hour(clock.angle)#should be index
             # count+=1
 
         # JUST FOR TESTING PURPOSES
         # self.selected_clock = 0
-        # self.pbc.parent.mainWidgit.dummy_clocks[self.selected_clock].angle = 0
-        # self.cur_hour = self.angle_into_cur_hour(self.pbc.parent.mainWidgit.dummy_clocks[self.selected_clock].angle)
+        # self.pbc.parent.mainWidget.dummy_clocks[self.selected_clock].angle = 0
+        # self.cur_hour = self.angle_into_cur_hour(self.pbc.parent.mainWidget.dummy_clocks[self.selected_clock].angle)
 
 
 # =============================================================================

@@ -64,7 +64,7 @@ class ClockUtil:
         if not self.parent.pretrain_window:
             self.cur_hours = [0.0]*len(self.parent.clock_centers)
         else:
-            self.cur_hours = [0.0]*len(self.parent.mainWidgit.dummy_clocks)
+            self.cur_hours = [0.0]*len(self.parent.mainWidget.dummy_clocks)
         self.clock_angles = zeros(len(self.cur_hours))
         self.time_rotate = self.parent.time_rotate 
         # LOOKATHERE
@@ -177,12 +177,12 @@ class ClockUtil:
 
             self.calcualte_clock_params(self.bc.parent.clock_type)
             for clock_index in clock_index_list:
-                clock = self.bc.parent.mainWidgit.clocks[clock_index]
+                clock = self.bc.parent.mainWidget.clocks[clock_index]
 
                 if self.bc.parent.word_pred_on == 1:
-                    if clock_index in self.bc.parent.mainWidgit.reduced_word_clock_indices:
-                        clock = self.bc.parent.mainWidgit.reduced_word_clocks[
-                            self.bc.parent.mainWidgit.reduced_word_clock_indices.index(clock_index)]
+                    if clock_index in self.bc.parent.mainWidget.reduced_word_clock_indices:
+                        clock = self.bc.parent.mainWidget.reduced_word_clocks[
+                            self.bc.parent.mainWidget.reduced_word_clock_indices.index(clock_index)]
 
                 if self.bc.parent.clock_type == 'default':
                     clock.set_params(self.bc.parent.clock_params[clock_index, :4])
@@ -207,11 +207,11 @@ class ClockUtil:
             raise Exception("Arguments have different lengths!")
         else:
             for i in clock_index_list:
-                self.parent.mainWidgit.clocks[i].update()
+                self.parent.mainWidget.clocks[i].update()
 
     def repaint_one_clock(self, clock_index, angle):
-        # self.parent.mainWidgit.clocks[clock_index].angle = angle + math.pi*0.5
-        # self.parent.mainWidgit.clocks[clock_index].update()
+        # self.parent.mainWidget.clocks[clock_index].angle = angle + math.pi*0.5
+        # self.parent.mainWidget.clocks[clock_index].update()
         pass
 
     # start the UI over
@@ -219,26 +219,26 @@ class ClockUtil:
     # whether is_win, is_start true or False, the locations , UI are all same
     def init_round(self, clock_index_list):
         self.update_curhours(clock_index_list)
-        for clock in self.bc.parent.mainWidgit.clocks:
+        for clock in self.bc.parent.mainWidget.clocks:
             clock.new_round = True
 
     def highlight_clock(self, clock_index):
-        if self.parent.mainWidgit.clocks[clock_index] != '':
-            clock = self.parent.mainWidgit.clocks[clock_index]
+        if self.parent.mainWidget.clocks[clock_index] != '':
+            clock = self.parent.mainWidget.clocks[clock_index]
             if self.bc.parent.word_pred_on == 1:
-                if clock_index in self.bc.parent.mainWidgit.reduced_word_clock_indices:
-                    clock = self.bc.parent.mainWidgit.reduced_word_clocks[
-                        self.bc.parent.mainWidgit.reduced_word_clock_indices.index(clock_index)]
+                if clock_index in self.bc.parent.mainWidget.reduced_word_clock_indices:
+                    clock = self.bc.parent.mainWidget.reduced_word_clocks[
+                        self.bc.parent.mainWidget.reduced_word_clock_indices.index(clock_index)]
             clock.selected = True
             clock.highlight_timer.start(2000)
     
     def unhighlight_clock(self, clock_index):
-        if self.parent.mainWidgit.clocks[clock_index] != '':
-            clock = self.parent.mainWidgit.clocks[clock_index]
+        if self.parent.mainWidget.clocks[clock_index] != '':
+            clock = self.parent.mainWidget.clocks[clock_index]
             if self.bc.parent.word_pred_on == 1:
-                if clock_index in self.bc.parent.mainWidgit.reduced_word_clock_indices:
-                    clock = self.bc.parent.mainWidgit.reduced_word_clocks[
-                        self.bc.parent.mainWidgit.reduced_word_clock_indices.index(clock_index)]
+                if clock_index in self.bc.parent.mainWidget.reduced_word_clock_indices:
+                    clock = self.bc.parent.mainWidget.reduced_word_clocks[
+                        self.bc.parent.mainWidget.reduced_word_clock_indices.index(clock_index)]
             clock.selected = False
             clock.update()
             clock.stop()

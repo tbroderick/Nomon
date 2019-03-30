@@ -19,7 +19,7 @@
 ######################################
 
 import numpy
-from PyQt4 import QtGui
+from PyQt5 import QtGui
 import pickle
 import os, sys
 #sys.path.insert(0, os.path.realpath('user_preferences'))

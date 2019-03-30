@@ -8,6 +8,7 @@
 
 import os, sys
 import numpy as np
+import kconfig
 
 # sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from predictor import WordPredictor
@@ -24,7 +25,7 @@ class LanguageModel():
         # By default it is set to 0 and will return all possible
         # words
         self.num_predictions = 3
-        self.min_log_prob = np.log(0.02)
+        self.min_log_prob = -float("inf")
 
         # The default vocab_id is ''
         self.vocab_id = ''
@@ -55,31 +56,33 @@ class LanguageModel():
             word_preds += [key_word_preds]
             word_probs += [key_word_probs]
 
-        key_probs = self.get_char_probs(word_dict, keys_li)
+        key_probs, total_log_prob = self.get_char_probs(word_dict, keys_li)
 
-        return word_preds, word_probs, key_probs
+        word_probs = np.array(word_probs) - total_log_prob
+        word_probs = np.where(word_probs > np.log(kconfig.prob_thres), word_probs, -float("inf"))
+        word_preds = np.where(word_probs != -float("inf"), word_preds, "")
+
+        return word_preds.tolist(), word_probs.tolist(), key_probs
 
     def get_char_probs(self, word_dict, keys_li):
-
+        total_log_prob = -float("inf")
         key_probs = []
         for key in keys_li:
-            log_prob = 0
+            log_prob = -float("inf")
             if key in word_dict:
                 for word in word_dict[key]:
-                    if log_prob == 0:
-                        log_prob = word[1]
-                    else:
-                        log_prob = np.logaddexp(log_prob, word[1])
+                    log_prob = np.logaddexp(log_prob, word[1])
+            total_log_prob = np.logaddexp(log_prob, total_log_prob)
             key_probs += [log_prob]
 
-        return key_probs
+        return key_probs, total_log_prob
 
 
 
 def main():
 
     LM = LanguageModel('../keyboard/resources/lm_word_medium.kenlm', '../keyboard/resources/vocab_100k')
-    print(LM.get_words("", "h", list("abcdefghijklmnopqrstuvwxyz' ")))
+    print(LM.get_words("", "", list("abcdefghijklmnopqrstuvwxyz' ")))
 
     # # Provide the name and path of a language model and the vocabulary
     # lm_filename = '../resources/lm_word_medium.kenlm'

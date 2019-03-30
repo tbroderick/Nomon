@@ -189,11 +189,11 @@ class BroderClocks:
         bound_score = top_score - self.parent.win_diffs[self.clock_inf.sorted_inds[0]]
 
         for clock_index in self.clock_inf.clocks_on:
-            clock = self.parent.mainWidgit.clocks[clock_index]
+            clock = self.parent.mainWidget.clocks[clock_index]
             if self.parent.word_pred_on == 1:
-                if clock_index in self.parent.mainWidgit.reduced_word_clock_indices:
-                    clock = self.parent.mainWidgit.reduced_word_clocks[
-                        self.parent.mainWidgit.reduced_word_clock_indices.index(clock_index)]
+                if clock_index in self.parent.mainWidget.reduced_word_clock_indices:
+                    clock = self.parent.mainWidget.reduced_word_clocks[
+                        self.parent.mainWidget.reduced_word_clock_indices.index(clock_index)]
             if self.clock_inf.cscores[clock_index] > bound_score:
                 clock.highlighted = True
             else:

@@ -163,7 +163,7 @@ pause_length = 1000
 
 ### Language model ###
 # probability threshold for inclusion of word in the display
-prob_thres = 0.001
+prob_thres = 0.008
 # undo prior prob
 undo_prob = 1.0 / 40
 # break prior prob
