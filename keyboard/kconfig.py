@@ -29,7 +29,7 @@ space_char = ' '
 mybad_char = '@'
 # yourbad_char = 'Yours'
 yourbad_char = 'Undo+'
-break_chars = ['.', ',', '?', '\'']
+break_chars = ['.', ',', '?', '!']
 back_char = '#'
 clear_char = '$'
 
@@ -39,14 +39,14 @@ max_chars_display = 11
 # always put alpha-numeric keys first (self.N_alpha_keys)
 
 key_chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-                   'u', 'v', 'w', 'x', 'y', 'z', break_chars[3], space_char, break_chars[0], break_chars[1],
-                   break_chars[2], back_char, clear_char, mybad_char]
+                   'u', 'v', 'w', 'x', 'y', 'z', '\'', space_char, '\'', break_chars[0], break_chars[1],
+                   break_chars[2], break_chars[3], back_char, clear_char, mybad_char]
 alpha_target_layout = [['a', 'b', 'c', 'd', 'e'],
                  ['f', 'g', 'h', 'i', 'j'],
                  ['k', 'l', 'm', 'n', 'o'],
                  ['p', 'q', 'r', 's', 't'],
                  ['u', 'v', 'w', 'x', 'y'],
-                 ['z', 'BREAKUNIT', space_char, 'BACKUNIT', 'UNDOUNIT']]
+                 ['z', 'BREAKUNIT', "SPACEUNIT", 'BACKUNIT', 'UNDOUNIT']]
 
 ## qwerty
 qwerty_target_layout = [['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],

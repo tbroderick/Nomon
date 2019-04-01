@@ -422,6 +422,10 @@ class Pretraining(StartWindow):
 
 
     def re_init(self):
+        """
+
+        :return: None
+        """
         self.sister.pretrain = True
         self.setGeometry(self.screen_res[0] * 0.05, self.screen_res[1] * 0.0675, self.screen_res[0] * 0.9,
                          self.screen_res[1] * 0.85)

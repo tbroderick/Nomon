@@ -57,7 +57,6 @@ class LanguageModel():
             word_probs += [key_word_probs]
 
         key_probs, total_log_prob = self.get_char_probs(word_dict, keys_li)
-
         word_probs = np.array(word_probs) - total_log_prob
         word_probs = np.where(word_probs > np.log(kconfig.prob_thres), word_probs, -float("inf"))
         word_preds = np.where(word_probs != -float("inf"), word_preds, "")
@@ -72,6 +71,8 @@ class LanguageModel():
             if key in word_dict:
                 for word in word_dict[key]:
                     log_prob = np.logaddexp(log_prob, word[1])
+            if log_prob == -float("inf"):
+                log_prob = np.log(kconfig.prob_thres*0.5)
             total_log_prob = np.logaddexp(log_prob, total_log_prob)
             key_probs += [log_prob]
 

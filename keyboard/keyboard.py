@@ -23,6 +23,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets, QtMultimedia
 
 from mainWindow import MainWindow
 from subWindows import Pretraining, StartWindow
+from phrases import Phrases
 # import dtree
 from kenlm_lm import LanguageModel
 from pickle_util import PickleUtil
@@ -38,6 +39,8 @@ from broderclocks import BroderClocks
 sys.path.insert(0, os.path.realpath('../KernelDensityEstimation'))
 
 sys._excepthook = sys.excepthook
+
+
 def exception_hook(exctype, value, traceback):
     print(exctype, value, traceback)
     sys._excepthook(exctype, value, traceback)
@@ -75,6 +78,14 @@ class Keyboard(MainWindow):
 
         self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference, \
             self.start_speed, self.is_write_data = user_preferences
+
+        self.phrase_prompts = False # set to true for data collection mode
+
+        if self.phrase_prompts:
+            self.phrases = Phrases("resources/all_lower_nopunc.txt")
+        else:
+            self.phrases = None
+
 
         if self.layout_preference == 'alpha':
             self.target_layout = kconfig.alpha_target_layout
@@ -659,12 +670,43 @@ class Keyboard(MainWindow):
                 else:
                     self.word_score_prior.append(0)
 
+    def reset_context(self):
+        self.left_context = ""
+        self.context = ""
+        self.typed = ""
+        self.lm_prefix = ""
+        self.draw_words()
+
+    def update_phrases(self, cur_text):
+        cur_phrase_typed, next_phrase = self.phrases.compare(cur_text)
+
+        if next_phrase:
+            self.typed_versions += ['']
+            self.mainWidget.text_box.setText('')
+            self.clear_text = False
+            undo_text = 'Clear'
+
+            self.phrases.sample()
+            cur_phrase_typed = ""
+            self.reset_context()
+
+        new_text = self.mainWidget.text_box.toPlainText()
+
+        self.mainWidget.text_box.setText(
+            "<p><span style='color:#00dd00;'>" + cur_phrase_typed + "</span><span style='color:#000000;'>"
+            + self.phrases.cur_phrase[len(cur_phrase_typed):] + "<\p><p>" + new_text + "</span><\p>")
+
     def draw_typed(self):
         self.wpm_update()
+        redraw_words = False
+        # phrases
 
         delete = False
         undo = False
-        previous_text = self.mainWidget.text_box.toPlainText()
+        if self.phrase_prompts:
+            previous_text = self.mainWidget.text_box.toPlainText().split("\n")[-1]
+        else:
+            previous_text = self.mainWidget.text_box.toPlainText()
 
         if len(self.last_add_li) > 1:
             last_add = self.last_add_li[-1]
@@ -680,8 +722,9 @@ class Keyboard(MainWindow):
             new_text = ''
             undo_text = new_text
 
-        if new_text in  [". ",", ","? "]:
+        if new_text in  [". ",", ","? ", "! "]:
             previous_text = previous_text[:-1]
+            redraw_words = True
 
         index = self.previous_winner
         if self.mainWidget.clocks[index] != '':
@@ -696,6 +739,7 @@ class Keyboard(MainWindow):
             self.mainWidget.text_box.setText('')
             self.clear_text = False
             undo_text = 'Clear'
+
         elif delete:
             # self.prefix = self.prefix[:-1]
             if self.typed_versions[-1] != '':
@@ -720,6 +764,14 @@ class Keyboard(MainWindow):
 
         self.previous_undo_text = undo_text
         self.mainWidget.undo_label.setText("<font color='green'>" + undo_text + "</font>")
+
+        if redraw_words:
+            self.reset_context()
+
+        if self.phrase_prompts:
+            print("fuckkk")
+            self.update_phrases(self.typed_versions[-1])
+
 
     def wpm_update(self):
         time_diff = (time.time() - self.wpm_time)
@@ -886,7 +938,7 @@ class Keyboard(MainWindow):
                 self.context += new_char
                 self.last_add_li.append(1)
 
-            if new_char in [".", ",", "?"]:
+            if new_char in [".", ",", "?", "!"]:
                 talk_string = "Full stop"
                 self.old_context_li.append(self.context)
                 self.context = ""
