@@ -34,6 +34,8 @@ import os
 import kconfig
 import config
 import time
+from appdirs import user_data_dir
+import pathlib
 from broderclocks import BroderClocks
 
 sys.path.insert(0, os.path.realpath('../KernelDensityEstimation'))
@@ -79,7 +81,7 @@ class Keyboard(MainWindow):
         self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference, \
             self.start_speed, self.is_write_data = user_preferences
 
-        self.phrase_prompts = False # set to true for data collection mode
+        self.phrase_prompts = False  # set to true for data collection mode
 
         if self.phrase_prompts:
             self.phrases = Phrases("resources/all_lower_nopunc.txt")
@@ -147,11 +149,11 @@ class Keyboard(MainWindow):
         self.old_context_li = [""]
         self.last_add_li = [0]
         # set up "talked" text
-        self.talk_file = "talk.txt"
+        # self.talk_file = "talk.txt"
         self.sound_set = True
 
         # check for speech
-        talk_fid = open(self.talk_file, 'wb')
+        # talk_fid = open(self.talk_file, 'wb')
         # write words
         self.init_words()
 
@@ -206,15 +208,15 @@ class Keyboard(MainWindow):
         self.update_radii = False
         self.on_timer()
 
-
     def gen_data_handel(self):
         self.cwd = os.getcwd()
-        data_path = os.path.join(self.cwd, 'data')
-        if os.path.exists(data_path):
-            user_files = list(os.walk(data_path))
+        self.data_path = user_data_dir('data', 'Nomon')
+        if os.path.exists(self.data_path):
+            user_files = list(os.walk(self.data_path))
             users = user_files[0][1]
         else:
-            os.mkdir(data_path)
+            pathlib.Path(self.data_path).mkdir(parents=True, exist_ok=True)
+            # os.mkdir(data_path)
             user_files = None
             users = []
         input_method = 'text'
@@ -245,14 +247,14 @@ class Keyboard(MainWindow):
                     break
             if input_method == 'text':
                 self.user_id = num
-                user_id_path = os.path.join(data_path, str(self.user_id))
+                user_id_path = os.path.join(self.data_path, str(self.user_id))
                 os.mkdir(user_id_path)
 
         if input_method == 'list':
             item, ok = QtWidgets.QInputDialog.getItem(self, "Select User ID", "List of save User IDs:", users, 0, False)
             self.user_id = item
 
-        self.user_handel = os.path.join(data_path, str(self.user_id))
+        self.user_handel = os.path.join(self.data_path, str(self.user_id))
         user_id_files = list(os.walk(self.user_handel))
         user_id_calibrations = user_id_files[0][1]
         if len(user_id_calibrations) == 0:

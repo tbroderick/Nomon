@@ -9,7 +9,7 @@ os.environ['TK_LIBRARY'] = os.path.join(PYTHON_INSTALL_DIR, 'tcl', 'tk8.6')
 
 build_exe_options = {"packages": ["broderclocks","kenlm_lm","predictor","vocabtrie","config","kconfig","widgets","subWindows","mainWindow",
                                   "string","time",'PyQt5.QtGui', 'PyQt5.QtCore', 'PyQt5.QtWidgets', "PyQt5.QtMultimedia", "numpy",
-                                  "sys","Pickle","pickle_util", "random",
+                                  "sys","Pickle","pickle_util", "random", "pathlib", "appdirs",
                                   "os","pretraininginference","clock_util","clock_inference_engine", "kenlm", "phrases"],
                      "include_files": ["icons", "resources"]}#"pygame",
 

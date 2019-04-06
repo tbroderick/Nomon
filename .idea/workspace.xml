@@ -4,24 +4,14 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ac89ebe2-b77b-446b-80d2-81c517c20547" name="Default" comment="Ported to PyQt5">
-      <change afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/keyboard/phrases.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/keyboard/resources/all_lower_nopunc.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Nomon.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Nomon.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="ac89ebe2-b77b-446b-80d2-81c517c20547" name="Default" comment="--added phrase prompt &#10;--redid punct layout&#10;--fixed 0 prior in lm">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboard/corpus/BNC-token-proc-CENSORED.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboard/corpus/BNC-token-proc.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboard/corpus/merged_ce-0.2.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboard/corpus/merged_ce-0.2_censored.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboard/kconfig.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/kconfig.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboard/kenlm_lm.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/kenlm_lm.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/keyboard/keyboard.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/keyboard.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/keyboard/mainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/mainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboard/phrases/._base_file_phrases.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/keyboard/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/setup.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboard/subWindows.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/subWindows.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/keyboard/talk.txt" beforeDir="false" />
     </list>
     <list id="aa6254be-35a7-4291-8536-037b7fa13556" name="restart no longer needed for high contrast, profanity filter. consolidated user preference pickles, prompt for data save" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -38,11 +28,32 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/keyboard/keyboard.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="187">
-              <caret line="743" column="44" selection-start-line="743" selection-start-column="44" selection-end-line="743" selection-end-column="44" />
+            <state relative-caret-position="340">
+              <caret line="83" column="37" selection-start-line="83" selection-start-column="37" selection-end-line="83" selection-end-column="37" />
               <folding>
                 <element signature="e#852#892#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/keyboard/pretraininginference.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="499">
+              <caret line="270" column="17" selection-start-line="270" selection-start-column="17" selection-end-line="270" selection-end-column="17" />
+              <folding>
+                <element signature="e#109#140#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/keyboard/broderclocks.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="122">
+              <caret line="95" column="13" selection-start-line="95" selection-start-column="13" selection-end-line="95" selection-end-column="13" />
             </state>
           </provider>
         </entry>
@@ -68,11 +79,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/keyboard/phrases.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="578">
+            <state relative-caret-position="561">
               <caret line="34" column="44" selection-start-line="34" selection-start-column="44" selection-end-line="34" selection-end-column="44" />
-              <folding>
-                <element signature="e#0#13#0" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -80,11 +88,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/keyboard/mainWindow.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="209">
-              <caret line="444" column="92" selection-start-line="444" selection-start-column="91" selection-end-line="444" selection-end-column="92" />
-              <folding>
-                <element signature="e#0#42#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="190">
+              <caret line="487" column="63" selection-start-line="487" selection-start-column="59" selection-end-line="487" selection-end-column="63" />
             </state>
           </provider>
         </entry>
@@ -118,13 +123,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>QtGui</find>
-      <find>QtCore.QPalette</find>
-      <find>on_p</find>
-      <find>timer.s</find>
-      <find>self.parent</find>
-      <find>alignm</find>
-      <find>launv</find>
       <find>time_Rp</find>
       <find>help</find>
       <find>size</find>
@@ -147,7 +145,14 @@
       <find>phrase</find>
       <find>lm</find>
       <find>?</find>
-      <find>?</find>
+      <find>cwd</find>
+      <find>data</find>
+      <find>tal</find>
+      <find>comp</find>
+      <find>data_pa</find>
+      <find>save/</find>
+      <find>save</find>
+      <find>talk.t</find>
     </findStrings>
     <replaceStrings>
       <replace>self.minSize</replace>
@@ -212,7 +217,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/keyboard/word_list.txt" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_1.py" />
         <option value="$PROJECT_DIR$/keyboard/safewords.txt" />
         <option value="$PROJECT_DIR$/keyboard/corpus/BNC-token-proc.txt" />
@@ -259,16 +263,19 @@
         <option value="$PROJECT_DIR$/keyboard/phrases.py" />
         <option value="$PROJECT_DIR$/keyboard/kenlm_lm.py" />
         <option value="$PROJECT_DIR$/keyboard/kconfig.py" />
-        <option value="$PROJECT_DIR$/keyboard/mainWindow.py" />
+        <option value="$PROJECT_DIR$/keyboard/keyboard.spec" />
         <option value="$PROJECT_DIR$/keyboard/setup.py" />
+        <option value="$PROJECT_DIR$/keyboard/mainWindow.py" />
+        <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/keyboard/keyboard.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-7" />
-    <option name="width" value="1014" />
-    <option name="height" value="652" />
+    <option name="x" value="498" />
+    <option name="y" value="132" />
+    <option name="width" value="1944" />
+    <option name="height" value="1044" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -276,22 +283,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope">
-        <subPane subId="Project Files">
-          <expand>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="Nomon" type="cbb8eebc:String" user="Nomon" />
-            </path>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="Nomon" type="cbb8eebc:String" user="Nomon" />
-              <item name="keyboard" type="cbb8eebc:String" user="keyboard" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -304,11 +295,21 @@
               <item name="Nomon" type="462c0819:PsiDirectoryNode" />
               <item name="keyboard" type="462c0819:PsiDirectoryNode" />
             </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <expand>
             <path>
-              <item name="Nomon" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Nomon" type="462c0819:PsiDirectoryNode" />
-              <item name="keyboard" type="462c0819:PsiDirectoryNode" />
-              <item name="resources" type="462c0819:PsiDirectoryNode" />
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="Nomon" type="cbb8eebc:String" user="Nomon" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="Nomon" type="cbb8eebc:String" user="Nomon" />
+              <item name="keyboard" type="cbb8eebc:String" user="keyboard" />
             </path>
           </expand>
           <select />
@@ -387,6 +388,25 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="data_load" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Nomon" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/keyboard" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/keyboard/data_load.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="kenlm_lm" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="Nomon" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -457,6 +477,9 @@
       <module name="Nomon" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/keyboard" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -477,10 +500,12 @@
       <item itemvalue="Python.keyboard" />
       <item itemvalue="Python.mainWindow" />
       <item itemvalue="Python.phrases" />
+      <item itemvalue="Python.data_load" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.keyboard" />
+        <item itemvalue="Python.data_load" />
         <item itemvalue="Python.mainWindow" />
         <item itemvalue="Python.kenlm_lm" />
         <item itemvalue="Python.phrases" />
@@ -501,7 +526,11 @@
       <workItem from="1553990738641" duration="89000" />
       <workItem from="1553990989979" duration="2813000" />
       <workItem from="1554073451591" duration="25000" />
-      <workItem from="1554073947255" duration="17321000" />
+      <workItem from="1554073947255" duration="17449000" />
+      <workItem from="1554096827024" duration="35000" />
+      <workItem from="1554143701637" duration="4884000" />
+      <workItem from="1554326715035" duration="8000" />
+      <workItem from="1554580667417" duration="7642000" />
     </task>
     <task id="LOCAL-00001" summary="First experimentation of new GUI using PyQt4">
       <created>1529361516430</created>
@@ -804,11 +833,18 @@
       <option name="project" value="LOCAL" />
       <updated>1554095828708</updated>
     </task>
-    <option name="localTasksCounter" value="44" />
+    <task id="LOCAL-00044" summary="--added phrase prompt &#10;--redid punct layout&#10;--fixed 0 prior in lm">
+      <created>1554096194865</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1554096194865</updated>
+    </task>
+    <option name="localTasksCounter" value="45" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="20248000" />
+    <option name="totallyTimeSpent" value="32945000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -820,14 +856,42 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
+    <frame x="-7" y="-7" width="1519" height="977" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49891067" visible="true" weight="0.15671642" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49891067" visible="true" weight="0.16358659" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" sideWeight="0.50108933" side_tool="true" weight="0.14436248" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3267974" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.62241656" visible="true" weight="0.23293608" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.62241656" visible="true" weight="0.23286052" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.5699523" weight="0.39239" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" weight="0.3291592" />
+      <window_info anchor="bottom" id="Messages" order="7" />
+      <window_info anchor="bottom" id="Terminal" order="8" weight="0.32818073" />
+      <window_info anchor="bottom" id="Version Control" order="9" sideWeight="0.53418124" weight="0.29144096" />
+      <window_info anchor="bottom" id="Inspection Results" order="10" sideWeight="0.49960968" weight="0.3298969" />
+      <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.37758347" side_tool="true" weight="0.3094812" />
+      <window_info anchor="bottom" id="Docker" order="12" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Database Changes" order="13" />
+      <window_info anchor="bottom" id="Python Console" order="14" weight="0.32742316" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.2489339" />
+      <window_info anchor="right" id="SciView" order="3" />
+      <window_info anchor="right" id="Database" order="4" />
+      <window_info anchor="right" x="0" y="0" width="329" height="777" id="Documentation" order="5" side_tool="true" weight="0.32854208" />
+      <window_info anchor="right" id="Coverage" order="6" side_tool="true" />
+    </layout>
+    <layout-to-restore>
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49891067" visible="true" weight="0.16427104" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" sideWeight="0.50108933" side_tool="true" weight="0.14436248" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.3267974" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.62241656" weight="0.23293608" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.5699523" weight="0.39239" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -840,34 +904,13 @@
       <window_info anchor="bottom" id="Docker" order="12" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="13" />
       <window_info anchor="bottom" id="Python Console" order="14" weight="0.32827735" />
-      <window_info anchor="right" x="0" y="0" width="329" height="777" id="Documentation" side_tool="true" weight="0.32991102" />
-      <window_info anchor="right" id="Coverage" side_tool="true" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.2489339" />
       <window_info anchor="right" id="SciView" order="3" />
       <window_info anchor="right" id="Database" order="4" />
-    </layout>
-    <layout-to-restore>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49891067" visible="true" weight="0.21997301" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info id="Favorites" order="2" sideWeight="0.50108933" side_tool="true" weight="0.14436248" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.3267974" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.62241656" visible="true" weight="0.25564805" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.5699523" weight="0.39239" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" weight="0.3291592" />
-      <window_info anchor="bottom" id="Python Console" order="7" weight="0.3291592" />
-      <window_info anchor="bottom" id="Messages" order="8" />
-      <window_info anchor="bottom" id="Terminal" order="9" weight="0.32818073" />
-      <window_info anchor="bottom" id="Version Control" order="10" sideWeight="0.53418124" weight="0.291939" />
-      <window_info anchor="bottom" id="Inspection Results" order="11" sideWeight="0.49960968" weight="0.3298969" />
-      <window_info anchor="bottom" id="Event Log" order="12" sideWeight="0.37758347" side_tool="true" weight="0.3094812" />
-      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
-      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.2489339" />
+      <window_info anchor="right" x="0" y="0" width="329" height="777" id="Documentation" order="5" side_tool="true" weight="0.32854208" />
+      <window_info anchor="right" id="Coverage" order="6" side_tool="true" />
     </layout-to-restore>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -925,7 +968,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="first attempt to make drawing clocks faster&#10;pickles fixed for installer&#10;new working installer" />
     <MESSAGE value="restart no longer needed for high contrast, profanity filter. consolidated user preference pickles, prompt for data save" />
     <MESSAGE value="minor bug fixes and working installer" />
     <MESSAGE value="Merge branch 'workBranch' of https://github.com/tbroderick/Nomon into workBranch&#10;&#10;# Conflicts:&#10;#&#9;keyboard/pre_broderclocks_pyqt.py" />
@@ -950,7 +992,8 @@
     <MESSAGE value="Ported to PyQt5" />
     <MESSAGE value="--added phrase prompts&#10;--reconfigured punctuation&#10;--fixed 0 prior issue with kenlm" />
     <MESSAGE value="--added phrase prompts&#10;--changed punctuation layout&#10;--fixed 0 prior issue with lm" />
-    <option name="LAST_COMMIT_MESSAGE" value="--added phrase prompts&#10;--changed punctuation layout&#10;--fixed 0 prior issue with lm" />
+    <MESSAGE value="--added phrase prompt &#10;--redid punct layout&#10;--fixed 0 prior in lm" />
+    <option name="LAST_COMMIT_MESSAGE" value="--added phrase prompt &#10;--redid punct layout&#10;--fixed 0 prior in lm" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -972,7 +1015,7 @@
     </watches-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Nomon$keyboard.coverage" NAME="keyboard Coverage Results" MODIFIED="1554095628344" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
+    <SUITE FILE_PATH="coverage/Nomon$keyboard.coverage" NAME="keyboard Coverage Results" MODIFIED="1554592371803" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$mainWindow.coverage" NAME="mainWindow Coverage Results" MODIFIED="1554090765886" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$kenlm_lm.coverage" NAME="kenlm_lm Coverage Results" MODIFIED="1554089836334" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
   </component>
@@ -991,23 +1034,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/keyboard/data/preconfig.pickle" />
-    <entry file="file://$PROJECT_DIR$/keyboard/data/.keep" />
-    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_5.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="215">
-          <caret line="17" selection-start-line="17" selection-end-line="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Python27/Lib/pickle.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="46">
-          <caret line="971" selection-start-line="971" selection-end-line="971" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/pre_broderclocks_pyqt.py" />
     <entry file="file://$PROJECT_DIR$/keyboard/language_prior.py" />
     <entry file="file://$PROJECT_DIR$/keyboard/build/exe.win-amd64-2.7/clock_util.py" />
     <entry file="file://$USER_HOME$/.PyCharmCE2018.1/system/python_stubs/-817973147/PyQt4/QtGui/QMainWindow.py">
@@ -1134,13 +1160,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/broderclocks.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1547">
-          <caret line="98" column="8" selection-start-line="98" selection-start-column="8" selection-end-line="98" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/keyboard/clock_util.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="606">
@@ -1155,13 +1174,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/pretraininginference.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="15" selection-start-line="15" selection-end-line="15" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/keyboard/resources/all_lower_nopunc.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="544">
@@ -1169,27 +1181,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/subWindows.py">
+    <entry file="file://$PROJECT_DIR$/keyboard/keyboard.spec">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
-          <caret line="5" column="10" selection-start-line="5" selection-start-column="10" selection-end-line="5" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/phrases.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="578">
-          <caret line="34" column="44" selection-start-line="34" selection-start-column="44" selection-end-line="34" selection-end-column="44" />
-          <folding>
-            <element signature="e#0#13#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/kenlm_lm.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1054">
-          <caret line="67" column="22" selection-start-line="67" selection-start-column="22" selection-end-line="67" selection-end-column="22" />
+        <state relative-caret-position="442">
+          <caret line="26" column="32" lean-forward="true" selection-start-line="26" selection-start-column="32" selection-end-line="26" selection-end-column="32" />
         </state>
       </provider>
     </entry>
@@ -1200,12 +1195,33 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/mainWindow.py">
+    <entry file="file://$PROJECT_DIR$/keyboard/phrases.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="209">
-          <caret line="444" column="92" selection-start-line="444" selection-start-column="91" selection-end-line="444" selection-end-column="92" />
+        <state relative-caret-position="561">
+          <caret line="34" column="44" selection-start-line="34" selection-start-column="44" selection-end-line="34" selection-end-column="44" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/kenlm_lm.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1054">
+          <caret line="67" column="22" selection-start-line="67" selection-start-column="22" selection-end-line="67" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/subWindows.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="5" column="10" selection-start-line="5" selection-start-column="10" selection-end-line="5" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/data_load.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="289">
+          <caret line="22" column="15" lean-forward="true" selection-start-line="22" selection-start-column="15" selection-end-line="22" selection-end-column="15" />
           <folding>
-            <element signature="e#0#42#0" expanded="true" />
+            <element signature="e#0#9#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1217,10 +1233,57 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/zipfile.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="200">
+          <caret line="1593" selection-start-line="1593" selection-end-line="1593" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/zip.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/mainWindow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="190">
+          <caret line="487" column="63" selection-start-line="487" selection-start-column="59" selection-end-line="487" selection-end-column="63" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/broderclocks.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="122">
+          <caret line="95" column="13" selection-start-line="95" selection-start-column="13" selection-end-line="95" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/pretraininginference.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="499">
+          <caret line="270" column="17" selection-start-line="270" selection-start-column="17" selection-end-line="270" selection-end-column="17" />
+          <folding>
+            <element signature="e#109#140#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="51">
+          <caret line="3" column="4" lean-forward="true" selection-start-line="3" selection-start-column="4" selection-end-line="3" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/keyboard/keyboard.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="743" column="44" selection-start-line="743" selection-start-column="44" selection-end-line="743" selection-end-column="44" />
+        <state relative-caret-position="340">
+          <caret line="83" column="37" selection-start-line="83" selection-start-column="37" selection-end-line="83" selection-end-column="37" />
           <folding>
             <element signature="e#852#892#0" expanded="true" />
           </folding>

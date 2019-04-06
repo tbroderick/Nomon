@@ -446,7 +446,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                   " your preference anytime in the Tools menu).")
         message_box.addButton(QtWidgets.QMessageBox.Yes)
         message_box.addButton(QtWidgets.QMessageBox.No)
-        message_box.setDefaultButton(QtWidgets.QMessageBox.No)
+        message_box.setDefaultButton(QtWidgets.QMessageBox.Yes)
         message_box.setWindowIcon(self.icon)
 
         reply = message_box.exec_()
@@ -464,14 +464,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.check_filemenu()
 
     def compress_data_event(self):
-        zf = zipfile.ZipFile("nomon_data.zip", "w")
-        for dirname, subdirs, files in os.walk("data"):
-            zf.write(dirname)
-            for filename in files:
-                zf.write(os.path.join(dirname, filename))
-        zf.close()
+        self.bc.save_when_quit()
+        data_save_path, _ = os.path.split(self.data_path)
+        data_zip_path = os.path.join(data_save_path, "nomon_data.zip")
+        zf = zipfile.ZipFile(data_zip_path, "w")
+        for dirname, subdirs, files in os.walk(self.data_path):
+            sub_dirname = dirname[len(self.data_path):]
 
-        data_file_path = os.path.join(os.getcwd(), 'nomon_data.zip')
+            zf.write(dirname, sub_dirname)
+            for filename in files:
+                file_path = os.path.join(dirname, filename)
+                sub_file_path = file_path[len(self.data_path):]
+                zf.write(file_path, sub_file_path)
+        zf.close()
 
         message_box = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "Data Compression", "We have compressed your data into a ZIP"
                                                                            " archive accessible in the location"
@@ -480,7 +485,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                                                            "ZIP archive to the listed email address. We"
                                                                            " greatly appreciate your willingness to "
                                                                            "help us make Nomon better!")
-        message_box.setDetailedText("File Path: \n" + data_file_path + "\n\n Email: \nnomonstudy@gmail.com")
+        message_box.setDetailedText("File Path: \n" + data_save_path + "\n\n Email: \nnomonstudy@gmail.com")
         message_box.addButton(QtWidgets.QMessageBox.Ok)
         message_box.setWindowIcon(self.icon)
 
