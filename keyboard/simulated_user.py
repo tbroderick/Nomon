@@ -38,19 +38,9 @@ from appdirs import user_data_dir
 import pathlib
 from broderclocks import BroderClocks
 
-# sys.path.insert(0, os.path.realpath('../KernelDensityEstimation'))
+sys.path.insert(0, os.path.realpath('../KernelDensityEstimation'))
 
-sys._excepthook = sys.excepthook
-
-
-def exception_hook(exctype, value, traceback):
-    print(exctype, value, traceback)
-    sys._excepthook(exctype, value, traceback)
-    sys.exit(1)
-sys.excepthook = exception_hook
-
-if kconfig.target_evt == kconfig.joy_evt:
-    import pygame
+# sys._excepthook = sys.excepthook
 
 
 class Keyboard(MainWindow):
@@ -66,28 +56,15 @@ class Keyboard(MainWindow):
         # Number of word clocks to display in case word prediction == 1 (reduced)
         self.reduce_display = 5
 
-        # get user data before initialization
-        self.gen_data_handel()
+        # # get user data before initialization
+        # self.gen_data_handel()
 
-        self.up_handel = PickleUtil(os.path.join(self.user_handel, 'user_preferences.p'))
-        user_preferences = self.up_handel.safe_load()
-        if user_preferences is None:
-            first_load = True
-            user_preferences = ['default', 1, False, 'alpha', 'off', 12, True]
-            self.up_handel.safe_save(user_preferences)
-        else:
-            first_load = False
+        user_preferences = ['default', 1, False, 'alpha', 'off', 12, False]
 
-        self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference, \
+        self.clock_type, self.font_scale, self.high_contrast,self.layout_preference, self.pf_preference, \
             self.start_speed, self.is_write_data = user_preferences
 
         self.phrase_prompts = False  # set to true for data collection mode
-
-        if self.phrase_prompts:
-            self.phrases = Phrases("resources/all_lower_nopunc.txt")
-        else:
-            self.phrases = None
-
 
         if self.layout_preference == 'alpha':
             self.target_layout = kconfig.alpha_target_layout
@@ -193,13 +170,11 @@ class Keyboard(MainWindow):
 
         self.consent = False
 
-        if first_load:
-            self.pretrain = True
-            self.welcome = Pretraining(self, screen_res)
-
+        # if first_load:
+        #     self.pretrain = True
+        #     self.welcome = Pretraining(self, screen_res)
 
         # animate
-
         # record to prevent double tap
         self.last_key_press_time = time.time()
         self.last_release_time = time.time()
@@ -207,70 +182,6 @@ class Keyboard(MainWindow):
         self.init_clocks()
         self.update_radii = False
         self.on_timer()
-
-    def gen_data_handel(self):
-        self.cwd = os.getcwd()
-        self.data_path = user_data_dir('data', 'Nomon')
-        if os.path.exists(self.data_path):
-            user_files = list(os.walk(self.data_path))
-            users = user_files[0][1]
-        else:
-            pathlib.Path(self.data_path).mkdir(parents=True, exist_ok=True)
-            # os.mkdir(data_path)
-            user_files = None
-            users = []
-        input_method = 'text'
-        if user_files is not None and len(users) != 0:
-            message = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "Load User Data", "You can either create a new user profile or "
-                                                                             "load an existing user profile.")
-            message.addButton(QtWidgets.QPushButton('Create New User'), QtWidgets.QMessageBox.YesRole)
-            message.addButton(QtWidgets.QPushButton('Load Previous User'), QtWidgets.QMessageBox.NoRole)
-            message.setDefaultButton(QtWidgets.QMessageBox.Yes)
-            response = message.exec_()
-            if response == 0:
-                input_method = 'text'
-            else:
-                input_method = 'list'
-
-        if input_method == 'text':
-            valid_user_id = False
-            input_text = "Please input a Number that will be used to save your user information"
-            while not valid_user_id:
-                num, ok = QtWidgets.QInputDialog.getInt(self, "User ID Number Input", input_text)
-                if str(num) not in users:
-                    valid_user_id = True
-                else:
-                    input_text = "The user ID you inputed already exists! \n please input a valid user ID or press " \
-                                 "\"cancel\" to choose an existing one from a list"
-                if ok == 0:
-                    input_method = 'list'
-                    break
-            if input_method == 'text':
-                self.user_id = num
-                user_id_path = os.path.join(self.data_path, str(self.user_id))
-                os.mkdir(user_id_path)
-
-        if input_method == 'list':
-            item, ok = QtWidgets.QInputDialog.getItem(self, "Select User ID", "List of save User IDs:", users, 0, False)
-            self.user_id = item
-
-        self.user_handel = os.path.join(self.data_path, str(self.user_id))
-        user_id_files = list(os.walk(self.user_handel))
-        user_id_calibrations = user_id_files[0][1]
-        if len(user_id_calibrations) == 0:
-            self.data_handel = os.path.join(self.user_handel, 'cal0')
-            os.mkdir(self.data_handel)
-            user_id_cal_files = None
-            self.user_cal_num = 0
-        else:
-            user_id_cal_files = user_id_files[-1][2]
-            self.data_handel = user_id_files[-1][0]
-            self.user_cal_num = len(user_id_calibrations)-1
-        if user_id_cal_files is not None:
-            self.use_num = sum([1 if 'params_data' in file_name else 0 for file_name in user_id_cal_files])
-        else:
-            self.use_num = 0
-        print(self.data_handel)
 
     def save_environment(self):
         self.rotate_index_past = self.rotate_index

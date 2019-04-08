@@ -5,7 +5,7 @@ Created on Wed Aug  1 15:28:48 2018
 @author: TiffMin
 """
 from __future__ import division
-from numpy import log, exp, sqrt, pi, std, argmin, e
+import numpy as np
 from clock_util import ClockUtil
 import config
 
@@ -15,11 +15,11 @@ class Entropy:
     def __init__(self, clock_inf):
         self.clock_inf = clock_inf
         self.num_bits = 0
-        self.bits_per_select = log(len(self.clock_inf.clocks_on)) / log(2)
+        self.bits_per_select = np.log(len(self.clock_inf.clocks_on)) / np.log(2)
 
     def update_bits(self):
         K = len(self.clock_inf.clocks_on)
-        self.bits_per_select = log(K) / log(2)
+        self.bits_per_select = np.log(K) / np.log(2)
         self.num_bits += self.bits_per_select
         return self.num_bits
 
@@ -53,8 +53,8 @@ class KernelDensityEstimation:
         for x in self.x_li:
             diff = x - config.mu0
 
-            dens = exp(-1/(2*config.sigma0_sq) * diff*diff)
-            dens /= sqrt(2*pi*config.sigma0_sq)
+            dens = np.exp(-1/(2*config.sigma0_sq) * diff*diff)
+            dens /= np.sqrt(2*np.pi*config.sigma0_sq)
             dens *= self.n_ksigma
             self.dens_li.append(dens)
             self.Z += dens
@@ -80,11 +80,11 @@ class KernelDensityEstimation:
     
     # helper functions
     def normal(self, x, mu, sig_sq):
-        return exp(-((x-mu)**2)/(2*sig_sq)) / float(sqrt(2*pi*sig_sq))
+        return np.exp(-((x-mu)**2)/(2*sig_sq)) / float(np.sqrt(2*np.pi*sig_sq))
     
     def optimal_bandwith(self, things):
         n = len(things)
-        return 1.06 * (n ** -0.2) * std(things)
+        return 1.06 * (n ** -0.2) * np.std(things)
 
     def ave_sigma_sq(self, eff_num_points, yLenEff):
         ysum = sum([y for y in self.y_li[0:yLenEff]])
@@ -98,11 +98,11 @@ class KernelDensityEstimation:
 
     # calculate the optimal bandwidth only with the latest yLenEff(effective) data
     def calc_ksigma(self, eff_num_points, yLenEff):
-        # combine empirical and prior
+        # combine emnp.pirical and prior
         ave_sigma_sq = self.ave_sigma_sq(eff_num_points, yLenEff)
 
         # optimal bandwidth
-        self.ksigma = self.ns_factor * sqrt(ave_sigma_sq)
+        self.ksigma = self.ns_factor * np.sqrt(ave_sigma_sq)
         return self.ksigma
 
     # When a new yin comes in, add that yin to kernel density estimation
@@ -111,8 +111,8 @@ class KernelDensityEstimation:
         ksigma_sq = ksigma * ksigma
         for index in self.index_li:
             diff = self.x_li[index] - yin
-            dens = exp(-1 / (2 * ksigma_sq) * diff * diff)
-            dens /= sqrt(2 * pi * ksigma_sq)
+            dens = np.exp(-1 / (2 * ksigma_sq) * diff * diff)
+            dens /= np.sqrt(2 * np.pi * ksigma_sq)
             self.dens_li[index] = self.damp * self.dens_li[index] + dens
             # summing Z again to keep it fresh (& since have to anyway)
             self.Z += self.dens_li[index]
@@ -145,7 +145,7 @@ class ClockInference:
         self.kde = KernelDensityEstimation(self.time_rotate)
         
         # how many pts to save (0.02: threshold for accuracy)
-        self.n_hist = min(200, int(log(0.02) / log(self.kde.damp)))
+        self.n_hist = min(200, int(np.log(0.02) / np.log(self.kde.damp)))
         
         self.past_data = past_data
 
@@ -158,19 +158,24 @@ class ClockInference:
     def get_score_inc(self, yin):
         index = int(config.num_divs_click * (yin / self.time_rotate + 0.5)) % config.num_divs_click
         if self.kde.Z != 0: 
-            return log(self.kde.dens_li[index] / self.kde.Z)
+            return np.log(self.kde.dens_li[index] / self.kde.Z)
         # Not super sure tho
         else:
             return 1
 
     def reverse_index_gsi(self, log_dens_val):
-        dens_val = e ** log_dens_val
-        most_likely_index = argmin([abs(x - dens_val) for x in self.kde.dens_li])
+        dens_val = np.e ** log_dens_val
+        most_likely_index = np.argmin([abs(x - dens_val) for x in self.kde.dens_li])
         return most_likely_index
     
     # increments and adds the new x to the ksigma calculation
     def inc_score_inc(self, yin):
         # add to the list
+        if self.bc.parent.is_write_data:
+            ind_in_histo = np.argmin(np.abs(np.array(self.kde.x_li)-yin))  # save relative click time
+            self.bc.save_click_time(self.bc.last_press_time_li.pop(0), self.bc.last_gap_time_li.pop(0), ind_in_histo)
+            print("Click Time Recorded!")
+
         if len(self.kde.y_li) > self.n_hist:
             self.kde.y_li.pop()
             self.kde.y_ksigma.pop()
@@ -213,6 +218,7 @@ class ClockInference:
                 # mod and 0.5's for keeping in (-0.5,0.5) range
                 click_time = (self.clock_util.cur_hours[i] * self.time_rotate * 1.0 / self.clock_util.num_divs_time +
                               time_diff_in - self.time_rotate * config.frac_period + 0.5) % 1 - 0.5
+
                 self.clock_history[0][-1].append(click_time)
                 clocks_on_cursor += 1
             else:
@@ -250,14 +256,19 @@ class ClockInference:
             
         elif n_hist > config.learn_delay:
             # index of the winning clock
-            win_index = self.win_history[config.learn_delay]
 
+            num_selections = len(self.clock_history)
             # add a score point to the location of each recorded press
-            n_press = len(self.clock_history[config.learn_delay])
+            # for selection_index in range(num_selections-1, -1, -1):
+            selection_index = -config.learn_delay
+            n_press = len(self.clock_history[selection_index])
+            win_index = self.win_history[selection_index]
             for press in range(0, n_press):
-                self.inc_score_inc(self.clock_history[config.learn_delay][press][win_index])
+                self.inc_score_inc(self.clock_history[selection_index][press][win_index])
 
             # delete extra bits
+            # self.clock_history = []
+            # self.win_history = []
             for index in range(n_hist - 1, config.learn_delay - 1, -1):
                 self.clock_history.pop(index)
                 self.win_history.pop(index)

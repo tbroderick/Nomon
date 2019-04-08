@@ -736,9 +736,7 @@ class MainKeyboardWidget(QtWidgets.QWidget):
         self.sldLabel.setText(str(self.speed_slider.value()))
         self.parent.change_speed(value)
         self.parent.start_speed = value
-        
-        self.parent.up_handel.safe_save([self.parent.clock_type, self.parent.font_scale, self.parent.high_contrast, self.parent.layout_preference,
-                                  self.parent.pf_preference, self.parent.start_speed, self.parent.is_write_data])
+
 
     def get_words(self, char):  # Reformat word list into blueprint for GUI construction
         i = 0

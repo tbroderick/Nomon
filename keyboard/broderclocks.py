@@ -32,6 +32,8 @@ class BroderClocks:
     
         self.latest_time = time.time()
         self.last_press_time = time.time()
+        self.last_gap_time_li = []
+        self.last_press_time_li = []
         
         #NOT SUPER SURE
         self.time_rotate = self.parent.time_rotate
@@ -45,44 +47,48 @@ class BroderClocks:
 
     #get kde data from past use
     def get_prev_data(self):
-        self.prev_data_path = self.parent.data_handel + "\\preconfig.p"
-        print("USER ID is" + str(self.parent.user_id))
-        load_dict = PickleUtil(self.prev_data_path).safe_load()
-        if load_dict != None:
-            self.clock_inf.kde.get_past_dens_li(load_dict)
+        if self.parent.is_write_data:
+            self.prev_data_path = self.parent.data_handel + "\\preconfig.p"
+            print("USER ID is" + str(self.parent.user_id))
+            load_dict = PickleUtil(self.prev_data_path).safe_load()
+            if load_dict != None:
+                self.clock_inf.kde.get_past_dens_li(load_dict)
     
     def get_click_data(self):
 
-        self.click_data_path = self.parent.data_handel + "\\click_time_log.p"
+        if self.parent.is_write_data:
+            self.click_data_path = self.parent.data_handel + "\\click_time_log_" + str(self.parent.use_num-1)+".p"
 
-        load_click = PickleUtil(self.click_data_path).safe_load()
-        if load_click != None:
-            try:
-                if load_click.has_key('user id') and load_click.has_key('use_num') and load_click.has_key('rotate index'):
-                    if load_click['user id'] == self.parent.user_id:
-                        self.click_time_list = load_click['click time list']
-                        # self.parent.use_num = load_click['use_num'] +1
-                        self.parent.rotate_index = load_click['rotate index']
-                        return
-            except:
-                pass
-        self.click_time_list = []
-        self.parent.rotate_index = config.default_rotate_ind
-        return
-        
-   
-        
-    def save_click_time(self,last_gap_time, index):
-        self.click_time_list.append((last_gap_time, index))     
+            load_click = PickleUtil(self.click_data_path).safe_load()
+            self.click_time_list = []
+            if load_click != None:
+                try:
+                    if load_click.has_key('user id') and load_click.has_key('use_num') and load_click.has_key('rotate index'):
+                        if load_click['user id'] == self.parent.user_id:
+                            self.click_time_list = load_click['click time list']
+                            # self.parent.use_num = load_click['use_num'] +1
+                            self.parent.rotate_index = load_click['rotate index']
+                            return
+                except:
+                    pass
+
+            self.parent.rotate_index = config.default_rotate_ind
+            return
+
+    def save_click_time(self, last_press_time, last_gap_time, index):
+
+        self.parent.params_handle_dict['press'].append([last_press_time])
+        self.click_time_list.append((last_gap_time, index))
       
     def save_when_quit_noconsent(self):
-        PickleUtil(self.click_data_path).safe_save({'user id': self.parent.user_id, 'use_num': self.parent.use_num ,'click time list': [], 'rotate index': self.parent.rotate_index})
+        if self.parent.is_write_data:
+            PickleUtil(self.click_data_path).safe_save({'user id': self.parent.user_id, 'use_num': self.parent.use_num ,'click time list': [], 'rotate index': self.parent.rotate_index})
 
     #ALL THE SAVES AND DUMPS THEY DO WHEN THEY QUIT KEYBOARD SHOULD BE HERE TOO
     def save_when_quit(self):
 
             self.prev_data_path = os.path.join(self.parent.data_handel, 'preconfig.p')
-            self.click_data_path = os.path.join(self.parent.data_handel, 'click_time_log.p')
+            self.click_data_path = os.path.join(self.parent.data_handel, 'click_time_log_' + str(self.parent.use_num)+'.p')
             self.params_data_path = os.path.join(self.parent.data_handel, 'params_data_use_num' + str(self.parent.use_num)+'.p')
             print(self.params_data_path)
             PickleUtil(self.click_data_path).safe_save({'user id': self.parent.user_id, 'use_num': self.parent.use_num ,'click time list': self.click_time_list, 'rotate index': self.parent.rotate_index})
@@ -109,12 +115,13 @@ class BroderClocks:
         top_score_clock = self.clock_inf.sorted_inds[0]
         #그냥 curhour하면 되는거 아닌가 
         ind_in_histo = self.clock_inf.reverse_index_gsi(self.clock_inf.cscores[top_score_clock])
-        
+
         #Save all click time by the user
         last_gap_time = (time_in - self.last_press_time) % self.time_rotate
         if self.parent.is_write_data:
-            self.save_click_time(last_gap_time, ind_in_histo)
             self.last_press_time = time_in
+            self.last_gap_time_li += [last_gap_time]  # save time of click % rotate index
+            self.last_press_time_li += [time_in]
             # print "click time was recorded!"
 
         # proceed based on whether there was a winner
