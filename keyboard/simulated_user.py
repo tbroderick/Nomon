@@ -17,12 +17,9 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Nomon Keyboard.  If not, see <http://www.gnu.org/licenses/>.
 ######################################
-
-from numpy import zeros, array, log, exp
+import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets, QtMultimedia
 
-from mainWindow import MainWindow
-from subWindows import Pretraining, StartWindow
 from phrases import Phrases
 # import dtree
 from kenlm_lm import LanguageModel
@@ -33,7 +30,6 @@ import os
 # import string
 import kconfig
 import config
-import time
 from appdirs import user_data_dir
 import pathlib
 from broderclocks import BroderClocks
@@ -42,13 +38,21 @@ sys.path.insert(0, os.path.realpath('../KernelDensityEstimation'))
 
 # sys._excepthook = sys.excepthook
 
+class Time():
+    def __init__(self):
+        self.cur_time = 0
 
-class Keyboard(MainWindow):
+    def time(self):
+        return self.cur_time
 
+    def set_time(self, t):
+        self.cur_time = t
+
+class Keyboard():
     def __init__(self, screen_res, app):
-        super(Keyboard, self).__init__(screen_res)
+        # super(Keyboard, self).__init__(screen_res)
 
-        self.app = app
+        self.time = Time()
         self.pretrain_window = False
 
         # 2 is turn fully on, 1 is turn on but reduce, 0 is turn off
@@ -114,8 +118,8 @@ class Keyboard(MainWindow):
         self.params_handle_dict = {'speed': [], 'params': [], 'start': [], 'press': [], 'choice': []}
         self.num_presses = 0
 
-        self.params_handle_dict['params'].append([config.period_li[config.default_rotate_ind], config.theta0])
-        self.params_handle_dict['start'].append(time.time())
+        # self.params_handle_dict['params'].append([config.period_li[config.default_rotate_ind], config.theta0])
+        # self.params_handle_dict['start'].append(time.time())
 
         self.gen_scale()
         self.pause_set = True
@@ -146,27 +150,22 @@ class Keyboard(MainWindow):
         self.clear_text = False
         self.pretrain = False
 
-        self.init_ui()
-
         self.time_rotate = config.period_li[self.start_speed]
         # get language model results
         self.gen_word_prior(False)
 
-        self.clock_spaces = zeros((len(self.clock_centers), 2))
+        self.clock_spaces = np.zeros((len(self.clock_centers), 2))
 
         self.bc = BroderClocks(self)
-        self.mainWidget.change_value(self.start_speed)
 
         self.bc.init_follow_up(self.word_score_prior)
 
-        self.clock_params = zeros((len(self.clock_centers), 8))
+        self.clock_params = np.zeros((len(self.clock_centers), 8))
 
-        self.bc.clock_inf.clock_util.calcualte_clock_params('default', recompute=True)
+        # self.bc.clock_inf.clock_util.calcualte_clock_params('default', recompute=True)
 
-        # draw histogram
-        self.init_histogram()
 
-        self.save_environment()
+        # self.save_environment()
 
         self.consent = False
 
@@ -176,62 +175,51 @@ class Keyboard(MainWindow):
 
         # animate
         # record to prevent double tap
-        self.last_key_press_time = time.time()
-        self.last_release_time = time.time()
+        # self.last_key_press_time = time.time()
+        # self.last_release_time = time.time()
 
-        self.init_clocks()
+        # self.init_clocks()
         self.update_radii = False
-        self.on_timer()
+        # self.on_timer()
 
-    def save_environment(self):
-        self.rotate_index_past = self.rotate_index
-        self.window_size_past = self.frameGeometry()
-        self.clock_type_past = self.clock_type
-        self.layout_preference_past = self.layout_preference
-        self.high_contrast_past = self.high_contrast
-
-    def init_clocks(self):
-        self.update_clock_radii()
-
-        self.bc.clock_inf.clock_util.calcualte_clock_params(self.clock_type, recompute=True)
-        for clock in self.words_on:
-            self.mainWidget.clocks[clock].set_params(self.clock_params[clock, :], recompute=True)
-            self.mainWidget.clocks[clock].redraw_text = True
-            if self.word_pred_on == 1:
-                if clock in self.mainWidget.reduced_word_clock_indices:
-                    word_clock = self.mainWidget.reduced_word_clocks[self.mainWidget.reduced_word_clock_indices.index(clock)]
-                    word_clock.set_params(self.clock_params[clock, :], recompute=True)
-        for clock in self.words_off:
-            self.mainWidget.clocks[clock].redraw_text = True
-
-    def update_clock_radii(self):
-        for clock in self.words_on:
-            self.clock_spaces[clock, :] = array([self.mainWidget.clocks[clock].w, self.mainWidget.clocks[clock].h])
-            if self.word_pred_on == 1:
-                if clock in self.mainWidget.reduced_word_clock_indices:
-                    word_clock = self.mainWidget.reduced_word_clocks[
-                        self.mainWidget.reduced_word_clock_indices.index(clock)]
-                    self.clock_spaces[clock, :] = array(
-                        [word_clock.w, word_clock.h])
-
-        self.bc.clock_inf.clock_util.calcualte_clock_params(self.clock_type, recompute=True)
-        self.update_radii = False
-
-    def find_events(self):
-        # check everything in the queue of pygame events
-        events = pygame.event.get()
-        for event in events:
-            # event type for pressing any of the joystick buttons down
-            if event.type == pygame.JOYBUTTONDOWN:
-                # generate the event I've defined
-                self.canvas.event_generate(kconfig.joy_evt)
-
-        # return to check for more events in a moment
-        self.parent.after(20, self.find_events)
-
-    def keyPressEvent(self, e):
-        if e.key() == QtCore.Qt.Key_Space:
+        # print(self.bc.clock_inf.clock_util.cur_hours)
+        print(self.words_on)
+        target_clock = 31
+        print(self.index_to_text(target_clock))
+        ndt = self.bc.clock_inf.clock_util.num_divs_time
+        for i in range(6):
+            if self.bc.clock_inf.clock_util.cur_hours[target_clock] > ndt // 2:
+                time_delta = (3*ndt // 2 - self.bc.clock_inf.clock_util.cur_hours[target_clock]) / ndt * self.time_rotate
+            else:
+                time_delta = (ndt // 2 - self.bc.clock_inf.clock_util.cur_hours[target_clock])/ndt*self.time_rotate
+            # print(time_delta)
+            self.time.set_time(self.time.time()+time_delta)
+            self.on_timer()
+            # print(self.bc.clock_inf.clock_util.cur_hours[target_clock])
             self.on_press()
+        print(self.words_on)
+        target_clock = 17
+        print(self.index_to_text(target_clock))
+        for i in range(6):
+            if self.bc.clock_inf.clock_util.cur_hours[target_clock] > ndt // 2:
+                time_delta = (3*ndt // 2 - self.bc.clock_inf.clock_util.cur_hours[target_clock]) / ndt * self.time_rotate
+            else:
+                time_delta = (ndt // 2 - self.bc.clock_inf.clock_util.cur_hours[target_clock])/ndt*self.time_rotate
+            # print(time_delta)
+            self.time.set_time(self.time.time()+time_delta)
+            self.on_timer()
+            # print(self.bc.clock_inf.clock_util.cur_hours[target_clock])
+            self.on_press()
+
+    def index_to_text(self, index):
+
+        if (index - kconfig.N_pred) % (kconfig.N_pred + 1) == 0:
+            typed = self.keys_li[self.index_to_wk[index]]
+        else:
+            key = self.index_to_wk[index] // kconfig.N_pred
+            pred = self.index_to_wk[index] % kconfig.N_pred
+            typed = self.words_li[key][pred]
+        return typed
 
     def init_locs(self):
         # size of keyboard
@@ -332,22 +320,6 @@ class Keyboard(MainWindow):
         tick_int = int((len(config.period_li) - 1) * kconfig.word_pt * 3 / (1.0 * scale_length)) + 1
         self.time_rotate = config.period_li[self.rotate_index]
 
-    def toggle_pause_button(self, value):
-        self.pause_set = value
-        self.mainWidget.sldLabel.setFocus()
-
-    def toggle_sound_button(self, value):
-        self.sound_set = value
-        self.mainWidget.sldLabel.setFocus()
-
-    def toggle_talk_button(self, value):
-        self.talk_set = value
-        self.mainWidget.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
-
-    def toggle_learn_button(self, value):
-        config.is_learning = value
-        self.mainWidget.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
-
     def change_speed(self, index):
         # speed (as shown on scale)
         speed_index = int(index)
@@ -378,7 +350,7 @@ class Keyboard(MainWindow):
             bars = self.bc.get_histogram()
         # bars = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.bars = bars
-        self.mainWidget.histogram.update()
+        # self.mainWidget.histogram.update()
 
     def init_words(self):
         (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(self.left_context, self.context,
@@ -542,8 +514,8 @@ class Keyboard(MainWindow):
             self.word_pair.append((key,))
             index += 1
 
-        self.mainWidget.update_clocks()
-        self.init_clocks()
+        # self.mainWidget.update_clocks()
+        # self.init_clocks()
 
     def gen_word_prior(self, is_undo):
         self.word_score_prior = []
@@ -554,20 +526,20 @@ class Keyboard(MainWindow):
                 # word case
                 if len(pair) == 2:
                     (key, pred) = pair
-                    prob = self.word_freq_li[key][pred] + log(kconfig.rem_prob)
+                    prob = self.word_freq_li[key][pred] + np.log(kconfig.rem_prob)
                     self.word_score_prior.append(prob)
                 else:
                     key = pair[0]
                     prob = self.key_freq_li[key]
-                    prob = prob + log(kconfig.rem_prob)
+                    prob = prob + np.log(kconfig.rem_prob)
                     if self.keys_li[key] == kconfig.mybad_char or self.keys_li[key] == kconfig.yourbad_char:
-                        prob = log(kconfig.undo_prob)
+                        prob = np.log(kconfig.undo_prob)
                     if self.keys_li[key] in kconfig.break_chars:
-                        prob = log(kconfig.break_prob)
+                        prob = np.log(kconfig.break_prob)
                     if self.keys_li[key] == kconfig.back_char:
-                        prob = log(kconfig.back_prob)
+                        prob = np.log(kconfig.back_prob)
                     if self.keys_li[key] == kconfig.clear_char:
-                        prob = log(kconfig.undo_prob)
+                        prob = np.log(kconfig.undo_prob)
 
                     self.word_score_prior.append(prob)
         else:
@@ -589,25 +561,6 @@ class Keyboard(MainWindow):
         self.typed = ""
         self.lm_prefix = ""
         self.draw_words()
-
-    def update_phrases(self, cur_text):
-        cur_phrase_typed, next_phrase = self.phrases.compare(cur_text)
-
-        if next_phrase:
-            self.typed_versions += ['']
-            self.mainWidget.text_box.setText('')
-            self.clear_text = False
-            undo_text = 'Clear'
-
-            self.phrases.sample()
-            cur_phrase_typed = ""
-            self.reset_context()
-
-        new_text = self.mainWidget.text_box.toPlainText()
-
-        self.mainWidget.text_box.setText(
-            "<p><span style='color:#00dd00;'>" + cur_phrase_typed + "</span><span style='color:#000000;'>"
-            + self.phrases.cur_phrase[len(cur_phrase_typed):] + "<\p><p>" + new_text + "</span><\p>")
 
     def draw_typed(self):
         self.wpm_update()
@@ -682,102 +635,22 @@ class Keyboard(MainWindow):
             self.reset_context()
 
         if self.phrase_prompts:
-            print("fuckkk")
             self.update_phrases(self.typed_versions[-1])
 
-
-    def wpm_update(self):
-        time_diff = (time.time() - self.wpm_time)
-        if time_diff < 15. * 10 / self.time_rotate:
-            self.wpm_data + time_diff
-            self.wpm_time = 0
-            self.mainWidget.wpm_label.setText("Selections/Min: " + str(round(self.wpm_data.average(), 2)))
-
-    def on_pause(self):
-
-        self.mainWidget.pause_timer.start(kconfig.pause_length)
-        self.in_pause = True
-        self.setStyleSheet("background-color:" + config.bg_color_highlt + ";")
-        self.mainWidget.text_box.setStyleSheet("background-color:#ffffff;")
-        for clock in self.mainWidget.clocks:
-            clock.redraw_text = True
-
-    def end_pause(self):
-        self.mainWidget.pause_timer.stop()
-        self.in_pause = False
-        self.setStyleSheet("")
-        self.on_timer()
-        for clock in self.mainWidget.clocks:
-            clock.redraw_text = True
-
     def on_timer(self):
-        if self.wpm_time != 0:
-            if time.time() - self.wpm_time > 15:  # reset wrd prior and click history after inactivity
-                self.wpm_time = 0
-                self.bc.clock_inf.clock_history = [[]]
-                self.bc.is_undo = True
-                self.bc.init_round(True, False, self.bc.clock_inf.prev_cscores)
-                self.wpm_time = 0
-
-        if self.focusWidget() == self.mainWidget.text_box:
-            self.mainWidget.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
-
-        if self.bc_init:
-            if not self.in_pause:
-                self.bc.clock_inf.clock_util.increment(self.words_on)
+        self.bc.clock_inf.clock_util.increment(self.words_on)
 
     def on_press(self):
-        # self.canvas.focus_set()
-        if self.wpm_time == 0:
-            self.wpm_time = time.time()
-
-        if not self.in_pause:
-            if self.is_write_data:
-                self.num_presses += 1
-
-            self.bc.select()
-        if self.sound_set:
-            self.play()
-
-    def play(self):
-        sound_file = "icons/bell.wav"
-        QtMultimedia.QSound(sound_file).play()
-
-    def highlight_winner(self, index):
-        if self.word_pred_on == 1:
-            if index in self.mainWidget.reduced_word_clock_indices:
-                word_clock = self.mainWidget.reduced_word_clocks[self.mainWidget.reduced_word_clock_indices.index(index)]
-                word_clock.selected = True
-        if self.mainWidget.clocks[index] != '':
-            self.mainWidget.clocks[index].selected = True
-            self.mainWidget.clocks[index].update()
-            self.mainWidget.highlight_timer.start(2000)
-
-    def end_highlight(self):
-        index = self.previous_winner
-        if self.word_pred_on == 1:
-            for word_clock in self.mainWidget.reduced_word_clocks:
-                word_clock.selected = False
-        if self.mainWidget.clocks[index] != '':
-            self.mainWidget.clocks[index].selected = False
-            self.mainWidget.clocks[index].update()
-            self.mainWidget.highlight_timer.stop()
-
-    def talk_winner(self, talk_string):
-        pass
+        self.bc.select()
 
     def make_choice(self, index):
         is_undo = False
         is_equalize = False
 
-        # now pause (if desired)
-        if self.pause_set == 1:
-            self.on_pause()
-            self.mainWidget.pause_timer.start(kconfig.pause_length)
 
         # highlight winner
         self.previous_winner = index
-        self.highlight_winner(index)
+        # self.highlight_winner(index)
 
         # initialize talk string
         talk_string = ""
@@ -886,7 +759,7 @@ class Keyboard(MainWindow):
             self.left_context = self.typed
 
         self.draw_words()
-        self.draw_typed()
+        # self.draw_typed()
         # update the word prior
         self.gen_word_prior(is_undo)
 
@@ -902,11 +775,6 @@ class Keyboard(MainWindow):
 
         return self.words_on, self.words_off, self.word_score_prior, is_undo, is_equalize
 
-
-    def present_choice(self):
-        self.draw_histogram()
-        # self.canvas.update_idletasks()
-
     def closeEvent(self, event):
         print("CLOSING THRU CLOSEEVENT")
         self.quit(event)
@@ -915,24 +783,6 @@ class Keyboard(MainWindow):
     def quit(self, event=None):
         self.bc.quit_bc()
         self.close()
-
-    def launch_help(self):
-        help_window = Pretraining(self, self.mainWidget.screen_res, help_screen=True)
-        help_window.show()
-
-        self.pretrain = True
-        self.mainWidget.repaint()
-
-    def launch_retrain(self):
-        retrain_window = Pretraining(self, self.mainWidget.screen_res)
-        retrain_window.screen_num=3
-        retrain_window.next_screen()
-        retrain_window.show()
-        # retrain_window.setCentralWidget(retrain_window.mainWidget)
-
-        retrain_window.retrain = True
-        self.pretrain = True
-        self.mainWidget.repaint()
 
 
 def main():
@@ -945,6 +795,7 @@ def main():
     # splash = StartWindow(screen_res, True)
     app.processEvents()
     ex = Keyboard(screen_res, app)
+
 
     # if first_load:
     #     ex.first_load = True
