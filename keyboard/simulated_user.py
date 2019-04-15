@@ -18,7 +18,7 @@
 #    along with Nomon SimulatedUser.  If not, see <http://www.gnu.org/licenses/>.
 ######################################
 import numpy as np
-# from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 
 from phrases import Phrases
 # import dtree
@@ -50,16 +50,18 @@ class Time():
 
 
 class SimulatedUser:
-    def __init__(self, click_dist=None, plot=None):
+    def __init__(self, cwd=os.getcwd()):
 
-        if click_dist is None:  # if not supplied, assume ideal user with delta dist
-            click_dist = np.zeros(80)
-            click_dist[40] = 1
+        click_dist = np.zeros(80)
+        click_dist[40] = 1
 
-        self.plot = plot
+        self.plot = None
         self.click_dist = list(click_dist)
 
+        self.working_dir=cwd
+
         self.time = Time()
+        self.prev_time = 0
         self.N_pred = kconfig.N_pred
         self.prob_thres = kconfig.prob_thres
 
@@ -144,16 +146,20 @@ class SimulatedUser:
 
         # self.init_clocks()
         self.num_selections = 0
+        self.sel_per_min_avg = 0
         self.num_presses = 0
+        self.press_per_min_avg = 0
         self.num_errors = 0
-
+        self.error_rate_avg = 0
         self.kde_errors = []
+        self.kde_errors_avg = None
+
         self.update_radii = False
         # self.on_timer()
         self.winner = False
         self.winner_text = ""
 
-    def parameter_metrics(self, parameters, num_clicks=500):
+    def parameter_metrics(self, parameters, num_clicks=500, trials=1, attribute=None):
         # Load parameters or use defaults
         if "click_dist" in parameters:
             self.click_dist = parameters["click_dist"]
@@ -170,19 +176,54 @@ class SimulatedUser:
         if "prob_thresh" in parameters:
             self.prob_thres = parameters["prob_thresh"]
         else:
-            self.prob_thres = kconfig.N_pred
+            self.prob_thres = kconfig.prob_thres
 
         self.gen_data_dir()
+        for trial in range(trials):
+            self.clock_spaces = np.zeros((len(self.clock_centers), 2))  # reset bc for new trial
+            self.bc = BroderClocks(self)
+            self.bc.init_follow_up(self.word_score_prior)
+            self.clock_params = np.zeros((len(self.clock_centers), 8))
+            self.gen_word_prior(False)
 
-        while self.num_presses < num_clicks:
-            text = self.phrases.sample()
-            self.type_text(text, verbose=False)
-            print(round(self.num_presses/num_clicks*100), " %")
+            while self.num_presses < num_clicks:
+                text = self.phrases.sample()
+                self.type_text(text, verbose=False)
+                print(round(self.num_presses/num_clicks*100), " %")
 
-        print("selections per minute: ", self.num_selections / (self.time.time() / 60))
-        print("presses per selection: ", self.num_presses / self.num_selections)
-        print("error rate: ", self.num_errors / self.num_selections)
-        self.save_simulation_data()
+            print("selections per minute: ", self.num_selections / (self.time.time() / 60))
+            print("presses per selection: ", self.num_presses / self.num_selections)
+            print("error rate: ", self.num_errors / self.num_selections)
+
+            self.update_sim_averages(trials)
+
+            self.num_selections = 0
+            self.num_presses = 0
+            self.num_errors = 0
+            self.kde_errors = []
+
+        self.save_simulation_data(attribute=attribute)
+
+    def update_sim_averages(self, num_trials):
+
+        time_int = self.time.time() - self.prev_time
+        self.prev_time = float(self.time.time())
+
+        self.sel_per_min_avg += self.num_selections / time_int / num_trials
+
+        self.press_per_min_avg += self.num_presses / time_int / num_trials
+
+        self.error_rate_avg += self.num_errors / time_int / num_trials
+
+        if self.kde_errors_avg is None:
+            self.kde_errors_avg = np.array(self.kde_errors) / num_trials
+        else:
+            length = min(len(self.kde_errors_avg), len(self.kde_errors))
+            if len(self.kde_errors_avg) < len(self.kde_errors):
+                self.kde_errors_avg += np.array(self.kde_errors[:length]) / num_trials
+            else:
+                self.kde_errors_avg = self.kde_errors_avg[:length] + np.array(self.kde_errors) / num_trials
+
 
     def type_text(self, text, verbose=True):
         self.target_text = text
@@ -840,7 +881,7 @@ class SimulatedUser:
 
         return self.words_on, self.words_off, self.word_score_prior, is_undo, is_equalize
 
-    def save_simulation_data(self):
+    def save_simulation_data(self, attribute=None):
         data_file = os.path.join(self.data_loc, "npred_"+str(self.N_pred)+"_pthres_"+str(self.prob_thres)+".p")
         data_handel = PickleUtil(data_file)
 
@@ -849,22 +890,24 @@ class SimulatedUser:
         dist_id_handel.safe_save(self.click_dist)
 
         data_dict = dict()
-        data_dict["click_dist"] = self.click_dist
         data_dict["N_pred"] = self.N_pred
         data_dict["prob_thresh"] = self.prob_thres
-        data_dict["errors"] = self.num_errors
-        data_dict["selections"] = self.num_selections
-        data_dict["presses"] = self.num_presses
+        data_dict["errors"] = self.error_rate_avg
+        data_dict["selections"] = self.sel_per_min_avg
+        data_dict["presses"] = self.press_per_min_avg
+        data_dict["kde_mses"] = self.kde_errors_avg
         data_dict["kde"] = self.bc.get_histogram()
+        if attribute is not None:
+            data_dict["attribute"] = attribute
         data_handel.safe_save(data_dict)
 
     def gen_data_dir(self):
         dist_found = False
         highest_user_num = 0
-        if not os.path.exists("sim_data"):
-            os.mkdir("sim_data")
+        if not os.path.exists(os.path.join(self.working_dir, "sim_data")):
+            os.mkdir(os.path.join(self.working_dir, "sim_data"))
 
-        for path, dir, files in os.walk("sim_data"):
+        for path, dir, files in os.walk(os.path.join(self.working_dir, "sim_data")):
             highest_user_num = max(max([0]+[int(d) for d in dir]), highest_user_num)
             for file in files:
                 if "dist_id" in file:
@@ -875,12 +918,8 @@ class SimulatedUser:
                         self.data_loc = path
 
         if not dist_found:
-            os.mkdir(os.path.join("sim_data", str(highest_user_num+1)))
-            self.data_loc = os.path.join("sim_data", str(highest_user_num+1))
-
-
-
-
+            os.mkdir(os.path.join(os.path.join(self.working_dir, "sim_data"), str(highest_user_num+1)))
+            self.data_loc = os.path.join(os.path.join(self.working_dir, "sim_data"), str(highest_user_num+1))
 
     def closeEvent(self, event):
         print("CLOSING THRU CLOSEEVENT")
@@ -934,9 +973,10 @@ def main():
     # hp.show()
 
     parameters_list = [{"click_dist": normal_hist(0, i/2)} for i in range(1,20)]
-    for parameters in parameters_list:
-        sim = SimulatedUser(None, None)
-        sim.parameter_metrics(parameters)
+    attributes = [i/2 for i in range(1,20)]
+    for parameters, attribute in zip(parameters_list, attributes):
+        sim = SimulatedUser()
+        sim.parameter_metrics(parameters, num_clicks=200, trials=2, attribute=attribute)
 
 
 if __name__ == "__main__":
