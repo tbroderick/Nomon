@@ -2,20 +2,20 @@
 
 ######################################
 #    Copyright 2009 Tamara Broderick
-#    This file is part of Nomon Keyboard.
+#    This file is part of Nomon SimulatedUser.
 #
-#    Nomon Keyboard is free software: you can redistribute it and/or modify
+#    Nomon SimulatedUser is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
 #
-#    Nomon Keyboard is distributed in the hope that it will be useful,dfg
+#    Nomon SimulatedUser is distributed in the hope that it will be useful,dfg
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
 #
 #    You should have received a copy of the GNU General Public License
-#    along with Nomon Keyboard.  If not, see <http://www.gnu.org/licenses/>.
+#    along with Nomon SimulatedUser.  If not, see <http://www.gnu.org/licenses/>.
 ######################################
 
 from numpy import zeros, array, log, exp
@@ -208,6 +208,7 @@ class Keyboard(MainWindow):
         self.update_radii = False
         self.on_timer()
 
+
     def gen_data_handel(self):
         self.cwd = os.getcwd()
         self.data_path = user_data_dir('data', 'Nomon')
@@ -278,6 +279,11 @@ class Keyboard(MainWindow):
         self.clock_type_past = self.clock_type
         self.layout_preference_past = self.layout_preference
         self.high_contrast_past = self.high_contrast
+
+    def data_auto_save(self):
+        if len(self.bc.click_time_list) > 0:
+            print("auto saving data")
+            self.bc.save_when_quit()
 
     def init_clocks(self):
         self.update_clock_radii()

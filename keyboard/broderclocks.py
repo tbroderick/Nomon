@@ -65,7 +65,9 @@ class BroderClocks:
 
         # proceed based on whether there was a winner
         if (self.clock_inf.is_winner()):
-            print("WINNER",  self.clock_inf.sorted_inds[0])
+            self.parent.winner = True
+            self.parent.winner_text = self.parent.clock_to_text(self.clock_inf.sorted_inds[0])
+            # print("WINNER",  self.clock_inf.sorted_inds[0])
             # record winner
             self.clock_inf.win_history[0] = self.clock_inf.sorted_inds[0]
             # update number of bits recorded

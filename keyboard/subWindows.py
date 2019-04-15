@@ -28,7 +28,7 @@ class StartWindow(QtWidgets.QMainWindow):
         h = 500
 
         self.setGeometry((self.screen_res[0] - w) / 2, (self.screen_res[1] - h) / 2, w, h)
-        self.setWindowTitle('Nomon Keyboard')
+        self.setWindowTitle('Nomon SimulatedUser')
         self.setWindowIcon(QtGui.QIcon('icons/nomon.png'))
 
     def next_screen(self):
@@ -92,7 +92,7 @@ class WelcomeScreen1(QtWidgets.QWidget):
         self.sub_label_2 = QtWidgets.QLabel("<i>(press to continue)</i>")
 
         self.sub_label_1.setWordWrap(True)
-        loading_label = QtWidgets.QLabel("<b>Welcome to the Nomon Keyboard!</b>")
+        loading_label = QtWidgets.QLabel("<b>Welcome to the Nomon SimulatedUser!</b>")
         loading_label.setFont(config.welcome_main_font[1])
 
         self.sub_label_1.setFont(config.welcome_sub_font[1])
@@ -384,7 +384,7 @@ class Pretraining(StartWindow):
         """
 
         :param screen_res: screen resolution from QApplication
-        :param sister: An instance of Keyboard() that represents the main window
+        :param sister: An instance of SimulatedUser() that represents the main window
         """
         self.sister = sister
         self.sister.pretrain = True

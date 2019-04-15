@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from scipy import stats
 import numpy as np
 
-data_dir = "C:\\Users\\nickb\\AppData\\Local\\Nomon\\data"
+data_dir = "C:\\Users\\nickb\\AppData\\Local\\Nomon\\data\\0"
 
 click_data_files = []
 click_context_files = []
@@ -113,7 +113,6 @@ class DataUtil:
 
         print("Data partitioned into " + str(len(self.clicks_by_speed.keys())) + " sets by clock rotation speed")
 
-
     def correct_data(self):
 
         if 1.44 not in self.clicks_by_speed.keys():
@@ -137,7 +136,6 @@ class DataUtil:
 
         self.corrected_clicks = np.array(self.corrected_clicks)
 
-
     def plot_data(self):
         fig = plt.figure()
         ax = plt.subplot(111)
@@ -149,7 +147,7 @@ class DataUtil:
             clicks_std = np.std(clicks)
             clicks = clicks - clicks_mean
 
-            plot_label = "speed: "+str(clock_speed)+" ("+str(len(clicks))+" points)"
+            plot_label = "rotation: "+str(clock_speed)+" ("+str(len(clicks))+" points)"
             ax.hist(clicks+40, 80, range=[0, 80], density=True, color=plot_color, alpha=0.3, label=plot_label)
 
             kernel = stats.gaussian_kde(clicks)
@@ -165,7 +163,7 @@ class DataUtil:
             kernel = stats.gaussian_kde(self.corrected_clicks)
             res = 10
             plot_color = self.plot_colors[plot_num]
-            plot_label = "speed_adj (" + str(len(self.corrected_clicks)) + " points)"
+            plot_label = "rotation_adj (" + str(len(self.corrected_clicks)) + " points)"
             plt.plot(np.arange(80 * res) / res, kernel(np.arange(80 * res) / res - 40), linestyle="--", color="0000", linewidth=2, label=plot_label)
 
 

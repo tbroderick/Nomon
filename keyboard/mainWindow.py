@@ -95,7 +95,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.bc_text_align_action = QtWidgets.QAction('&Bottom Center', self, checkable=True)
         self.bc_text_align_action.triggered.connect(lambda: self.clock_text_align('bc'))
 
-        # Keyboard Layout Menu Actions
+        # SimulatedUser Layout Menu Actions
         self.default_layout_action = QtWidgets.QAction('&Alphabetical (Default)', self, checkable=True)
         self.default_layout_action.triggered.connect(lambda: self.layout_change_event('alpha'))
 
@@ -159,7 +159,7 @@ class MainWindow(QtWidgets.QMainWindow):
         font_menu.addAction(self.small_font_action)
         font_menu.addAction(self.med_font_action)
         font_menu.addAction(self.large_font_action)
-        keyboard_menu = view_menu.addMenu('&Keyboard Layout')
+        keyboard_menu = view_menu.addMenu('&SimulatedUser Layout')
         keyboard_menu.addAction(self.default_layout_action)
         keyboard_menu.addAction(self.qwerty_layout_action)
         # word prediction
@@ -180,7 +180,7 @@ class MainWindow(QtWidgets.QMainWindow):
         help_menu.addSeparator()
         help_menu.addAction(about_action)
 
-        self.setWindowTitle('Nomon Keyboard')
+        self.setWindowTitle('Nomon SimulatedUser')
 
         self.icon = QtGui.QIcon(os.path.join("icons/", 'nomon.png'))
         self.setWindowIcon(self.icon)
@@ -354,7 +354,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.environment_change = True
 
     def layout_change_event(self, layout):
-        message_box = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "Change Keyboard Layout", "This will change the clock "
+        message_box = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "Change SimulatedUser Layout", "This will change the clock "
                                                                                          "layout to <b>" + layout + "</b"
                                                                                          "> order. <b>NOTICE:</b> You "
                                                                                          "will have to restart Nomon for"
@@ -529,21 +529,21 @@ class MainWindow(QtWidgets.QMainWindow):
     def about_event(self):
         # noinspection PyTypeChecker
         QtWidgets.QMessageBox.question(self, 'About Nomon', "Copyright 2009 Tamara Broderick\n"
-                                                        "This file is part of Nomon Keyboard.\n\n"
+                                                        "This file is part of Nomon SimulatedUser.\n\n"
 
-                                                        "Nomon Keyboard is free software: you can redistribute "
+                                                        "Nomon SimulatedUser is free software: you can redistribute "
                                                         "it and/or modify the Free Software Foundation, either "
                                                         "version 3 of the License, or (at your option) any "
                                                         "later version.\n\n"
 
-                                                        "Nomon Keyboard is distributed in the hope that it will"
+                                                        "Nomon SimulatedUser is distributed in the hope that it will"
                                                         " be useful, but WITHOUT ANY WARRANTY; without even the"
                                                         " implied warranty of MERCHANTABILITY or FITNESS FOR A "
                                                         "PARTICULAR PURPOSE.  See the GNU General Public "
                                                         "License for more details.\n\n"
 
                                                         "You should have received a copy of the GNU General "
-                                                        "Public License along with Nomon Keyboard.  If not, see"
+                                                        "Public License along with Nomon SimulatedUser.  If not, see"
                                                         " <http://www.gnu.org/licenses/>.",
                                    QtWidgets.QMessageBox.Ok)
 
@@ -669,6 +669,10 @@ class MainKeyboardWidget(QtWidgets.QWidget):
         self.frame_timer.timeout.connect(self.parent.on_timer)
         self.frame_timer.start(config.ideal_wait_s * 1000)
 
+        self.data_save_timer = QtCore.QTimer()
+        self.data_save_timer.timeout.connect(self.parent.data_auto_save)
+        self.data_save_timer.start(config.auto_save_time * 60000)
+
         self.pause_timer = QtCore.QTimer()
         self.pause_timer.setSingleShot(True)
         self.pause_timer.timeout.connect(self.parent.end_pause)
@@ -680,7 +684,7 @@ class MainKeyboardWidget(QtWidgets.QWidget):
         # Tool Tips
         # noinspection PyCallByClass
         QtWidgets.QToolTip.setFont(QtGui.QFont('Monospace', 12))
-        self.setToolTip("This is the Nomon Keyboard. To select an option, \n "
+        self.setToolTip("This is the Nomon SimulatedUser. To select an option, \n "
                         "find the clock immediately to its left. Press the \n"
                         "spacebar when the moving hand is near noon.")
         self.speed_slider_label.setToolTip("This slider scales the speed of clock rotation. Higher \nvalues correspond "

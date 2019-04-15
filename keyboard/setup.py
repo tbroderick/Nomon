@@ -22,7 +22,7 @@ elif sys.platform == "win64":
     base = "Win64GUI"
 
 setup(name="Nomon",
-      version="3.0",
+      version="3.1.1",
       description = "Python 3, PyQt5",
       options={"build_exe": build_exe_options},
       executables=[Executable("keyboard.py", base=base,

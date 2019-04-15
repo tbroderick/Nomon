@@ -12,6 +12,7 @@ class VocabTrie(object):
         self.root = VocabTrieNode()
 
     def add_word(self, word):
+
         current = self.root
         for character in word:
             # char_id = ord(character)
@@ -40,10 +41,6 @@ class VocabTrie(object):
             else:
                 return False
         return False
-
-
-
-
 
     def get_words_with_prefix(self, prefix, model, state_in, state_out):
         suggestion_list = []

@@ -15,7 +15,7 @@ from predictor import WordPredictor
 
 
 class LanguageModel():
-    def __init__(self, lm_filename, vocab_filename):
+    def __init__(self, lm_filename, vocab_filename, parent=None):
         self.lm_filename = lm_filename
         self.vocab_filename = vocab_filename
 
@@ -24,16 +24,27 @@ class LanguageModel():
         # Define how many predictions you want for each character
         # By default it is set to 0 and will return all possible
         # words
-        self.num_predictions = 3
+        if parent is not None:
+            self.parent = parent
+            self.num_predictions = self.parent.N_pred
+            self.prob_thres = self.parent.prob_thres
+        else:
+            self.parent=None
+            self.num_predictions = kconfig.N_pred
+            self.prob_thres = kconfig.prob_thres
         self.min_log_prob = -float("inf")
 
         # The default vocab_id is ''
         self.vocab_id = ''
 
     def get_words(self, context, prefix, keys_li):
+        if self.parent is not None:
+            self.num_predictions = self.parent.N_pred
+            self.prob_thres = self.parent.prob_thres
+
         self.context = context
         self.prefix = prefix
-        print("prefix: ", prefix, ", context: ", context)
+        # print("prefix: ", prefix, ", context: ", context)
 
         word_preds = []
         word_probs = []
@@ -44,8 +55,8 @@ class LanguageModel():
             if len(word_list) > 0:
                 word_dict[word_list[0][0][len(prefix)]] = word_list
         for key in keys_li:
-            key_word_preds = ["", "", ""]
-            key_word_probs = [-float("inf"), -float("inf"), -float("inf")]
+            key_word_preds = ["" for i in range(self.num_predictions)]
+            key_word_probs = [-float("inf") for i in range(self.num_predictions)]
             if key in word_dict:
                 index = 0
                 for word_tuple in word_dict[key]:
@@ -58,7 +69,7 @@ class LanguageModel():
 
         key_probs, total_log_prob = self.get_char_probs(word_dict, keys_li)
         word_probs = np.array(word_probs) - total_log_prob
-        word_probs = np.where(word_probs > np.log(kconfig.prob_thres), word_probs, -float("inf"))
+        word_probs = np.where(word_probs > np.log(self.prob_thres), word_probs, -float("inf"))
         word_preds = np.where(word_probs != -float("inf"), word_preds, "")
 
         return word_preds.tolist(), word_probs.tolist(), key_probs

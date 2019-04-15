@@ -18,7 +18,7 @@
 #    along with Nomon SimulatedUser.  If not, see <http://www.gnu.org/licenses/>.
 ######################################
 import numpy as np
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 
 from phrases import Phrases
 # import dtree
@@ -30,7 +30,7 @@ import os
 # import string
 import kconfig
 import config
-from appdirs import user_data_dir
+# from appdirs import user_data_dir
 from broderclocks import BroderClocks
 
 sys.path.insert(0, os.path.realpath('../KernelDensityEstimation'))
