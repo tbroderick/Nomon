@@ -21,4 +21,4 @@ parameters_list = [{"click_dist": normal_hist(0, i / 2)} for i in job_indicies]
 attributes = [i / 2 for i in job_indicies]
 for parameters, attribute in zip(parameters_list, attributes):
     sim = SimulatedUser(currentdir)
-    sim.parameter_metrics(parameters, num_clicks=500, trials=10, attribute=attribute)
+    sim.parameter_metrics(parameters, num_clicks=200, trials=2, attribute=attribute)

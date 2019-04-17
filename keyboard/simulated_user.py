@@ -148,7 +148,7 @@ class SimulatedUser:
         self.num_selections = 0
         self.sel_per_min_avg = 0
         self.num_presses = 0
-        self.press_per_min_avg = 0
+        self.press_per_sel_avg = 0
         self.num_errors = 0
         self.error_rate_avg = 0
         self.kde_errors = []
@@ -209,11 +209,11 @@ class SimulatedUser:
         time_int = self.time.time() - self.prev_time
         self.prev_time = float(self.time.time())
 
-        self.sel_per_min_avg += self.num_selections / time_int / num_trials
+        self.sel_per_min_avg += self.num_selections / (time_int / 60) / num_trials
 
-        self.press_per_min_avg += self.num_presses / time_int / num_trials
+        self.press_per_sel_avg += self.num_presses / self.num_selections / num_trials
 
-        self.error_rate_avg += self.num_errors / time_int / num_trials
+        self.error_rate_avg += self.num_errors / self.num_selections / num_trials
 
         if self.kde_errors_avg is None:
             self.kde_errors_avg = np.array(self.kde_errors) / num_trials
@@ -267,11 +267,11 @@ class SimulatedUser:
                     self.num_errors += 1
 
                     print("Wrong clock, backtracking . . . ")
-                    undo_clock = self.keys_li.index(kconfig.mybad_char)*4 + 3
-                    if undo_depth < 3:
-                        self.select_clock(undo_clock, undo_depth=undo_depth+1)
-                        if target_clock != undo_clock:
-                            self.select_clock(target_clock, verbose=False)
+                    # undo_clock = self.keys_li.index(kconfig.mybad_char)*4 + 3
+                    # if undo_depth < 3:
+                    #     self.select_clock(undo_clock, undo_depth=undo_depth+1)
+                    #     if target_clock != undo_clock:
+                    #         self.select_clock(target_clock, verbose=False)
 
                 break
 
@@ -894,7 +894,7 @@ class SimulatedUser:
         data_dict["prob_thresh"] = self.prob_thres
         data_dict["errors"] = self.error_rate_avg
         data_dict["selections"] = self.sel_per_min_avg
-        data_dict["presses"] = self.press_per_min_avg
+        data_dict["presses"] = self.press_per_sel_avg
         data_dict["kde_mses"] = self.kde_errors_avg
         data_dict["kde"] = self.bc.get_histogram()
         if attribute is not None:
@@ -934,8 +934,12 @@ class SimulatedUser:
 def normal_hist(mu, sigma):
     n_bars = config.num_divs_click
     bars = (np.arange(n_bars) - n_bars//2)
-    bars = np.exp(-np.square(bars - mu) / (2 * sigma ** 2)) / np.sqrt(2 * np.pi * sigma ** 2)
-    return bars/np.sum(bars)
+    bars_over = (np.arange(n_bars) + n_bars//2)
+    bars_under = (np.arange(n_bars) - n_bars*3//2)
+    out = np.exp(-np.square(bars - mu) / (2 * sigma ** 2)) / np.sqrt(2 * np.pi * sigma ** 2)
+    out += np.exp(-np.square(bars_over - mu) / (2 * sigma ** 2)) / np.sqrt(2 * np.pi * sigma ** 2)
+    out += np.exp(-np.square(bars_under - mu) / (2 * sigma ** 2)) / np.sqrt(2 * np.pi * sigma ** 2)
+    return out/np.sum(out)
 
 class HistPlot():
     def __init__(self):
@@ -968,15 +972,15 @@ def main():
 
     # hp = HistPlot()
     #
-    # click_dist = normal_hist(0, 2)
-    # hp.plot_hist(click_dist)
-    # hp.show()
+    click_dist = normal_hist(0, 2)
+    plt.bar(np.arange(80), click_dist)
+    plt.show()
 
-    parameters_list = [{"click_dist": normal_hist(0, i/2)} for i in range(1,20)]
-    attributes = [i/2 for i in range(1,20)]
-    for parameters, attribute in zip(parameters_list, attributes):
-        sim = SimulatedUser()
-        sim.parameter_metrics(parameters, num_clicks=200, trials=2, attribute=attribute)
+    # parameters_list = [{"click_dist": normal_hist(0, i/2)} for i in range(1,20)]
+    # attributes = [i/2 for i in range(1,20)]
+    # for parameters, attribute in zip(parameters_list, attributes):
+    #     sim = SimulatedUser()
+    #     sim.parameter_metrics(parameters, num_clicks=200, trials=2, attribute=attribute)
 
 
 if __name__ == "__main__":
