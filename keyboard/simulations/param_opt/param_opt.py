@@ -13,7 +13,7 @@ try:
     my_task_id = int(sys.argv[1])
     num_tasks = int(sys.argv[2])
 except IndexError:
-    my_task_id = 1
+    my_task_id = 9
     num_tasks = 20
 
 
@@ -28,7 +28,7 @@ for click_dist in click_dists:
     param_dict = {}
     param_dict["click_dist"] = click_dist.tolist()
     for n_pred in n_pred_range:
-        param_dict["N_Pred"] = n_pred
+        param_dict["N_pred"] = n_pred
         for prob_thresh in prob_thresh_range:
             param_dict["prob_thresh"] = prob_thresh
             parameters_list += [param_dict.copy()]
@@ -41,4 +41,4 @@ print(job_indicies)
 for job_index in job_indicies:
     parameters = parameters_list[job_index-1]
     sim = SimulatedUser(currentdir, job_num=job_index)
-    sim.parameter_metrics(parameters, num_clicks=750, trials=20)
+    sim.parameter_metrics(parameters, num_clicks=200, trials=1)

@@ -4,10 +4,9 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ac89ebe2-b77b-446b-80d2-81c517c20547" name="Default" comment="set up parameter optimizations">
+    <list default="true" id="ac89ebe2-b77b-446b-80d2-81c517c20547" name="Default" comment="fixed bug in data file creation overlapping">
       <change beforePath="$PROJECT_DIR$/keyboard/simulated_user.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/simulated_user.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/keyboard/simulations/param_opt/param_opt.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/simulations/param_opt/param_opt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboard/simulations/param_opt/sim_parm_opt.sh" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/simulations/param_opt/sim_parm_opt.sh" afterDir="false" />
     </list>
     <list id="aa6254be-35a7-4291-8536-037b7fa13556" name="restart no longer needed for high contrast, profanity filter. consolidated user preference pickles, prompt for data save" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -24,8 +23,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/keyboard/simulated_user.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="928" selection-start-line="928" selection-end-line="928" />
+            <state relative-caret-position="85">
+              <caret line="188" column="27" selection-start-line="188" selection-start-column="27" selection-end-line="188" selection-end-column="27" />
               <folding>
                 <element signature="e#871#889#0" expanded="true" />
               </folding>
@@ -87,11 +86,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/keyboard/simulations/param_opt/param_opt.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="214">
-              <caret line="27" column="19" lean-forward="true" selection-start-line="27" selection-start-column="19" selection-end-line="27" selection-end-column="19" />
+            <state relative-caret-position="404">
+              <caret line="36" column="31" lean-forward="true" selection-start-line="36" selection-start-column="31" selection-end-line="36" selection-end-column="31" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
               </folding>
@@ -99,11 +98,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/keyboard/simulations/param_opt/sim_parm_opt.sh">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="68">
-              <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
+            <state relative-caret-position="323">
+              <caret line="19" selection-start-line="19" selection-end-line="19" />
             </state>
           </provider>
         </entry>
@@ -261,9 +260,9 @@
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/keyboard/dtree.py" />
         <option value="$PROJECT_DIR$/keyboard/kenlm_lm.py" />
-        <option value="$PROJECT_DIR$/keyboard/simulations/param_opt/param_opt.py" />
-        <option value="$PROJECT_DIR$/keyboard/simulated_user.py" />
         <option value="$PROJECT_DIR$/keyboard/simulations/param_opt/sim_parm_opt.sh" />
+        <option value="$PROJECT_DIR$/keyboard/simulated_user.py" />
+        <option value="$PROJECT_DIR$/keyboard/simulations/param_opt/param_opt.py" />
       </list>
     </option>
   </component>
@@ -565,14 +564,7 @@
       <workItem from="1555098433701" duration="10358000" />
       <workItem from="1555165193965" duration="88875000" />
       <workItem from="1555674353463" duration="6000" />
-      <workItem from="1555789842280" duration="17588000" />
-    </task>
-    <task id="LOCAL-00004" summary="First fully-working GUI with PyQt. Code is still rough--will clean in later commit.">
-      <created>1529613332028</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1529613332028</updated>
+      <workItem from="1555789842280" duration="19991000" />
     </task>
     <task id="LOCAL-00005" summary="Fixed issue with undoing 'Delete', added undo text, stylized pause feature">
       <created>1529698005715</created>
@@ -910,11 +902,18 @@
       <option name="project" value="LOCAL" />
       <updated>1555872230251</updated>
     </task>
-    <option name="localTasksCounter" value="53" />
+    <task id="LOCAL-00053" summary="fixed bug in data file creation overlapping">
+      <created>1555874510423</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1555874510423</updated>
+    </task>
+    <option name="localTasksCounter" value="54" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="199309000" />
+    <option name="totallyTimeSpent" value="201712000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -934,7 +933,7 @@
       <window_info id="Favorites" order="2" sideWeight="0.50108933" side_tool="true" weight="0.14436248" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32624114" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.62241656" visible="true" weight="0.22813238" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.62241656" visible="true" weight="0.25295508" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.5699523" weight="0.39007092" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -1038,7 +1037,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="addded updated installer" />
     <MESSAGE value="Fixed minor bugs in click time message box displaying twice and window stuck in grey-out after profanity change" />
     <MESSAGE value="Added Working Installer" />
     <MESSAGE value="fixed addition of old files in git" />
@@ -1063,7 +1061,8 @@
     <MESSAGE value="added job array support" />
     <MESSAGE value="added simulation scripts&#10;added data visualization" />
     <MESSAGE value="set up parameter optimizations" />
-    <option name="LAST_COMMIT_MESSAGE" value="set up parameter optimizations" />
+    <MESSAGE value="fixed bug in data file creation overlapping" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed bug in data file creation overlapping" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1085,7 +1084,7 @@
     </watches-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Nomon$simulated_user.coverage" NAME="simulated_user Coverage Results" MODIFIED="1555871225660" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
+    <SUITE FILE_PATH="coverage/Nomon$simulated_user.coverage" NAME="simulated_user Coverage Results" MODIFIED="1555879831143" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$keyboard.coverage" NAME="keyboard Coverage Results" MODIFIED="1555009586700" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$mainWindow.coverage" NAME="mainWindow Coverage Results" MODIFIED="1554090765886" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$sim_data_load.coverage" NAME="sim_data_load Coverage Results" MODIFIED="1555538687193" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
@@ -1094,7 +1093,7 @@
     <SUITE FILE_PATH="coverage/Nomon$inc_var.coverage" NAME="inc_var Coverage Results" MODIFIED="1555525238400" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard/simulations/increasing_variance" />
     <SUITE FILE_PATH="coverage/Nomon$data_load.coverage" NAME="data_load Coverage Results" MODIFIED="1555817756387" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$dtree.coverage" NAME="dtree Coverage Results" MODIFIED="1555819102050" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
-    <SUITE FILE_PATH="coverage/Nomon$param_opt.coverage" NAME="param_opt Coverage Results" MODIFIED="1555874444934" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard/simulations/param_opt" />
+    <SUITE FILE_PATH="coverage/Nomon$param_opt.coverage" NAME="param_opt Coverage Results" MODIFIED="1555879995134" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard/simulations/param_opt" />
   </component>
   <component name="debuggerHistoryManager">
     <expressions id="setValue">
@@ -1414,10 +1413,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/simulations/param_opt/sim_parm_opt.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="323">
+          <caret line="19" selection-start-line="19" selection-end-line="19" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/keyboard/simulated_user.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="928" selection-start-line="928" selection-end-line="928" />
+        <state relative-caret-position="85">
+          <caret line="188" column="27" selection-start-line="188" selection-start-column="27" selection-end-line="188" selection-end-column="27" />
           <folding>
             <element signature="e#871#889#0" expanded="true" />
           </folding>
@@ -1426,18 +1432,11 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/keyboard/simulations/param_opt/param_opt.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="214">
-          <caret line="27" column="19" lean-forward="true" selection-start-line="27" selection-start-column="19" selection-end-line="27" selection-end-column="19" />
+        <state relative-caret-position="404">
+          <caret line="36" column="31" lean-forward="true" selection-start-line="36" selection-start-column="31" selection-end-line="36" selection-end-column="31" />
           <folding>
             <element signature="e#0#21#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/simulations/param_opt/sim_parm_opt.sh">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
         </state>
       </provider>
     </entry>
