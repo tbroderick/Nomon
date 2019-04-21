@@ -18,7 +18,7 @@
 #    along with Nomon SimulatedUser.  If not, see <http://www.gnu.org/licenses/>.
 ######################################
 import numpy as np
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 
 from phrases import Phrases
 # import dtree
@@ -50,11 +50,12 @@ class Time():
 
 
 class SimulatedUser:
-    def __init__(self, cwd=os.getcwd()):
+    def __init__(self, cwd=os.getcwd(), job_num=None):
 
         click_dist = np.zeros(80)
         click_dist[40] = 1
 
+        self.job_num = job_num
         self.plot = None
         self.click_dist = list(click_dist)
 
@@ -922,24 +923,31 @@ class SimulatedUser:
         data_handel.safe_save(data_dict)
 
     def gen_data_dir(self):
-        dist_found = False
-        highest_user_num = 0
-        if not os.path.exists(os.path.join(self.working_dir, "sim_data")):
-            os.mkdir(os.path.join(self.working_dir, "sim_data"))
+        if self.job_num is not None:
+            if not os.path.exists(os.path.join(self.working_dir, "sim_data")):
+                os.mkdir(os.path.join(self.working_dir, "sim_data"))
 
-        for path, dir, files in os.walk(os.path.join(self.working_dir, "sim_data")):
-            highest_user_num = max(max([0]+[int(d) for d in dir]), highest_user_num)
-            for file in files:
-                if "dist_id" in file:
-                    file_handel = PickleUtil(os.path.join(path, file))
-                    dist_id = file_handel.safe_load()
-                    if np.sum(np.array(dist_id) - np.array(self.click_dist)) == 0:
-                        dist_found = True
-                        self.data_loc = path
+            os.mkdir(os.path.join(os.path.join(self.working_dir, "sim_data"), str(self.job_num)))
+            self.data_loc = os.path.join(os.path.join(self.working_dir, "sim_data"), str(self.job_num))
+        else:
+            dist_found = False
+            highest_user_num = 0
+            if not os.path.exists(os.path.join(self.working_dir, "sim_data")):
+                os.mkdir(os.path.join(self.working_dir, "sim_data"))
 
-        if not dist_found:
-            os.mkdir(os.path.join(os.path.join(self.working_dir, "sim_data"), str(highest_user_num+1)))
-            self.data_loc = os.path.join(os.path.join(self.working_dir, "sim_data"), str(highest_user_num+1))
+            for path, dir, files in os.walk(os.path.join(self.working_dir, "sim_data")):
+                highest_user_num = max(max([0]+[int(d) for d in dir]), highest_user_num)
+                for file in files:
+                    if "dist_id" in file:
+                        file_handel = PickleUtil(os.path.join(path, file))
+                        dist_id = file_handel.safe_load()
+                        if np.sum(np.array(dist_id) - np.array(self.click_dist)) == 0:
+                            dist_found = True
+                            self.data_loc = path
+
+            if not dist_found:
+                os.mkdir(os.path.join(os.path.join(self.working_dir, "sim_data"), str(highest_user_num+1)))
+                self.data_loc = os.path.join(os.path.join(self.working_dir, "sim_data"), str(highest_user_num+1))
 
     def closeEvent(self, event):
         print("CLOSING THRU CLOSEEVENT")

@@ -13,7 +13,7 @@ try:
     my_task_id = int(sys.argv[1])
     num_tasks = int(sys.argv[2])
 except IndexError:
-    my_task_id = 2
+    my_task_id = 1
     num_tasks = 20
 
 
@@ -38,6 +38,7 @@ num_jobs = len(parameters_list)
 job_indicies = np.array_split(np.arange(1, num_jobs+1), num_tasks)[my_task_id-1]
 print(job_indicies)
 
-for parameters in parameters_list:
-    sim = SimulatedUser(currentdir)
+for job_index in job_indicies:
+    parameters = parameters_list[job_index-1]
+    sim = SimulatedUser(currentdir, job_num=job_index)
     sim.parameter_metrics(parameters, num_clicks=750, trials=20)
