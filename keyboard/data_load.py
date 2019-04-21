@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from scipy import stats
 import numpy as np
 
-data_dir = "C:\\Users\\nickb\\AppData\\Local\\Nomon\\data\\0"
+data_dir = "C:\\Users\\nickb\\Downloads\\All Nomon Data\\data\\0"
 
 click_data_files = []
 click_context_files = []
@@ -39,6 +39,7 @@ class DataUtil:
         self.click_data_files = []
         self.click_context_files = []
         self.preconfig_file = None
+        self.data_dir = data_dir
         for path, dir, files in os.walk(data_dir):
             for file in files:
                 if "click_time_log" in file:
@@ -64,7 +65,8 @@ class DataUtil:
             # size_list += [len(click_dict["click time list"])]
             self.rel_click_data += [click[1] for click in click_dict["click time list"]]
 
-        self.rel_click_data = np.array(self.rel_click_data)
+        self.rel_click_data = np.array(self.rel_click_data)[:-13]
+        print(self.rel_click_data)
 
         # size_list_2 = []
         for data_file in self.click_context_files:
@@ -73,7 +75,7 @@ class DataUtil:
             self.abs_click_data += context_dict["press"]
             # size_list_2 += [len(flatten(context_dict["press"]))]
             self.speed_changes += context_dict["speed"]
-        self.abs_click_data = np.array(flatten(self.abs_click_data))
+        self.abs_click_data = np.array(flatten(self.abs_click_data))[:-13]
         self.speed_changes.sort(key=lambda x: x[0])
 
         # print(self.click_context_files[14])
@@ -85,6 +87,7 @@ class DataUtil:
         self.kde_list = np.array(preconfig["li"])/np.sum(preconfig["li"])
 
         if len(self.abs_click_data) != len(self.rel_click_data):
+            print(len(self.abs_click_data), len(self.rel_click_data))
             raise ValueError("Click data length does not match context data length!")
         print("Loaded " + str(len(self.abs_click_data)) + " clicks")
 
@@ -120,7 +123,7 @@ class DataUtil:
 
         base_clicks = self.clicks_by_speed[1.44]
         base_clicks_mean = np.mean(base_clicks)
-        base_clicks = base_clicks - base_clicks_mean
+        # base_clicks = base_clicks - base_clicks_mean
         base_clicks_std = np.std(base_clicks)
 
         clock_speeds = list(self.clicks_by_speed.keys())
@@ -131,10 +134,16 @@ class DataUtil:
             clicks = clicks - clicks_mean
             clicks_std = np.std(clicks)
             clicks *= base_clicks_std/clicks_std
+            clicks += base_clicks_mean
 
             self.corrected_clicks += clicks.tolist()
 
         self.corrected_clicks = np.array(self.corrected_clicks)
+
+    def save_hist(self):
+        kernel = stats.gaussian_kde(self.corrected_clicks)
+        hist = kernel(np.arange(80))
+        PickleUtil(os.path.join(data_dir,"user_histogram.p")).safe_save(hist)
 
     def plot_data(self):
         fig = plt.figure()
@@ -145,26 +154,26 @@ class DataUtil:
             clicks = self.clicks_by_speed[clock_speed]
             clicks_mean = np.mean(clicks)
             clicks_std = np.std(clicks)
-            clicks = clicks - clicks_mean
+            # clicks = clicks - clicks_mean
 
             plot_label = "rotation: "+str(clock_speed)+" ("+str(len(clicks))+" points)"
-            ax.hist(clicks+40, 80, range=[0, 80], density=True, color=plot_color, alpha=0.3, label=plot_label)
+            ax.hist(clicks, 80, range=[0, 80], density=True, color=plot_color, alpha=0.3, label=plot_label)
 
             kernel = stats.gaussian_kde(clicks)
             res = 10
             plt.plot(np.arange(80*res)/res, kernel(np.arange(80*res)/res-40), color=plot_color, linewidth=2)
             plot_num += 1
 
-            plt.axvline(40, color=plot_color, linestyle="--", alpha=0.8)
+            plt.axvline(clicks_mean, color=plot_color, linestyle="--", alpha=0.8)
             for i in [-1,1]:
-                plt.axvline(40 + i*clicks_std, color=plot_color, linestyle=":", alpha=0.6)
+                plt.axvline(clicks_mean + i*clicks_std, color=plot_color, linestyle=":", alpha=0.6)
 
         if self.corrected_clicks is not None:
             kernel = stats.gaussian_kde(self.corrected_clicks)
             res = 10
             plot_color = self.plot_colors[plot_num]
             plot_label = "rotation_adj (" + str(len(self.corrected_clicks)) + " points)"
-            plt.plot(np.arange(80 * res) / res, kernel(np.arange(80 * res) / res - 40), linestyle="--", color="0000", linewidth=2, label=plot_label)
+            plt.plot(np.arange(80 * res) / res, kernel(np.arange(80 * res) / res), linestyle="--", color="0000", linewidth=2, label=plot_label)
 
 
         # ax.bar(np.arange(self.kde_list.size), self.kde_list, fill=False, edgecolor='black', label="KDE")
@@ -178,4 +187,5 @@ du = DataUtil(data_dir)
 du.load_data()
 du.split_data()
 du.correct_data()
+du.save_hist()
 du.plot_data()

@@ -1,5 +1,5 @@
 keyboard/build
 keyboard/dist
 sim_data/
-supercloud_results*/
+supercloud*/
 .pyc

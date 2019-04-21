@@ -144,9 +144,13 @@ class SimulatedUser:
 
         self.consent = False
 
+    def init_sim_data(self):
+
         # self.init_clocks()
         self.num_selections = 0
         self.sel_per_min_avg = 0
+        self.num_chars = 0
+        self.char_per_min_avg = 0
         self.num_presses = 0
         self.press_per_sel_avg = 0
         self.num_errors = 0
@@ -160,6 +164,7 @@ class SimulatedUser:
         self.winner_text = ""
 
     def parameter_metrics(self, parameters, num_clicks=500, trials=1, attribute=None):
+        self.init_sim_data()
         # Load parameters or use defaults
         if "click_dist" in parameters:
             self.click_dist = parameters["click_dist"]
@@ -168,8 +173,8 @@ class SimulatedUser:
             click_dist[40] = 1
             self.click_dist = list(click_dist)
 
-        if "N_Pred" in parameters:
-            self.N_pred = parameters["N_Pred"]
+        if "N_pred" in parameters:
+            self.N_pred = parameters["N_pred"]
         else:
             self.N_pred = kconfig.N_pred
 
@@ -180,11 +185,19 @@ class SimulatedUser:
 
         self.gen_data_dir()
         for trial in range(trials):
-            self.clock_spaces = np.zeros((len(self.clock_centers), 2))  # reset bc for new trial
-            self.bc = BroderClocks(self)
-            self.bc.init_follow_up(self.word_score_prior)
-            self.clock_params = np.zeros((len(self.clock_centers), 8))
-            self.gen_word_prior(False)
+            self.__init__()
+            # self.time.set_time(0)
+            # self.prev_time = 0
+            #
+            # self.init_locs()
+            # self.init_words()
+            # self.clock_spaces = np.zeros((len(self.clock_centers), 2))  # reset bc for new trial
+            # self.bc = BroderClocks(self)
+            # self.bc.init_follow_up(self.word_score_prior)
+            # self.clock_params = np.zeros((len(self.clock_centers), 8))
+            # self.gen_word_prior(False)
+            # self.bc.init_follow_up(self.word_score_prior)
+
 
             while self.num_presses < num_clicks:
                 text = self.phrases.sample()
@@ -192,12 +205,14 @@ class SimulatedUser:
                 print(round(self.num_presses/num_clicks*100), " %")
 
             print("selections per minute: ", self.num_selections / (self.time.time() / 60))
+            print("characters per minute: ", self.num_chars / (self.time.time() / 60))
             print("presses per selection: ", self.num_presses / self.num_selections)
             print("error rate: ", self.num_errors / self.num_selections)
 
             self.update_sim_averages(trials)
 
             self.num_selections = 0
+            self.num_chars = 0
             self.num_presses = 0
             self.num_errors = 0
             self.kde_errors = []
@@ -210,6 +225,8 @@ class SimulatedUser:
         self.prev_time = float(self.time.time())
 
         self.sel_per_min_avg += self.num_selections / (time_int / 60) / num_trials
+
+        self.char_per_min_avg += self.num_chars / (time_int / 60) / num_trials
 
         self.press_per_sel_avg += self.num_presses / self.num_selections / num_trials
 
@@ -254,6 +271,7 @@ class SimulatedUser:
             num_press += 1
             if self.winner:
                 self.num_selections += 1
+                self.num_chars += len(self.winner_text)
                 if len(self.bc.clock_inf.win_history) > 1:
                     selected_clock = self.bc.clock_inf.win_history[1]
                 else:
@@ -548,6 +566,7 @@ class SimulatedUser:
 
     def draw_words(self):
         (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(self.left_context, self.context, self.keys_li)
+        # print(self.words_li)
         word = 0
         index = 0
         self.words_on = []
@@ -894,6 +913,7 @@ class SimulatedUser:
         data_dict["prob_thresh"] = self.prob_thres
         data_dict["errors"] = self.error_rate_avg
         data_dict["selections"] = self.sel_per_min_avg
+        data_dict["characters"] = self.char_per_min_avg
         data_dict["presses"] = self.press_per_sel_avg
         data_dict["kde_mses"] = self.kde_errors_avg
         data_dict["kde"] = self.bc.get_histogram()
@@ -972,15 +992,18 @@ def main():
 
     # hp = HistPlot()
     #
-    click_dist = normal_hist(0, 2)
-    plt.bar(np.arange(80), click_dist)
-    plt.show()
+    click_dist = (normal_hist(0, 2))
+    # plt.bar(np.arange(80), click_dist)
+    # plt.show()
 
     # parameters_list = [{"click_dist": normal_hist(0, i/2)} for i in range(1,20)]
     # attributes = [i/2 for i in range(1,20)]
     # for parameters, attribute in zip(parameters_list, attributes):
-    #     sim = SimulatedUser()
-    #     sim.parameter_metrics(parameters, num_clicks=200, trials=2, attribute=attribute)
+    sim = SimulatedUser()
+    params = {"click_dist": np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.2541902814340914e-302, 1.0086920087521047e-277, 2.8017768030774834e-254, 6.97389115643989e-232, 1.5555835990773636e-210, 3.1095775396616144e-190, 5.570794140969275e-171, 8.94467281789515e-153, 1.2872875071646395e-135, 1.6607085657419055e-119, 1.920771245754656e-104, 1.9920447984272592e-90, 1.8529607235269678e-77, 1.5463683968953674e-65, 1.1582947252356645e-54, 7.791492555082668e-45, 4.7100487027093804e-36, 2.561120272382475e-28, 1.2541184057662315e-21, 5.538343539955984e-16, 2.2096339845198593e-11, 7.981536210952814e-08, 2.618827825243114e-05, 0.0007949017590679527, 0.002939855982818132, 0.007217111156261723, 0.01679789411973851, 0.030908818633498824, 0.05635108325405936, 0.11262268243539836, 0.17695142390178886, 0.20578901049860043, 0.1744946466354673, 0.09524813814187554, 0.04850083996058762, 0.021921830919505506, 0.011967478203211755, 0.00813832156682416, 0.007841924210574362, 0.008098493619665307, 0.006811765628866165, 0.004688177640230059, 0.0009410819727846906, 0.0007283322303701631, 0.00021416177778084704, 5.743827035235781e-06, 1.380530439691128e-08, 2.9732327999420265e-12, 5.737858391249442e-17, 9.922216900531416e-23, 1.537466237077811e-29, 2.1347176378774797e-37, 2.6559094827667993e-46, 2.9609023239215924e-56, 2.95782770331805e-67, 2.647644329255964e-79, 2.1236571076584065e-92, 1.5263253854212654e-106, 9.829871470823408e-122, 5.672657089846724e-138, 2.9333453978668607e-155, 1.3591827560712067e-173, 5.643265570307204e-193, 2.099525245610389e-213, 6.999220796510647e-235, 2.0908181758324322e-257, 5.596555563744285e-281, 1.3423425384172324e-305]), 'N_Pred': 2, 'prob_thresh': 0.0}
+    # params = {"click_dist": click_dist, "N_pred": 2, "prob_thresh": 0.008}
+
+    sim.parameter_metrics(params, num_clicks=500, trials=3)
 
 
 if __name__ == "__main__":

@@ -71,8 +71,6 @@ class Stack(list):
         return 60./(float(sum(self)) / float(len(self)))
 
 
-
-
 ### Algorithm parameters ###
 # winning score difference
 win_diff_base = numpy.log(99)

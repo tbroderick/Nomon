@@ -33,7 +33,7 @@ class SimDataUtil:
                     data_by_user[int(user_dir)] = user_data
         return data_by_user
 
-    def plot_across_user(self, metric, params=None, trends=False):
+    def plot_across_user(self, metric, params=None, trends=False, log=False, legend=None):
         if isinstance(metric, str):
             metric = [metric]
         for m in metric:
@@ -65,6 +65,9 @@ class SimDataUtil:
             ind_vars, dep_vars = zip(*data_points)
 
             if np.array(dep_vars[0]).size == 1:
+                if log:
+                    dep_vars = np.log(dep_vars)
+
                 plt.plot(ind_vars, dep_vars)
 
             else:
@@ -82,22 +85,57 @@ class SimDataUtil:
                         smooth_line = np.convolve(line_norm, np.ones((smoothing,))/smoothing)[smoothing:len(x_values)-smoothing]
                         # plt.plot(smooth_x, np.gradient(smooth_line), color=(min(1, (1-colors[i])*2),0,min(1, colors[i]*2)))
                         avg_grads += [-np.average(np.gradient(smooth_line))]
-                    plt.plot(ind_vars, avg_grads / np.max(avg_grads))
+                    plt.plot(ind_vars[1:], avg_grads[1:] / np.max(avg_grads))
                 else:
-                    for i, line in enumerate(dep_vars):
+                    plt.figure(figsize=(10, 12))
+                    x_pos = np.log(max([s.size for s in dep_vars])*1.05)
+                    plt.xlim(np.log(4), x_pos*1.1)
+                    max_y = -float("inf")
+                    for i, line in enumerate(dep_vars[1:]):
+                        label = ind_vars[i]
                         x_values = np.arange(line.size) + 1
-                        plt.plot(np.log(x_values[5:]), line[5:],
+
+                        if log:
+                            line = np.log(line)
+                        x_values = np.log(x_values)
+
+                        max_y = max(max_y, max(line))
+
+                        plt.plot(x_values[5:], line[5:],
                                  color=(min(1, (1 - colors[i]) * 2), 0, min(1, colors[i] * 2)))
 
+                        y_pos = line[-1] - 0.0005
+
+                        plt.text(x_pos, y_pos, str(label), fontsize=12, color=(min(1, (1 - colors[i]) * 2), 0, min(1, colors[i] * 2)))
+                    if legend is not None:
+                        plt.text(x_pos/1.075, max_y+abs(max_y*0.0075), legend["multi"], fontsize=11)
+
+
+        if legend is not None:
+            plt.title(legend["title"])
+            plt.xlabel(legend["x"])
+            plt.ylabel(legend["y"])
         plt.show()
 
 def main():
-    sdu = SimDataUtil("simulations/increasing_variance/sim_data")
-    sdu.plot_across_user("selections", (3, 0.008))
-    sdu.plot_across_user("presses", (3, 0.008))
-    sdu.plot_across_user("errors", (3, 0.008))
-    sdu.plot_across_user("kde_mses", (3, 0.008), trends=False)
-    sdu.plot_across_user("kde_mses", (3, 0.008), trends=True)
+    # sdu = SimDataUtil("simulations/increasing_variance/supercloud_results")
+    # plot_legend = {"title": "MSE Improvement of Nomon KDE vs Click Distribution Variance", "x": "Standard Deviation (# hist bins)",
+    #                "y": "Average (-) Gradient of MSE Over Presses"}
+    # sdu.plot_across_user("kde_mses", (3, 0.008), trends=True, log=False, legend=plot_legend)
+
+    sdu = SimDataUtil("simulations/bimodal/supercloud_results")
+
+    plot_legend = {"title": "MSE of Nomon KDE vs Bimodal Distance",
+                   "x": "log Number of Presses ( log(presses) )",
+                   "y": "MSE of KDE", "multi": "Modal Separation\n   (# hist bins)"}
+
+    sdu.plot_across_user("kde_mses", (3, 0.008), trends=False, log=False, legend=plot_legend)
+
+    # sdu.plot_across_user(["selections", "presses"], (3, 0.008))
+    # sdu.plot_across_user("errors", (3, 0.008))
+
+
+    # sdu.plot_across_user(["kde_mses", "errors"], (3, 0.008), trends=True)
 
 
 

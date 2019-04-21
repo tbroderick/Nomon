@@ -48,7 +48,6 @@ class LanguageModel():
 
         word_preds = []
         word_probs = []
-
         lm_results = self.word_predictor.get_words_with_context(prefix, context, self.vocab_id, self.num_predictions, self.min_log_prob)
         word_dict = {}
         for word_list in lm_results:

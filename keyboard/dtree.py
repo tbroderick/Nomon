@@ -155,8 +155,8 @@ class DTree:
         for line in self.file_handle.xreadlines():
             # read each line
             toks = line.split()
-            if (len(toks) != 2):
-                print "Error: len(toks) = %d" % (len(toks))
+            # if (len(toks) != 2):
+                # print "Error: len(toks) = %d" % (len(toks))
 
             # add word to the tree
             self.dt.add_word(toks[0], int(toks[1]))
@@ -164,7 +164,7 @@ class DTree:
             n_line += 1
             if n_line % 20000 == 0:
                 if self.loading_text[n_line / 20000] != "":
-                    print self.loading_text[n_line / 20000]
+                    # print self.loading_text[n_line / 20000]
                     subWindows.loading_text = self.loading_text[n_line / 20000]  # send messages to GUI splash screen
 
                     self.parent.app.processEvents()  # allow splash screen to refresh
@@ -206,7 +206,7 @@ class DTree:
 
 
 def main():
-    print "in dtree.py"
+    # print "in dtree.py"
 
     # file
     file_name = kconfig.train_file_name_default
