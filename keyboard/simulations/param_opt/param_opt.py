@@ -20,7 +20,7 @@ except IndexError:
 parameters_list = []
 click_dists = [PickleUtil(os.path.join("simulations/param_opt/click_distributions", file)).safe_load() for file in os.listdir("simulations/param_opt/click_distributions")]
 
-prob_thresh_range = np.arange(0,0.01,0.001).tolist()
+prob_thresh_range = np.arange(0,0.02,0.001).tolist()
 n_pred_range = np.arange(1, 4, 1).tolist()
 
 for click_dist in click_dists:
@@ -40,5 +40,5 @@ print(job_indicies)
 
 for job_index in job_indicies:
     parameters = parameters_list[job_index-1]
-    sim = SimulatedUser(currentdir, job_num=job_index)
-    sim.parameter_metrics(parameters, num_clicks=200, trials=1)
+    sim = SimulatedUser(currentdir)
+    sim.parameter_metrics(parameters, num_clicks=750, trials=40)

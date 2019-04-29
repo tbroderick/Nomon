@@ -52,12 +52,14 @@ class Time():
 class SimulatedUser:
     def __init__(self, cwd=os.getcwd(), job_num=None, sub_call=False):
 
-        click_dist = np.zeros(80)
-        click_dist[40] = 1
+        if not sub_call:
+            click_dist = np.zeros(80)
+            click_dist[40] = 1
+            self.click_dist = list(click_dist)
 
         self.job_num = job_num
         self.plot = None
-        self.click_dist = list(click_dist)
+
 
         self.working_dir=cwd
 
@@ -926,7 +928,10 @@ class SimulatedUser:
             dist_found = False
             highest_user_num = 0
             if not os.path.exists(os.path.join(self.working_dir, "sim_data")):
-                os.mkdir(os.path.join(self.working_dir, "sim_data"))
+                try:
+                    os.mkdir(os.path.join(self.working_dir, "sim_data"))
+                except OSError:
+                    pass
 
             for path, dir, files in os.walk(os.path.join(self.working_dir, "sim_data")):
                 highest_user_num = max(max([0]+[int(d) for d in dir]), highest_user_num)
