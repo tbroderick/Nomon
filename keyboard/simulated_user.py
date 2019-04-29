@@ -920,7 +920,10 @@ class SimulatedUser:
     def gen_data_dir(self):
         if self.job_num is not None:
             if not os.path.exists(os.path.join(self.working_dir, "sim_data")):
-                os.mkdir(os.path.join(self.working_dir, "sim_data"))
+                try:
+                    os.mkdir(os.path.join(self.working_dir, "sim_data"))
+                except FileExistsError:
+                    pass
 
             os.mkdir(os.path.join(os.path.join(self.working_dir, "sim_data"), str(self.job_num)))
             self.data_loc = os.path.join(os.path.join(self.working_dir, "sim_data"), str(self.job_num))
@@ -930,7 +933,7 @@ class SimulatedUser:
             if not os.path.exists(os.path.join(self.working_dir, "sim_data")):
                 try:
                     os.mkdir(os.path.join(self.working_dir, "sim_data"))
-                except OSError:
+                except FileExistsError:
                     pass
 
             for path, dir, files in os.walk(os.path.join(self.working_dir, "sim_data")):
@@ -944,7 +947,10 @@ class SimulatedUser:
                             self.data_loc = path
 
             if not dist_found:
-                os.mkdir(os.path.join(os.path.join(self.working_dir, "sim_data"), str(highest_user_num+1)))
+                try:
+                    os.mkdir(os.path.join(os.path.join(self.working_dir, "sim_data"), str(highest_user_num+1)))
+                except FileExistsError:
+                    pass
                 self.data_loc = os.path.join(os.path.join(self.working_dir, "sim_data"), str(highest_user_num+1))
 
     def closeEvent(self, event):
