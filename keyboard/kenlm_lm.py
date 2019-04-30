@@ -28,10 +28,12 @@ class LanguageModel():
             self.parent = parent
             self.num_predictions = self.parent.N_pred
             self.prob_thres = self.parent.prob_thres
+            self.num_words_total = self.parent.num_words_total
         else:
-            self.parent=None
+            self.parent = None
             self.num_predictions = kconfig.N_pred
-            self.prob_thres = kconfig.prob_thres
+            self.prob_thres = 0
+            self.num_words_total = 26*self.num_predictions
         self.min_log_prob = -float("inf")
 
         # The default vocab_id is ''
@@ -41,6 +43,7 @@ class LanguageModel():
         if self.parent is not None:
             self.num_predictions = self.parent.N_pred
             self.prob_thres = self.parent.prob_thres
+            self.num_words_total = self.parent.num_words_total
 
         self.context = context
         self.prefix = prefix
@@ -66,10 +69,14 @@ class LanguageModel():
             word_preds += [key_word_preds]
             word_probs += [key_word_probs]
 
+
         key_probs, total_log_prob = self.get_char_probs(word_dict, keys_li)
         word_probs = np.array(word_probs) - total_log_prob
-        word_probs = np.where(word_probs > np.log(self.prob_thres), word_probs, -float("inf"))
+        nth_min_log_prob = np.partition(word_probs.flatten(), -self.num_words_total)[-self.num_words_total]
+
+        word_probs = np.where(word_probs >= nth_min_log_prob, word_probs, -float("inf"))
         word_preds = np.where(word_probs != -float("inf"), word_preds, "")
+        word_preds = np.where(word_probs >= nth_min_log_prob, word_preds, "")
 
         return word_preds.tolist(), word_probs.tolist(), key_probs
 

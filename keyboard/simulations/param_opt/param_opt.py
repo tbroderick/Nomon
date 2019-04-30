@@ -13,14 +13,13 @@ try:
     my_task_id = int(sys.argv[1])
     num_tasks = int(sys.argv[2])
 except IndexError:
-    my_task_id = 9
+    my_task_id = 11
     num_tasks = 20
 
 
 parameters_list = []
 click_dists = [PickleUtil(os.path.join("simulations/param_opt/click_distributions", file)).safe_load() for file in os.listdir("simulations/param_opt/click_distributions")]
 
-prob_thresh_range = np.arange(0,0.02,0.001).tolist()
 n_pred_range = np.arange(1, 4, 1).tolist()
 
 for click_dist in click_dists:
@@ -29,8 +28,8 @@ for click_dist in click_dists:
     param_dict["click_dist"] = click_dist.tolist()
     for n_pred in n_pred_range:
         param_dict["N_pred"] = n_pred
-        for prob_thresh in prob_thresh_range:
-            param_dict["prob_thresh"] = prob_thresh
+        for num_words in range(0, n_pred * 26, 3):
+            param_dict["num_words"] = num_words
             parameters_list += [param_dict.copy()]
 
 print(len(parameters_list))
@@ -40,5 +39,7 @@ print(job_indicies)
 
 for job_index in job_indicies:
     parameters = parameters_list[job_index-1]
-    sim = SimulatedUser(currentdir)
-    sim.parameter_metrics(parameters, num_clicks=750, trials=40)
+    user_num = int(job_index*len(click_dists)/num_jobs)
+    sim = SimulatedUser(currentdir, job_num=user_num)
+
+    sim.parameter_metrics(parameters, num_clicks=500, trials=20)

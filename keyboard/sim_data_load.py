@@ -27,7 +27,7 @@ class SimDataUtil:
                             user_data["click_dist"] = PickleUtil(os.path.join(path, file)).safe_load()
                         elif "npred" in file:
                             params = file.split("npred_")
-                            params = [p.split("_pthres_") for p in params][1]
+                            params = [p.split("_nwords_") for p in params][1]
                             params = [p for sublist in params for p in sublist.split(".p")][:2]
                             params = tuple([float(p) for p in params])
                             user_data[params] = PickleUtil(os.path.join(path, file)).safe_load()
@@ -126,16 +126,16 @@ class SimDataUtil:
             for param in user_data:
                 if param != "click_dist":
                     if param not in average_data:
-                        average_data[param] = {'errors': 0, 'selections': 0, 'characters': 0, 'presses': 0}
-                    for data_label in ['errors', 'selections', 'characters', 'presses']:
-                        average_data[param][data_label] += user_data[param][data_label] / num_users
+                        average_data[param] = {'errors': 0, 'selections': 0, 'characters': 0, 'presses_sel': 0, 'presses_char': 0}
+                    for data_label in ['errors', 'selections', 'characters', 'presses_sel', 'presses_char']:
+                        average_data[param][data_label] += sum(user_data[param][data_label]) / num_users
 
         N_preds = list(set([param[0] for param in average_data]))
         N_preds.sort()
         prob_threshs = list(set([param[1] for param in average_data]))
         prob_threshs.sort()
 
-        for data_label in ['errors', 'selections', 'characters', 'presses']:
+        for data_label in ['errors', 'selections', 'characters', 'presses_sel', 'presses_char']:
             plot_values = np.zeros(len(prob_threshs))
             plot_values_2 = np.zeros(len(prob_threshs))
             colors = ["C0", "C1", "C2"]
@@ -143,19 +143,19 @@ class SimDataUtil:
             for y_index, N_pred in enumerate(N_preds):
                 for x_index, prob_thresh in enumerate(prob_threshs):
                     plot_values[x_index] = average_data[(N_pred, prob_thresh)][data_label]
-                    plot_values_2[x_index] = average_data[(N_pred, prob_thresh)]["selections"]
-                plt.plot(plot_values_2, plot_values, color=colors[ci], label="N Pred = "+str(N_pred))
-                plt.plot(plot_values_2[0], plot_values[0], '-o', color=colors[ci], markersize=7)
-                plt.plot(plot_values_2[-1], plot_values[-1], '-s', color=colors[ci], markersize=7)
+                    # plot_values_2[x_index] = average_data[(N_pred, prob_thresh)]["characters"]
+                plt.plot(prob_threshs, plot_values, color=colors[ci], label="N Pred = "+str(N_pred))
+                # plt.plot(plot_values_2[0], plot_values[0], '-o', color=colors[ci], markersize=7)
+                # plt.plot(plot_values_2[-1], plot_values[-1], '-s', color=colors[ci], markersize=7)
                 ci += 1
             plt.legend()
-            plt.xlabel("selections per minute")
+            plt.xlabel("word probability threshold")
             if data_label in ['selections', 'characters']:
                 plt.ylabel(data_label+str(" per minute"))
             else:
                 plt.ylabel(data_label + str(" per selection"))
 
-            plt.title(data_label + " vs selections")
+            plt.title(data_label + " vs probability threshold")
             plt.show()
 
 def order_data(dir):
@@ -169,17 +169,20 @@ def order_data(dir):
                 click_dist = PickleUtil(os.path.join(path, file)).safe_load()
                 if click_dist not in click_dists:
                     click_dists += [click_dist]
-                    os.mkdir(os.path.join(dir, os.path.join("ordered_data", str(click_dists.index(click_dist)))))
+                    # os.mkdir(os.path.join(dir, os.path.join("ordered_data", str(click_dists.index(click_dist)))))
+                print(path)
+                plt.plot(click_dist)
+                plt.show()
 
-            if "npred" in file:
-                new_dir = os.path.join(dir, os.path.join("ordered_data", str(click_dists.index(click_dist))))
-                if not os.path.exists(os.path.join(new_dir, file)):
-                    copyfile(os.path.join(path, file), os.path.join(new_dir, file))
-                else:
-                    new_dir = os.path.join(dir, os.path.join("ordered_data", str(len(click_dists))))
-                    if not os.path.exists(new_dir):
-                        os.mkdir(new_dir)
-                    copyfile(os.path.join(path, file), os.path.join(new_dir, file))
+            # if "npred" in file:
+            #     new_dir = os.path.join(dir, os.path.join("ordered_data", str(click_dists.index(click_dist))))
+            #     if not os.path.exists(os.path.join(new_dir, file)):
+            #         copyfile(os.path.join(path, file), os.path.join(new_dir, file))
+            #     else:
+            #         new_dir = os.path.join(dir, os.path.join("ordered_data", str(len(click_dists))))
+            #         if not os.path.exists(new_dir):
+            #             os.mkdir(new_dir)
+            #         copyfile(os.path.join(path, file), os.path.join(new_dir, file))
 
 
 def main():

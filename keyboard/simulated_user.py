@@ -69,6 +69,7 @@ class SimulatedUser:
         if not sub_call:
             self.N_pred = kconfig.N_pred
             self.prob_thres = kconfig.prob_thres
+            self.num_words_total = 26*self.N_pred
 
         # 2 is turn fully on, 1 is turn on but reduce, 0 is turn off
         self.word_pred_on = 2
@@ -150,16 +151,19 @@ class SimulatedUser:
         self.consent = False
 
     def init_sim_data(self):
-
         # self.init_clocks()
         self.num_selections = 0
-        self.sel_per_min_avg = 0
+        self.sel_per_min = []
+
         self.num_chars = 0
-        self.char_per_min_avg = 0
+        self.char_per_min = []
+
         self.num_presses = 0
-        self.press_per_sel_avg = 0
+        self.press_per_sel = []
+        self.press_per_char = []
+
         self.num_errors = 0
-        self.error_rate_avg = 0
+        self.error_rate_avg = []
         self.kde_errors = []
         self.kde_errors_avg = None
 
@@ -188,11 +192,16 @@ class SimulatedUser:
         else:
             self.prob_thres = kconfig.prob_thres
 
+        if "num_words" in parameters:
+            self.num_words_total = parameters["num_words"]
+        else:
+            self.num_words_total = 26*self.N_pred
+
         self.gen_data_dir()
         for trial in range(trials):
             self.__init__(sub_call=True)
 
-            print(self.N_pred, self.prob_thres)
+            print(self.N_pred, self.num_words_total)
 
 
             while self.num_presses < num_clicks:
@@ -203,6 +212,7 @@ class SimulatedUser:
             print("selections per minute: ", self.num_selections / (self.time.time() / 60))
             print("characters per minute: ", self.num_chars / (self.time.time() / 60))
             print("presses per selection: ", self.num_presses / self.num_selections)
+            print("presses per character: ", self.num_presses / self.num_chars)
             print("error rate: ", self.num_errors / self.num_selections)
 
             self.update_sim_averages(trials)
@@ -220,13 +230,15 @@ class SimulatedUser:
         time_int = self.time.time() - self.prev_time
         self.prev_time = float(self.time.time())
 
-        self.sel_per_min_avg += self.num_selections / (time_int / 60) / num_trials
+        self.sel_per_min += [self.num_selections / (time_int / 60)]
 
-        self.char_per_min_avg += self.num_chars / (time_int / 60) / num_trials
+        self.char_per_min += [self.num_chars / (time_int / 60)]
 
-        self.press_per_sel_avg += self.num_presses / self.num_selections / num_trials
+        self.press_per_sel += [self.num_presses / self.num_selections]
 
-        self.error_rate_avg += self.num_errors / self.num_selections / num_trials
+        self.press_per_char += [self.num_presses / self.num_chars]
+
+        self.error_rate_avg += [self.num_errors / self.num_selections]
 
         if self.kde_errors_avg is None:
             self.kde_errors_avg = np.array(self.kde_errors) / num_trials
@@ -236,7 +248,6 @@ class SimulatedUser:
                 self.kde_errors_avg += np.array(self.kde_errors[:length]) / num_trials
             else:
                 self.kde_errors_avg = self.kde_errors_avg[:length] + np.array(self.kde_errors) / num_trials
-
 
     def type_text(self, text, verbose=True):
         self.target_text = text
@@ -897,7 +908,7 @@ class SimulatedUser:
         return self.words_on, self.words_off, self.word_score_prior, is_undo, is_equalize
 
     def save_simulation_data(self, attribute=None):
-        data_file = os.path.join(self.data_loc, "npred_"+str(self.N_pred)+"_pthres_"+str(self.prob_thres)+".p")
+        data_file = os.path.join(self.data_loc, "npred_"+str(self.N_pred)+"_nwords_"+str(self.num_words_total)+".p")
         data_handel = PickleUtil(data_file)
 
         dist_id_file = os.path.join(self.data_loc, "dist_id.p")
@@ -907,11 +918,14 @@ class SimulatedUser:
         data_dict = dict()
         data_dict["N_pred"] = self.N_pred
         data_dict["prob_thresh"] = self.prob_thres
+        data_dict["num_words"] = self.num_words_total
         data_dict["errors"] = self.error_rate_avg
-        data_dict["selections"] = self.sel_per_min_avg
-        data_dict["characters"] = self.char_per_min_avg
-        data_dict["presses"] = self.press_per_sel_avg
+        data_dict["selections"] = self.sel_per_min
+        data_dict["characters"] = self.char_per_min
+        data_dict["presses_sel"] = self.press_per_sel
+        data_dict["presses_char"] = self.press_per_char
         data_dict["kde_mses"] = self.kde_errors_avg
+        data_dict["kde"] = self.bc.get_histogram()
         data_dict["kde"] = self.bc.get_histogram()
         if attribute is not None:
             data_dict["attribute"] = attribute
@@ -925,7 +939,11 @@ class SimulatedUser:
                 except FileExistsError:
                     pass
 
-            os.mkdir(os.path.join(os.path.join(self.working_dir, "sim_data"), str(self.job_num)))
+            if not os.path.exists(os.path.join(os.path.join(self.working_dir, "sim_data"), str(self.job_num))):
+                try:
+                    os.mkdir(os.path.join(os.path.join(self.working_dir, "sim_data"), str(self.job_num)))
+                except FileExistsError:
+                    pass
             self.data_loc = os.path.join(os.path.join(self.working_dir, "sim_data"), str(self.job_num))
         else:
             dist_found = False
@@ -1013,9 +1031,9 @@ def main():
     # for parameters, attribute in zip(parameters_list, attributes):
     sim = SimulatedUser()
     params = {"click_dist": np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.2541902814340914e-302, 1.0086920087521047e-277, 2.8017768030774834e-254, 6.97389115643989e-232, 1.5555835990773636e-210, 3.1095775396616144e-190, 5.570794140969275e-171, 8.94467281789515e-153, 1.2872875071646395e-135, 1.6607085657419055e-119, 1.920771245754656e-104, 1.9920447984272592e-90, 1.8529607235269678e-77, 1.5463683968953674e-65, 1.1582947252356645e-54, 7.791492555082668e-45, 4.7100487027093804e-36, 2.561120272382475e-28, 1.2541184057662315e-21, 5.538343539955984e-16, 2.2096339845198593e-11, 7.981536210952814e-08, 2.618827825243114e-05, 0.0007949017590679527, 0.002939855982818132, 0.007217111156261723, 0.01679789411973851, 0.030908818633498824, 0.05635108325405936, 0.11262268243539836, 0.17695142390178886, 0.20578901049860043, 0.1744946466354673, 0.09524813814187554, 0.04850083996058762, 0.021921830919505506, 0.011967478203211755, 0.00813832156682416, 0.007841924210574362, 0.008098493619665307, 0.006811765628866165, 0.004688177640230059, 0.0009410819727846906, 0.0007283322303701631, 0.00021416177778084704, 5.743827035235781e-06, 1.380530439691128e-08, 2.9732327999420265e-12, 5.737858391249442e-17, 9.922216900531416e-23, 1.537466237077811e-29, 2.1347176378774797e-37, 2.6559094827667993e-46, 2.9609023239215924e-56, 2.95782770331805e-67, 2.647644329255964e-79, 2.1236571076584065e-92, 1.5263253854212654e-106, 9.829871470823408e-122, 5.672657089846724e-138, 2.9333453978668607e-155, 1.3591827560712067e-173, 5.643265570307204e-193, 2.099525245610389e-213, 6.999220796510647e-235, 2.0908181758324322e-257, 5.596555563744285e-281, 1.3423425384172324e-305]), 'N_Pred': 2, 'prob_thresh': 0.0}
-    params = {"click_dist": click_dist, "N_pred": 2, "prob_thresh": 0.008}
+    params = {"click_dist": click_dist, "N_pred": 3, "num_words": 60}
 
-    sim.parameter_metrics(params, num_clicks=500, trials=3)
+    sim.parameter_metrics(params, num_clicks=100, trials=3)
 
 
 if __name__ == "__main__":
