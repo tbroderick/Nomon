@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from scipy import stats
 import numpy as np
 
-data_dir = "C:\\Users\\nickb\\Downloads\\All Nomon Data\\data\\0"
+data_dir = "C:\\Users\\nickb\\Downloads\\All Nomon Data\\data"
 
 click_data_files = []
 click_context_files = []

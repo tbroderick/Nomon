@@ -2,6 +2,9 @@ import os
 from shutil import copyfile
 from pickle_util import PickleUtil
 from matplotlib import pyplot as plt
+import seaborn as sns
+import pandas as pd
+
 from scipy import stats
 import numpy as np
 
@@ -126,37 +129,59 @@ class SimDataUtil:
             for param in user_data:
                 if param != "click_dist":
                     if param not in average_data:
-                        average_data[param] = {'errors': 0, 'selections': 0, 'characters': 0, 'presses_sel': 0, 'presses_char': 0}
-                    for data_label in ['errors', 'selections', 'characters', 'presses_sel', 'presses_char']:
-                        average_data[param][data_label] += sum(user_data[param][data_label]) / num_users
+                        average_data[param] = {'errors': [], 'selections': [], 'characters': [], 'presses_sel': [], 'presses_char': []}
+                    for data_label in ['selections', 'characters', 'presses_sel', 'presses_char', 'errors']:
+                        average_data[param][data_label] += user_data[param][data_label]
+
 
         N_preds = list(set([param[0] for param in average_data]))
         N_preds.sort()
+        N_preds.reverse()
         prob_threshs = list(set([param[1] for param in average_data]))
         prob_threshs.sort()
 
-        for data_label in ['errors', 'selections', 'characters', 'presses_sel', 'presses_char']:
-            plot_values = np.zeros(len(prob_threshs))
+        for data_label in ['selections', 'characters', 'presses_sel', 'presses_char', 'errors']:
+            plot_values = {}
             plot_values_2 = np.zeros(len(prob_threshs))
             colors = ["C0", "C1", "C2"]
             ci=0
-            for y_index, N_pred in enumerate(N_preds):
-                for x_index, prob_thresh in enumerate(prob_threshs):
-                    plot_values[x_index] = average_data[(N_pred, prob_thresh)][data_label]
-                    # plot_values_2[x_index] = average_data[(N_pred, prob_thresh)]["characters"]
-                plt.plot(prob_threshs, plot_values, color=colors[ci], label="N Pred = "+str(N_pred))
-                # plt.plot(plot_values_2[0], plot_values[0], '-o', color=colors[ci], markersize=7)
-                # plt.plot(plot_values_2[-1], plot_values[-1], '-s', color=colors[ci], markersize=7)
-                ci += 1
-            plt.legend()
-            plt.xlabel("word probability threshold")
-            if data_label in ['selections', 'characters']:
-                plt.ylabel(data_label+str(" per minute"))
-            else:
-                plt.ylabel(data_label + str(" per selection"))
 
-            plt.title(data_label + " vs probability threshold")
+            formatted_data_points = []
+            for y_index, N_pred in enumerate(N_preds):
+                sub_plot_values = []
+                x_labels = []
+                for x_index, prob_thresh in enumerate(prob_threshs):
+                    if (N_pred, prob_thresh) in average_data:
+                        if not isinstance(average_data[(N_pred, prob_thresh)][data_label], int):
+                            if (N_pred, prob_thresh) in average_data:
+                                x_labels.append(str(int(prob_thresh)))
+                                data_points = average_data[(N_pred, prob_thresh)][data_label]
+                                for point in data_points:
+                                    formatted_data_points.append([prob_thresh, int(N_pred), point])
+            if data_label == 'selections':
+                dep_var_name = "Selections per Minute"
+            elif data_label == 'characters':
+                dep_var_name = "Characters per Minute"
+            elif data_label == 'presses_sel':
+                dep_var_name = "Presses per Selection"
+            elif data_label == 'presses_char':
+                dep_var_name = "Presses per Character"
+            elif data_label == 'errors':
+                dep_var_name = "Errors per Selection"
+            else:
+                raise ValueError("Data Attribute Unknown: " + data_label)
+
+            print(formatted_data_points)
+
+            DF = pd.DataFrame(formatted_data_points, columns=["Word Display Max", "Words Per Character", dep_var_name])
+            sns.lineplot(x="Word Display Max", y=dep_var_name, hue="Words Per Character",
+                         palette=sns.cubehelix_palette(3, start=1, rot=0, dark=.2, light=.8, reverse=True), data=DF, ci=95)
             plt.show()
+
+            # break
+
+
+
 
 def order_data(dir):
     click_dists = []
@@ -191,9 +216,7 @@ def main():
     #                "y": "Average (-) Gradient of MSE Over Presses"}
     # sdu.plot_across_user("kde_mses", (3, 0.008), trends=True, log=False, legend=plot_legend)
 
-    # order_data("simulations/param_opt/supercloud_results")
-
-    sdu = SimDataUtil("simulations/param_opt/sim_data")
+    sdu = SimDataUtil("simulations/param_opt/supercloud_results")
     sdu.plot_across_params()
 
     # plot_legend = {"title": "MSE of Nomon KDE vs Bimodal Distance",

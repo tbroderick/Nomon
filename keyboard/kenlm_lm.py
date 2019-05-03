@@ -72,7 +72,10 @@ class LanguageModel():
 
         key_probs, total_log_prob = self.get_char_probs(word_dict, keys_li)
         word_probs = np.array(word_probs) - total_log_prob
-        nth_min_log_prob = np.partition(word_probs.flatten(), -self.num_words_total)[-self.num_words_total]
+        if self.num_words_total == 0:
+            nth_min_log_prob = 0
+        else:
+            nth_min_log_prob = np.partition(word_probs.flatten(), -self.num_words_total)[-self.num_words_total]
 
         word_probs = np.where(word_probs >= nth_min_log_prob, word_probs, -float("inf"))
         word_preds = np.where(word_probs != -float("inf"), word_preds, "")
