@@ -13,17 +13,17 @@ try:
     my_task_id = int(sys.argv[1])
     num_tasks = int(sys.argv[2])
 except IndexError:
-    my_task_id = 2
-    num_tasks = 20
+    my_task_id = 1
+    num_tasks = 6
 
 
 parameters_list = []
 click_dists = [PickleUtil(os.path.join("simulations/param_opt/click_distributions", file)).safe_load() for file in os.listdir("simulations/param_opt/click_distributions")]
 
 n_pred_range = np.arange(1, 4, 1).tolist()
-n_pred_range = [2]
+n_pred_range = [1, 2, 3]
 # num_words_range = range(0, n_pred * 26, 3)
-num_words_range = [1,2,3]
+num_words_range = [2]
 
 
 for click_dist in click_dists:

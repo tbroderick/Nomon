@@ -167,15 +167,20 @@ class SimDataUtil:
             elif data_label == 'presses_char':
                 dep_var_name = "Presses per Character"
             elif data_label == 'errors':
-                dep_var_name = "Errors per Selection"
+                dep_var_name = "Error Rate (Errors/Selection)"
             else:
                 raise ValueError("Data Attribute Unknown: " + data_label)
 
             print(formatted_data_points)
 
-            DF = pd.DataFrame(formatted_data_points, columns=["Word Display Max", "Words Per Character", dep_var_name])
-            sns.lineplot(x="Word Display Max", y=dep_var_name, hue="Words Per Character",
-                         palette=sns.cubehelix_palette(3, start=1, rot=0, dark=.2, light=.8, reverse=True), data=DF, ci=95)
+            DF = pd.DataFrame(formatted_data_points, columns=["Word Predictions Max Count", "Words Per Character", dep_var_name])
+
+            plt.figure(figsize=(10, 8))
+            sns.set(font_scale=1.5, rc={"lines.linewidth": 3})
+            sns.set_style({'font.serif': 'Helvetica'})
+            sns.lineplot(x="Word Predictions Max Count", y=dep_var_name, hue="Words Per Character",
+                         palette=sns.cubehelix_palette(3, start=2, rot=0.2, dark=.2, light=.7, reverse=True), data=DF, ci='sd')
+            plt.title(dep_var_name+" vs. Word Predictions Max Count")
             plt.show()
 
             # break
