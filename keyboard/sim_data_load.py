@@ -15,6 +15,7 @@ class SimDataUtil:
         self.data_directory = data_dir
         self.data_by_user = self.load_data()
         self.user_numbers = set(self.data_by_user.keys())
+        self.make_data_frame()
 
         self.plot_colors = ["#0000ff", "#00aa00", "#aa0000", "#ff7700", "#aa00aa"]
 
@@ -121,7 +122,7 @@ class SimDataUtil:
             plt.ylabel(legend["y"])
         plt.show()
 
-    def plot_across_params(self):
+    def make_data_frame(self):
         average_data = {}
         num_users = len(self.user_numbers)
         for user in self.user_numbers:
@@ -129,10 +130,10 @@ class SimDataUtil:
             for param in user_data:
                 if param != "click_dist":
                     if param not in average_data:
-                        average_data[param] = {'errors': [], 'selections': [], 'characters': [], 'presses_sel': [], 'presses_char': []}
+                        average_data[param] = {'errors': [], 'selections': [], 'characters': [], 'presses_sel': [],
+                                               'presses_char': []}
                     for data_label in ['selections', 'characters', 'presses_sel', 'presses_char', 'errors']:
                         average_data[param][data_label] += user_data[param][data_label]
-
 
         N_preds = list(set([param[0] for param in average_data]))
         N_preds.sort()
@@ -140,24 +141,35 @@ class SimDataUtil:
         prob_threshs = list(set([param[1] for param in average_data]))
         prob_threshs.sort()
 
-        for data_label in ['selections', 'characters', 'presses_sel', 'presses_char', 'errors']:
-            plot_values = {}
-            plot_values_2 = np.zeros(len(prob_threshs))
-            colors = ["C0", "C1", "C2"]
-            ci=0
+        formatted_data_points = []
+        for y_index, N_pred in enumerate(N_preds):
+            sub_plot_values = []
+            x_labels = []
+            for x_index, prob_thresh in enumerate(prob_threshs):
+                if (N_pred, prob_thresh) in average_data:
+                    if not isinstance(average_data[(N_pred, prob_thresh)][data_label], int):
+                        if (N_pred, prob_thresh) in average_data:
+                            x_labels.append(str(int(prob_thresh)))
 
-            formatted_data_points = []
-            for y_index, N_pred in enumerate(N_preds):
-                sub_plot_values = []
-                x_labels = []
-                for x_index, prob_thresh in enumerate(prob_threshs):
-                    if (N_pred, prob_thresh) in average_data:
-                        if not isinstance(average_data[(N_pred, prob_thresh)][data_label], int):
-                            if (N_pred, prob_thresh) in average_data:
-                                x_labels.append(str(int(prob_thresh)))
-                                data_points = average_data[(N_pred, prob_thresh)][data_label]
-                                for point in data_points:
-                                    formatted_data_points.append([prob_thresh, int(N_pred), point])
+                            data_dict = average_data[(N_pred, prob_thresh)]
+                            all_data=[]
+                            for key in ['selections', 'characters', 'presses_sel', 'presses_char', 'errors']:
+                                all_data += [data_dict[key]]
+                            data_points = np.array(all_data).T
+
+                            for points in data_points.tolist():
+                                formatted_data_points.append(
+                                    [prob_thresh, int(N_pred)]+points)
+
+        df_columns = ["Word Predictions Max Count", "Words Per Character", "Selections per Minute",
+                      "Characters per Minute", "Presses per Selection", "Presses per Character",
+                      "Error Rate (Errors/Selection)" ]
+        df = pd.DataFrame(formatted_data_points, columns=df_columns)
+        self.DF = df
+
+    def plot_across_params(self):
+
+        for data_label in ['selections', 'characters', 'presses_sel', 'presses_char', 'errors']:
             if data_label == 'selections':
                 dep_var_name = "Selections per Minute"
             elif data_label == 'characters':
@@ -171,22 +183,19 @@ class SimDataUtil:
             else:
                 raise ValueError("Data Attribute Unknown: " + data_label)
 
-            print(formatted_data_points)
-
-            DF = pd.DataFrame(formatted_data_points, columns=["Word Predictions Max Count", "Words Per Character", dep_var_name])
+            DF = self.DF
+            print(DF)
 
             plt.figure(figsize=(10, 8))
             sns.set(font_scale=1.5, rc={"lines.linewidth": 3})
             sns.set_style({'font.serif': 'Helvetica'})
-            sns.lineplot(x="Word Predictions Max Count", y=dep_var_name, hue="Words Per Character",
-                         palette=sns.cubehelix_palette(3, start=2, rot=0.2, dark=.2, light=.7, reverse=True), data=DF, ci='sd')
+            # sns.lineplot(x="Word Predictions Max Count", y=dep_var_name, hue="Words Per Character",
+            #              palette=sns.cubehelix_palette(3, start=2, rot=0.2, dark=.2, light=.7, reverse=True), data=DF, ci='sd')
+            sns.scatterplot(x="Presses per Character", y=dep_var_name, hue="Words Per Character", data=DF)
             plt.title(dep_var_name+" vs. Word Predictions Max Count")
             plt.show()
 
             # break
-
-
-
 
 def order_data(dir):
     click_dists = []
