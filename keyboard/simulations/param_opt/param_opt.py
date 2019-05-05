@@ -21,7 +21,6 @@ parameters_list = []
 click_dists = [PickleUtil(os.path.join("simulations/param_opt/click_distributions", file)).safe_load() for file in os.listdir("simulations/param_opt/click_distributions")]
 
 n_pred_range = np.arange(1, 4, 1).tolist()
-n_pred_range = [3]
 
 for click_dist in click_dists:
     click_dist = click_dist/np.sum(click_dist)

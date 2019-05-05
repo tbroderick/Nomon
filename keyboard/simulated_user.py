@@ -205,6 +205,7 @@ class SimulatedUser:
                 text = self.phrases.sample()
                 self.type_text(text, verbose=False)
                 print(round(self.num_presses/num_clicks*100), " %")
+                self.typed = ""  # reset tracking and context for lm -- new sentence
 
             print("selections per minute: ", self.num_selections / (self.time.time() / 60))
             print("characters per minute: ", self.num_chars / (self.time.time() / 60))
@@ -479,9 +480,7 @@ class SimulatedUser:
         # self.mainWidget.histogram.update()
 
     def init_words(self):
-        # (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(self.left_context, self.context,
-        #                                                                          self.keys_li)
-        (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words("", self.context,
+        (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(self.left_context, self.context,
                                                                                  self.keys_li)
 
         self.word_id = []
@@ -571,9 +570,7 @@ class SimulatedUser:
         self.typed_versions = ['']
 
     def draw_words(self):
-        # (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(self.left_context, self.context,
-        #                                                                          self.keys_li)
-        (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words("", self.context,
+        (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(self.left_context, self.context,
                                                                                  self.keys_li)
         word = 0
         index = 0

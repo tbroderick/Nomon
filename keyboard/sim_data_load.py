@@ -169,6 +169,7 @@ class SimDataUtil:
 
     def plot_across_params(self):
 
+        ind_var_name = "Word Predictions Max Count"
         for data_label in ['selections', 'characters', 'presses_sel', 'presses_char', 'errors']:
             if data_label == 'selections':
                 dep_var_name = "Selections per Minute"
@@ -189,10 +190,11 @@ class SimDataUtil:
             plt.figure(figsize=(10, 8))
             sns.set(font_scale=1.5, rc={"lines.linewidth": 3})
             sns.set_style({'font.serif': 'Helvetica'})
-            # sns.lineplot(x="Word Predictions Max Count", y=dep_var_name, hue="Words Per Character",
-            #              palette=sns.cubehelix_palette(3, start=2, rot=0.2, dark=.2, light=.7, reverse=True), data=DF, ci='sd')
-            sns.scatterplot(x="Presses per Character", y=dep_var_name, hue="Words Per Character", data=DF)
-            plt.title(dep_var_name+" vs. Word Predictions Max Count")
+            sns.lineplot(x="Word Predictions Max Count", y=dep_var_name, hue="Words Per Character",
+                         palette=sns.cubehelix_palette(1, start=2, rot=0.2, dark=.2, light=.7, reverse=True), data=DF, ci='sd')
+            # sns.scatterplot(x=ind_var_name, y=dep_var_name, hue="Words Per Character",
+            #                 palette=sns.cubehelix_palette(3, start=2, rot=0.2, dark=.2, light=.7, reverse=True), data=DF)
+            plt.title("Unigram LM: "+dep_var_name+" vs. "+ind_var_name)
             plt.show()
 
             # break
@@ -230,7 +232,7 @@ def main():
     #                "y": "Average (-) Gradient of MSE Over Presses"}
     # sdu.plot_across_user("kde_mses", (3, 0.008), trends=True, log=False, legend=plot_legend)
 
-    sdu = SimDataUtil("simulations/param_opt/supercloud_results")
+    sdu = SimDataUtil("simulations/param_opt/supercloud_results_unigram")
     sdu.plot_across_params()
 
     # plot_legend = {"title": "MSE of Nomon KDE vs Bimodal Distance",
