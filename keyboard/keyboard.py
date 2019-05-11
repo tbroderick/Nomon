@@ -800,14 +800,6 @@ class Keyboard(MainWindow):
             clock.redraw_text = True
 
     def on_timer(self):
-        if self.wpm_time != 0:
-            if time.time() - self.wpm_time > 15:  # reset wrd prior and click history after inactivity
-                self.wpm_time = 0
-                self.bc.clock_inf.clock_history = [[]]
-                self.bc.is_undo = True
-                self.bc.init_round(True, False, self.bc.clock_inf.prev_cscores)
-                self.wpm_time = 0
-
         if self.focusWidget() == self.mainWidget.text_box:
             self.mainWidget.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
 
@@ -830,7 +822,7 @@ class Keyboard(MainWindow):
 
     def play(self):
         sound_file = "icons/bell.wav"
-        QtMultimedia.QSound(sound_file).play()
+        QtMultimedia.QSound.play(sound_file)
 
     def highlight_winner(self, index):
         if self.word_pred_on == 1:
