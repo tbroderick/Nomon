@@ -8,10 +8,14 @@ class Phrases:
         phrases_text = phrases_file.read()
         phrases_file.close()
         self.phrases = []
+        self.phrase_length = 0
         for phrase in phrases_text.split("\n"):
-            if 3 <= len(phrase.split(" ")) <= 10:
+            # if 3 <= len(phrase.split(" ")) <= 10:
+            if 7 <= len(phrase.split(" ")):
                 self.phrases.append(phrase)
+                self.phrase_length += len(phrase.split(" "))
         self.num_phrases = len(self.phrases)
+        self.phrase_length /= self.num_phrases
         self.cur_phrase = None
         self.sample()
 
@@ -66,7 +70,7 @@ class Phrases:
 
 def main():
     phrases = Phrases("resources/all_lower_nopunc.txt")
-    print(phrases.sample())
+    print(phrases.sample(), phrases.phrase_length, phrases.num_phrases)
     print(phrases.compare("hello my name issdf "))
 
 

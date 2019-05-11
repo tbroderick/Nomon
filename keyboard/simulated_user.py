@@ -70,6 +70,7 @@ class SimulatedUser:
             self.N_pred = kconfig.N_pred
             self.prob_thres = kconfig.prob_thres
             self.num_words_total = 26*self.N_pred
+            self.lm_left_context = True
 
         # 2 is turn fully on, 1 is turn on but reduce, 0 is turn off
         self.word_pred_on = 2
@@ -123,7 +124,6 @@ class SimulatedUser:
         self.sound_set = True
 
         self.init_words()
-
 
         self.bars = kconfig.bars
 
@@ -196,6 +196,16 @@ class SimulatedUser:
             self.num_words_total = parameters["num_words"]
         else:
             self.num_words_total = 26*self.N_pred
+
+        if "num_words" in parameters:
+            self.num_words_total = parameters["num_words"]
+        else:
+            self.num_words_total = 26*self.N_pred
+
+        if "left_context" in parameters:
+            self.lm_left_context = parameters["left_context"]
+        else:
+            self.lm_left_context = False
 
         self.gen_data_dir()
         for trial in range(trials):
@@ -480,7 +490,11 @@ class SimulatedUser:
         # self.mainWidget.histogram.update()
 
     def init_words(self):
-        (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(self.left_context, self.context,
+        if self.lm_left_context:
+            lm_left_context = self.left_context
+        else:
+            lm_left_context = ""
+        (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(lm_left_context, self.context,
                                                                                  self.keys_li)
 
         self.word_id = []
@@ -570,7 +584,11 @@ class SimulatedUser:
         self.typed_versions = ['']
 
     def draw_words(self):
-        (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(self.left_context, self.context,
+        if self.lm_left_context:
+            lm_left_context = self.left_context
+        else:
+            lm_left_context = ""
+        (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(lm_left_context, self.context,
                                                                                  self.keys_li)
         word = 0
         index = 0
@@ -906,7 +924,8 @@ class SimulatedUser:
         return self.words_on, self.words_off, self.word_score_prior, is_undo, is_equalize
 
     def save_simulation_data(self, attribute=None):
-        data_file = os.path.join(self.data_loc, "npred_"+str(self.N_pred)+"_nwords_"+str(self.num_words_total)+".p")
+        data_file = os.path.join(self.data_loc, "npred_"+str(self.N_pred)+"_nwords_"+str(self.num_words_total)+"_lcon_"
+                                 +str(int(self.lm_left_context))+".p")
         data_handel = PickleUtil(data_file)
 
         dist_id_file = os.path.join(self.data_loc, "dist_id.p")
@@ -989,6 +1008,7 @@ def normal_hist(mu, sigma):
     out += np.exp(-np.square(bars_under - mu) / (2 * sigma ** 2)) / np.sqrt(2 * np.pi * sigma ** 2)
     return out/np.sum(out)
 
+
 class HistPlot():
     def __init__(self):
         self.plot_colors = ["#0000ff", "#00aa00", "#aa0000", "#ff7700", "#aa00aa"]
@@ -1031,7 +1051,7 @@ def main():
     params = {"click_dist": np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.2541902814340914e-302, 1.0086920087521047e-277, 2.8017768030774834e-254, 6.97389115643989e-232, 1.5555835990773636e-210, 3.1095775396616144e-190, 5.570794140969275e-171, 8.94467281789515e-153, 1.2872875071646395e-135, 1.6607085657419055e-119, 1.920771245754656e-104, 1.9920447984272592e-90, 1.8529607235269678e-77, 1.5463683968953674e-65, 1.1582947252356645e-54, 7.791492555082668e-45, 4.7100487027093804e-36, 2.561120272382475e-28, 1.2541184057662315e-21, 5.538343539955984e-16, 2.2096339845198593e-11, 7.981536210952814e-08, 2.618827825243114e-05, 0.0007949017590679527, 0.002939855982818132, 0.007217111156261723, 0.01679789411973851, 0.030908818633498824, 0.05635108325405936, 0.11262268243539836, 0.17695142390178886, 0.20578901049860043, 0.1744946466354673, 0.09524813814187554, 0.04850083996058762, 0.021921830919505506, 0.011967478203211755, 0.00813832156682416, 0.007841924210574362, 0.008098493619665307, 0.006811765628866165, 0.004688177640230059, 0.0009410819727846906, 0.0007283322303701631, 0.00021416177778084704, 5.743827035235781e-06, 1.380530439691128e-08, 2.9732327999420265e-12, 5.737858391249442e-17, 9.922216900531416e-23, 1.537466237077811e-29, 2.1347176378774797e-37, 2.6559094827667993e-46, 2.9609023239215924e-56, 2.95782770331805e-67, 2.647644329255964e-79, 2.1236571076584065e-92, 1.5263253854212654e-106, 9.829871470823408e-122, 5.672657089846724e-138, 2.9333453978668607e-155, 1.3591827560712067e-173, 5.643265570307204e-193, 2.099525245610389e-213, 6.999220796510647e-235, 2.0908181758324322e-257, 5.596555563744285e-281, 1.3423425384172324e-305]), 'N_Pred': 2, 'prob_thresh': 0.0}
     params = {"click_dist": click_dist, "N_pred": 3, "num_words": 5}
 
-    sim.parameter_metrics(params, num_clicks=100, trials=1)
+    sim.parameter_metrics(params, num_clicks=750, trials=30)
 
 
 if __name__ == "__main__":
