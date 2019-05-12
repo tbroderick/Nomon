@@ -32,8 +32,12 @@ class SimDataUtil:
                         elif "npred" in file:
                             params = file.split("npred_")
                             params = [p.split("_nwords_") for p in params][1]
-                            params = [p for sublist in params for p in sublist.split(".p")][:2]
-                            params = tuple([float(p) for p in params])
+                            params = [p for sublist in params for p in sublist.split("_lcon_")]
+                            params = [p for sublist in params for p in sublist.split(".p")][:3]
+                            if len(params) == 2:
+                                params = tuple([float(p) for p in params]+[1.0])
+                            else:
+                                params = tuple([float(p) for p in params])
                             user_data[params] = PickleUtil(os.path.join(path, file)).safe_load()
                     data_by_user[int(user_dir)] = user_data
         return data_by_user
@@ -134,24 +138,27 @@ class SimDataUtil:
                                                'presses_char': []}
                     for data_label in ['selections', 'characters', 'presses_sel', 'presses_char', 'errors']:
                         average_data[param][data_label] += user_data[param][data_label]
-
         N_preds = list(set([param[0] for param in average_data]))
         N_preds.sort()
         N_preds.reverse()
         prob_threshs = list(set([param[1] for param in average_data]))
         prob_threshs.sort()
-
+        if len(list(average_data.keys())[0]) > 2:
+            left_contexts = list(set([param[2] for param in average_data]))
+            left_contexts.sort()
         formatted_data_points = []
         for y_index, N_pred in enumerate(N_preds):
             sub_plot_values = []
             x_labels = []
             for x_index, prob_thresh in enumerate(prob_threshs):
-                if (N_pred, prob_thresh) in average_data:
-                    if not isinstance(average_data[(N_pred, prob_thresh)][data_label], int):
-                        if (N_pred, prob_thresh) in average_data:
+                for z_index, l_cont in enumerate(left_contexts):
+                    if (N_pred, prob_thresh, l_cont) in average_data:
+                        if not isinstance(average_data[(N_pred, prob_thresh, l_cont)][data_label], int):
                             x_labels.append(str(int(prob_thresh)))
 
-                            data_dict = average_data[(N_pred, prob_thresh)]
+                            data_dict = average_data[(N_pred, prob_thresh, l_cont)]
+
+
                             all_data=[]
                             for key in ['selections', 'characters', 'presses_sel', 'presses_char', 'errors']:
                                 all_data += [data_dict[key]]
@@ -159,18 +166,17 @@ class SimDataUtil:
 
                             for points in data_points.tolist():
                                 formatted_data_points.append(
-                                    [prob_thresh, int(N_pred)]+points)
+                                    [prob_thresh, int(N_pred), bool(l_cont)]+points)
 
-        df_columns = ["Word Predictions Max Count", "Words Per Character", "Selections per Minute",
+        df_columns = ["Word Predictions Max Count", "Words Per Character", "Left Context", "Selections per Minute",
                       "Characters per Minute", "Presses per Selection", "Presses per Character",
-                      "Error Rate (Errors/Selection)" ]
+                      "Error Rate (Errors/Selection)"]
         df = pd.DataFrame(formatted_data_points, columns=df_columns)
         self.DF = df
 
     def plot_across_params(self):
 
-        ind_var_name = "Word Predictions Max Count"
-        # ind_var_name = "Word Predictions Max Count"
+        ind_var_name = "Left Context"
         for data_label in ['selections', 'characters', 'presses_sel', 'presses_char', 'errors']:
             if data_label == 'selections':
                 dep_var_name = "Selections per Minute"
@@ -186,18 +192,37 @@ class SimDataUtil:
                 raise ValueError("Data Attribute Unknown: " + data_label)
 
             DF = self.DF
-            print(DF)
+            pd.set_option('display.max_columns', 500)
 
-            plt.figure(figsize=(10, 8))
+            fig, ax = plt.subplots()
+            fig.set_size_inches(10, 8)
             sns.set(font_scale=1.5, rc={"lines.linewidth": 3})
             sns.set_style({'font.serif': 'Helvetica'})
             if ind_var_name == "Word Predictions Max Count":
                 sns.lineplot(x=ind_var_name, y=dep_var_name, hue="Words Per Character",
                              palette=sns.cubehelix_palette(3, start=2, rot=0.2, dark=.2, light=.7, reverse=True), data=DF, ci="sd")
+            elif ind_var_name == "Left Context":
+
+                sns.violinplot(x=ind_var_name, y=dep_var_name, hue="Left Context", data=DF, inner="points", figsize=(10, 8))
+
+                lc_false = self.DF[self.DF[ind_var_name] == True][dep_var_name]
+                lc_false_mean = np.mean(lc_false.values)
+                plt.axhline(lc_false_mean, linestyle='--', color=(0.4, 0.4, 0.9))
+
+                lc_true = self.DF[self.DF[ind_var_name] == False][dep_var_name]
+                lc_true_mean = np.mean(lc_true.values)
+                plt.axhline(lc_true_mean, linestyle='--', color=(0.9, 0.9, 0.4))
+
+                t_value, p_value = stats.ttest_ind(lc_false, lc_true, equal_var=False)
+                plt.text(0.9, -.1, 'p-value: '+str(round(p_value,2)), ha='center', va='center', transform=ax.transAxes)
+
             else:
                 sns.scatterplot(x=ind_var_name, y=dep_var_name, hue="Words Per Character",
                                 palette=sns.cubehelix_palette(3, start=2, rot=0.2, dark=.2, light=.7, reverse=True), data=DF)
+
+
             plt.title("Unigram LM: "+dep_var_name+" vs. "+ind_var_name)
+
             plt.show()
 
             # break
@@ -235,7 +260,7 @@ def main():
     #                "y": "Average (-) Gradient of MSE Over Presses"}
     # sdu.plot_across_user("kde_mses", (3, 0.008), trends=True, log=False, legend=plot_legend)
 
-    sdu = SimDataUtil("simulations/param_opt/supercloud_results_max_count")
+    sdu = SimDataUtil("simulations/language_model/supercloud_results_3")
     sdu.plot_across_params()
 
     # plot_legend = {"title": "MSE of Nomon KDE vs Bimodal Distance",
