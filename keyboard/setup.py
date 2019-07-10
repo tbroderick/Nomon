@@ -9,7 +9,7 @@ os.environ['TK_LIBRARY'] = os.path.join(PYTHON_INSTALL_DIR, 'tcl', 'tk8.6')
 
 build_exe_options = {"packages": ["broderclocks","kenlm_lm","predictor","vocabtrie","config","kconfig","widgets","subWindows","mainWindow",
                                   "string","time",'PyQt5.QtGui', 'PyQt5.QtCore', 'PyQt5.QtWidgets', "PyQt5.QtMultimedia", "numpy",
-                                  "sys","Pickle","pickle_util", "random", "pathlib", "appdirs",
+                                  "sys","Pickle","pickle_util", "random", "pathlib", "appdirs", "re",
                                   "os","pretraininginference","clock_util","clock_inference_engine", "kenlm", "phrases"],
                      "include_files": ["icons", "resources"]}#"pygame",
 
@@ -22,8 +22,8 @@ elif sys.platform == "win64":
     base = "Win64GUI"
 
 setup(name="Nomon",
-      version="3.1.2",
-      description = "Python 3, PyQt5",
+      version="3.2.0",
+      description = "Python 3, PyQt5, Study Version",
       options={"build_exe": build_exe_options},
       executables=[Executable("keyboard.py", base=base,
                                 icon="nomon.ico",

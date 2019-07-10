@@ -30,7 +30,7 @@ class LanguageModel():
         # The default vocab_id is ''
         self.vocab_id = ''
 
-    def get_words(self, context, prefix, keys_li):
+    def get_words(self, context, prefix, keys_li, num_words_total=kconfig.num_words_total):
         self.context = context
         self.prefix = prefix
         print("prefix: ", prefix, ", context: ", context)
@@ -58,8 +58,12 @@ class LanguageModel():
 
         key_probs, total_log_prob = self.get_char_probs(word_dict, keys_li)
         word_probs = np.array(word_probs) - total_log_prob
-        word_probs = np.where(word_probs > np.log(kconfig.prob_thres), word_probs, -float("inf"))
+
+        nth_min_log_prob = np.partition(word_probs.flatten(), -num_words_total)[-num_words_total]
+
+        word_probs = np.where(word_probs >= nth_min_log_prob, word_probs, -float("inf"))
         word_preds = np.where(word_probs != -float("inf"), word_preds, "")
+        word_preds = np.where(word_probs >= nth_min_log_prob, word_preds, "")
 
         return word_preds.tolist(), word_probs.tolist(), key_probs
 

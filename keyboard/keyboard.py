@@ -18,7 +18,7 @@
 #    along with Nomon Keyboard.  If not, see <http://www.gnu.org/licenses/>.
 ######################################
 
-from numpy import zeros, array, log, exp
+import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets, QtMultimedia
 
 from mainWindow import MainWindow
@@ -27,6 +27,7 @@ from phrases import Phrases
 # import dtree
 from kenlm_lm import LanguageModel
 from pickle_util import PickleUtil
+from text_stats import calc_MSD
 
 import sys
 import os
@@ -73,7 +74,7 @@ class Keyboard(MainWindow):
         user_preferences = self.up_handel.safe_load()
         if user_preferences is None:
             first_load = True
-            user_preferences = ['default', 1, False, 'alpha', 'off', 12, True]
+            user_preferences = ['default', 1, False, 'alpha', 'off', 10, True]
             self.up_handel.safe_save(user_preferences)
         else:
             first_load = False
@@ -84,7 +85,7 @@ class Keyboard(MainWindow):
         self.phrase_prompts = False  # set to true for data collection mode
 
         if self.phrase_prompts:
-            self.phrases = Phrases("resources/all_lower_nopunc.txt")
+            self.phrases = Phrases("resources/comm2.dev")
         else:
             self.phrases = None
 
@@ -164,8 +165,13 @@ class Keyboard(MainWindow):
 
         self.previous_undo_text = ''
         self.previous_winner = 0
-        self.wpm_data = config.Stack(config.wpm_history_length)
+
+        self.wpm_data = []
+        self.decay_avg_wpm = 0
         self.wpm_time = 0
+        self.error_data = []
+        self.decay_avg_error = 1
+
         self.clear_text = False
         self.pretrain = False
 
@@ -175,14 +181,14 @@ class Keyboard(MainWindow):
         # get language model results
         self.gen_word_prior(False)
 
-        self.clock_spaces = zeros((len(self.clock_centers), 2))
+        self.clock_spaces = np.zeros((len(self.clock_centers), 2))
 
         self.bc = BroderClocks(self)
         self.mainWidget.change_value(self.start_speed)
 
         self.bc.init_follow_up(self.word_score_prior)
 
-        self.clock_params = zeros((len(self.clock_centers), 8))
+        self.clock_params = np.zeros((len(self.clock_centers), 8))
 
         self.bc.clock_inf.clock_util.calcualte_clock_params('default', recompute=True)
 
@@ -279,6 +285,11 @@ class Keyboard(MainWindow):
         self.layout_preference_past = self.layout_preference
         self.high_contrast_past = self.high_contrast
 
+    def data_auto_save(self):
+        if len(self.bc.click_time_list) > 0:
+            print("auto saving data")
+            self.bc.save_when_quit()
+
     def init_clocks(self):
         self.update_clock_radii()
 
@@ -295,12 +306,12 @@ class Keyboard(MainWindow):
 
     def update_clock_radii(self):
         for clock in self.words_on:
-            self.clock_spaces[clock, :] = array([self.mainWidget.clocks[clock].w, self.mainWidget.clocks[clock].h])
+            self.clock_spaces[clock, :] = np.array([self.mainWidget.clocks[clock].w, self.mainWidget.clocks[clock].h])
             if self.word_pred_on == 1:
                 if clock in self.mainWidget.reduced_word_clock_indices:
                     word_clock = self.mainWidget.reduced_word_clocks[
                         self.mainWidget.reduced_word_clock_indices.index(clock)]
-                    self.clock_spaces[clock, :] = array(
+                    self.clock_spaces[clock, :] = np.array(
                         [word_clock.w, word_clock.h])
 
         self.bc.clock_inf.clock_util.calcualte_clock_params(self.clock_type, recompute=True)
@@ -441,7 +452,7 @@ class Keyboard(MainWindow):
         # speed (as shown on scale)
         speed_index = int(index)
         # period (as stored in config.py)
-        self.rotate_index = config.scale_max - speed_index + 1
+        self.rotate_index = speed_index
         old_rotate = self.time_rotate
         self.time_rotate = config.period_li[self.rotate_index]
         self.bc.clock_inf.clock_util.change_period(self.time_rotate)
@@ -485,7 +496,7 @@ class Keyboard(MainWindow):
 
         # if word prediction on but reduced
         if self.word_pred_on == 1:
-            flat_freq_list = array([freq for sublist in self.word_freq_li for freq in sublist])
+            flat_freq_list = np.array([freq for sublist in self.word_freq_li for freq in sublist])
             if len(flat_freq_list) >= self.reduce_display:
                 # replacement_count = 0
                 for arg in flat_freq_list.argsort()[-self.reduce_display:]:
@@ -561,7 +572,12 @@ class Keyboard(MainWindow):
 
 
     def draw_words(self):
-        (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(self.left_context, self.context, self.keys_li)
+        if self.word_pred_on == 1:
+            num_words_total = 5
+        else:
+            num_words_total = kconfig.num_words_total
+
+        (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(self.left_context, self.context, self.keys_li, num_words_total=num_words_total)
         word = 0
         index = 0
         self.words_on = []
@@ -570,18 +586,22 @@ class Keyboard(MainWindow):
 
         # if word prediction on but reduced
         if self.word_pred_on == 1:
-            flat_freq_list = array([exp(freq) for sublist in self.word_freq_li for freq in sublist])
-            if len(flat_freq_list) >= self.reduce_display:
-                for arg in flat_freq_list.argsort()[-self.reduce_display:]:
-                    word_to_add = self.words_li[(arg // 3)][arg % 3]
-                    if word_to_add != '':
-                        self.word_list.append(word_to_add)
-            else:
-                temp_word_list = [word_item for sublist in self.words_li for word_item in sublist]
-                for word_item in temp_word_list:
-                    if word_item != '':
-                        self.word_list.append(word_item)
-            self.word_list.reverse()
+            flat_freq_list = np.array([np.exp(freq) for sublist in self.word_freq_li for freq in sublist])
+            # if len(flat_freq_list) >= self.reduce_display:
+            #     for arg in flat_freq_list.argsort()[-self.reduce_display:]:
+            #         word_to_add = self.words_li[(arg // 3)][arg % 3]
+            #         if word_to_add != '':
+            #             self.word_list.append(word_to_add)
+            # else:
+            #     temp_word_list = [word_item for sublist in self.words_li for word_item in sublist]
+            #     for word_item in temp_word_list:
+            #         if word_item != '':
+            #             self.word_list.append(word_item)
+            # self.word_list.reverse()
+            temp_word_list = [word_item for sublist in self.words_li for word_item in sublist]
+            for word_item in temp_word_list:
+                if word_item != '':
+                    self.word_list.append(word_item)
         # if word prediction completely on
         elif self.word_pred_on == 2:
             temp_word_list = [word_item for sublist in self.words_li for word_item in sublist]
@@ -610,10 +630,11 @@ class Keyboard(MainWindow):
                     # word prediction turned on but reduced
                     # rank words frequency and display only three
                     else:
-                        if windex in flat_freq_list.argsort()[-self.reduce_display:]:
-                            self.words_on.append(index)
-                        else:
-                            self.words_off.append(index)
+                        self.words_on.append(index)
+                        # if windex in flat_freq_list.argsort()[-self.reduce_display:]:
+                        #     self.words_on.append(index)
+                        # else:
+                        #     self.words_off.append(index)
 
                 windex += 1
                 word += 1
@@ -643,20 +664,20 @@ class Keyboard(MainWindow):
                 # word case
                 if len(pair) == 2:
                     (key, pred) = pair
-                    prob = self.word_freq_li[key][pred] + log(kconfig.rem_prob)
+                    prob = self.word_freq_li[key][pred] + np.log(kconfig.rem_prob)
                     self.word_score_prior.append(prob)
                 else:
                     key = pair[0]
                     prob = self.key_freq_li[key]
-                    prob = prob + log(kconfig.rem_prob)
+                    prob = prob + np.log(kconfig.rem_prob)
                     if self.keys_li[key] == kconfig.mybad_char or self.keys_li[key] == kconfig.yourbad_char:
-                        prob = log(kconfig.undo_prob)
+                        prob = np.log(kconfig.undo_prob)
                     if self.keys_li[key] in kconfig.break_chars:
-                        prob = log(kconfig.break_prob)
+                        prob = np.log(kconfig.break_prob)
                     if self.keys_li[key] == kconfig.back_char:
-                        prob = log(kconfig.back_prob)
+                        prob = np.log(kconfig.back_prob)
                     if self.keys_li[key] == kconfig.clear_char:
-                        prob = log(kconfig.undo_prob)
+                        prob = np.log(kconfig.undo_prob)
 
                     self.word_score_prior.append(prob)
         else:
@@ -666,7 +687,7 @@ class Keyboard(MainWindow):
                     key = pair[0]
                     if (self.keys_li[key] == kconfig.mybad_char) or (self.keys_li[key] == kconfig.yourbad_char):
                         prob = kconfig.undo_prob
-                        self.word_score_prior.append(log(prob))
+                        self.word_score_prior.append(np.log(prob))
                     else:
                         self.word_score_prior.append(0)
                 else:
@@ -679,27 +700,31 @@ class Keyboard(MainWindow):
         self.lm_prefix = ""
         self.draw_words()
 
-    def update_phrases(self, cur_text):
+    def update_phrases(self, cur_text, input_text):
         cur_phrase_typed, next_phrase = self.phrases.compare(cur_text)
+        cur_phrase_highlighted = self.phrases.highlight(cur_text)
 
         if next_phrase:
+            self.text_stat_update(self.phrases.cur_phrase, self.typed_versions[-1])
+
             self.typed_versions += ['']
             self.mainWidget.text_box.setText('')
+            self.mainWidget.speed_slider.setEnabled(True)
+            self.mainWidget.speed_slider_label.setStyleSheet('QLabel { color: blue }')
+            self.mainWidget.sldLabel.setStyleSheet('QLabel { color: blue }')
+
             self.clear_text = False
             undo_text = 'Clear'
 
             self.phrases.sample()
-            cur_phrase_typed = ""
+            input_text = ""
+            cur_phrase_highlighted = self.phrases.highlight("")
             self.reset_context()
 
-        new_text = self.mainWidget.text_box.toPlainText()
-
         self.mainWidget.text_box.setText(
-            "<p><span style='color:#00dd00;'>" + cur_phrase_typed + "</span><span style='color:#000000;'>"
-            + self.phrases.cur_phrase[len(cur_phrase_typed):] + "<\p><p>" + new_text + "</span><\p>")
+            "<p>" + cur_phrase_highlighted + "<\p><p>" + input_text + "</span><\p>")
 
     def draw_typed(self):
-        self.wpm_update()
         redraw_words = False
         # phrases
 
@@ -738,6 +763,7 @@ class Keyboard(MainWindow):
 
         if self.clear_text:
             self.typed_versions += ['']
+            input_text = ""
             self.mainWidget.text_box.setText('')
             self.clear_text = False
             undo_text = 'Clear'
@@ -746,15 +772,23 @@ class Keyboard(MainWindow):
             # self.prefix = self.prefix[:-1]
             if self.typed_versions[-1] != '':
                 self.typed_versions += [previous_text[:-1]]
+                input_text = "<span style='color:#000000;'>" + self.typed_versions[-1] + "</span>"
                 self.mainWidget.text_box.setText("<span style='color:#000000;'>" + self.typed_versions[-1] + "</span>")
+            else:
+                input_text = ""
         elif undo:
             if len(self.typed_versions) > 1:
                 self.typed_versions = self.typed_versions[:-1]
+                input_text = "<span style='color:#000000;'>" + self.typed_versions[-1] + "</span>"
                 self.mainWidget.text_box.setText("<span style='color:#000000;'>" + self.typed_versions[-1] + "</span>")
+            else:
+                input_text = ""
         else:
             self.typed_versions += [previous_text + new_text]
+            input_text = "<span style='color:#000000;'>" + previous_text + "</span><span style='color:#0000dd;'>"\
+                         + new_text + "</span>"
             self.mainWidget.text_box.setText(
-                "<span style='color:#000000;'>" + previous_text + "</span><span style='color:#00dd00;'>"
+                "<span style='color:#000000;'>" + previous_text + "</span><span style='color:#0000dd;'>"
                 + new_text + "</span>")
 
         if undo_text == kconfig.mybad_char:
@@ -771,16 +805,50 @@ class Keyboard(MainWindow):
             self.reset_context()
 
         if self.phrase_prompts:
-            print("fuckkk")
-            self.update_phrases(self.typed_versions[-1])
+            self.update_phrases(self.typed_versions[-1], input_text)
+
+    def text_stat_update(self, phrase, typed):
+
+        _, cur_error = calc_MSD(phrase, typed)
+
+        self.error_data = [cur_error] + self.error_data
+        decaying_weights = np.power(0.8, np.arange(len(self.error_data)))
+        decaying_weights /= np.sum(decaying_weights)
+
+        decay_avg_error = sum(np.array(self.error_data)*decaying_weights)
+        error_delta = decay_avg_error / (self.decay_avg_error + 0.000001)
+        self.decay_avg_error = decay_avg_error
+
+        self.wpm_data = [(len(typed.split(" "))-1) / (time.time() - self.wpm_time)*60] + self.wpm_data
+        self.wpm_time = 0
+        decaying_weights = np.power(0.8, np.arange(len(self.wpm_data)))
+        decaying_weights /= np.sum(decaying_weights)
+
+        decay_avg_wpm = sum(np.array(self.wpm_data) * decaying_weights)
+        wpm_delta = decay_avg_wpm / (self.decay_avg_wpm + 0.000001)
+        self.decay_avg_wpm = decay_avg_wpm
+
+        if error_delta > 1:
+            error_red = int(min(4, error_delta)*63)
+            error_green = 0
+        else:
+            error_green = int(min(4, 1/error_delta) * 63)
+            error_red = 0
+
+        if wpm_delta < 1:
+            wpm_red = int(min(4, wpm_delta)*63)
+            wpm_green = 0
+        else:
+            wpm_green = int(min(4, 1/wpm_delta) * 63)
+            wpm_red = 0
 
 
-    def wpm_update(self):
-        time_diff = (time.time() - self.wpm_time)
-        if time_diff < 15. * 10 / self.time_rotate:
-            self.wpm_data + time_diff
-            self.wpm_time = 0
-            self.mainWidget.wpm_label.setText("Selections/Min: " + str(round(self.wpm_data.average(), 2)))
+        self.mainWidget.error_label.setStyleSheet("color: rgb("+str(error_red)+", "+str(error_green)+", 0);")
+
+        self.mainWidget.wpm_label.setStyleSheet("color: rgb(" + str(wpm_red) + ", " + str(wpm_green) + ", 0);")
+
+        self.mainWidget.error_label.setText("Error Rate: " + str(round(decay_avg_error, 2)))
+        self.mainWidget.wpm_label.setText("Words/Min: " + str(round(decay_avg_wpm, 2)))
 
     def on_pause(self):
 
@@ -812,11 +880,17 @@ class Keyboard(MainWindow):
         if self.wpm_time == 0:
             self.wpm_time = time.time()
 
+        if self.phrase_prompts:
+            self.mainWidget.speed_slider.setEnabled(False)
+            self.mainWidget.speed_slider_label.setStyleSheet('QLabel { color: grey }')
+            self.mainWidget.sldLabel.setStyleSheet('QLabel { color: grey }')
+
         if not self.in_pause:
             if self.is_write_data:
                 self.num_presses += 1
 
             self.bc.select()
+
         if self.sound_set:
             self.play()
 
@@ -942,8 +1016,6 @@ class Keyboard(MainWindow):
                 self.typed = self.typed.replace(" "+new_char, new_char+" ")
             else:
                 self.typed += new_char
-
-
 
         # if selected a word
         else:

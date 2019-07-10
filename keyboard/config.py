@@ -18,7 +18,7 @@
 #    along with Nomon Keyboard.  If not, see <http://www.gnu.org/licenses/>.
 ######################################
 
-import numpy
+import numpy as np
 from PyQt5 import QtGui
 import pickle
 import os, sys
@@ -30,43 +30,33 @@ current_folder= os.path.dirname(os.path.abspath(__file__))
 ### Clock animation parameters ###
 # time for single rotation of the clock
 # time_rotate = 1.2 #1.35 #2.0**(0.5)
-period_li = [0,  # place holder
-             0.30, 0.33, 0.37, 0.41, 0.46,
-             0.51, 0.56, 0.63, 0.70, 0.77,
-             0.86, 0.96, 1.06, 1.18, 1.31,
-             1.46, 1.62, 1.80, 2.00, 2.22,
-             2.47, 2.74, 3.05]
-period_li = [i*1.5 for i in period_li]
+# period_li = [0,  # place holder
+#              0.30, 0.33, 0.37, 0.41, 0.46,
+#              0.51, 0.56, 0.63, 0.70, 0.77,
+#              0.86, 0.96, 1.06, 1.18, 1.31,
+#              1.46, 1.62, 1.80, 2.00, 2.22,
+#              2.47, 2.74, 3.05]
+# period_li = [i*1.5 for i in period_li]
+
+period_li = np.arange(21)
+period_li = 3*np.exp((-period_li)/12)
+
+print(period_li)
 scale_min = 1
 scale_max = len(period_li) - 1
-default_rotate_ind = 19  # 19 # (22,) 19, 16, 13, 10, 7
+default_rotate_ind = 10  # 19 # (22,) 19, 16, 13, 10, 7
 # number of clock divisions that register as a unique place to click
 num_divs_click = 80
 # seconds / frame; display update rate to aim for
 ideal_wait_s = 0.05
+# auto save time in minutes
+auto_save_time = 5
 # starting point of the highest scorer
 frac_period = 4.0 / 8.0  # 4.0/8.0 # 7, 6, 5, 4, 3, 2, 1
-theta0 = frac_period * 2.0 * numpy.pi  # numpy.pi
+theta0 = frac_period * 2.0 * np.pi  # numpy.pi
 
 # words per min tracking
 wpm_history_length = 20
-
-
-class Stack(list):
-
-    def __init__(self, max_size):
-        super(Stack, self).__init__()
-        self.max_size = max_size
-
-    def __add__(self, other):
-        if len(self) < self.max_size:
-            self.insert(0, other)
-        else:
-            self.pop(-1)
-            self.insert(0, other)
-
-    def average(self):
-        return 60./(float(sum(self)) / float(len(self)))
 
 
 
@@ -125,9 +115,9 @@ for font in text_box_font:
 
 ### Algorithm parameters ###
 # winning score difference
-win_diff_base = numpy.log(99)
-win_diff_high = numpy.log(999)
-max_init_diff = win_diff_base - numpy.log(4)
+win_diff_base = np.log(99)
+win_diff_high = np.log(999)
+max_init_diff = win_diff_base - np.log(4)
 # learning press distribution or not
 is_learning = True
 is_pre_learning = True

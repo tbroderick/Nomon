@@ -86,6 +86,11 @@ class BroderClocks:
 
     #ALL THE SAVES AND DUMPS THEY DO WHEN THEY QUIT KEYBOARD SHOULD BE HERE TOO
     def save_when_quit(self):
+            user_preferences = self.parent.clock_type, self.parent.font_scale, self.parent.high_contrast, \
+                               self.parent.layout_preference, self.parent.pf_preference, self.parent.rotate_index, \
+                               self.parent.is_write_data
+            self.parent.up_handel.safe_save(user_preferences)
+
 
             self.prev_data_path = os.path.join(self.parent.data_handel, 'preconfig.p')
             self.click_data_path = os.path.join(self.parent.data_handel, 'click_time_log_' + str(self.parent.use_num)+'.p')
@@ -94,6 +99,8 @@ class BroderClocks:
             PickleUtil(self.click_data_path).safe_save({'user id': self.parent.user_id, 'use_num': self.parent.use_num ,'click time list': self.click_time_list, 'rotate index': self.parent.rotate_index})
             PickleUtil(self.prev_data_path).safe_save({'li': self.clock_inf.kde.dens_li, 'z': self.clock_inf.kde.Z, 'opt_sig': self.clock_inf.kde.ksigma, 'y_li': self.clock_inf.kde.y_li, 'yksigma':self.clock_inf.kde.y_ksigma})
             PickleUtil(self.params_data_path).safe_save(self.parent.params_handle_dict)
+
+
 
     def quit_bc(self):
 

@@ -8,6 +8,7 @@ from pickle_util import PickleUtil
 from phrases import Phrases
 import os
 import zipfile
+import numpy as np
 
 from widgets import ClockWidget, HistogramWidget, VerticalSeparator, HorizontalSeparator
 
@@ -119,7 +120,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.retrain_action = QtWidgets.QAction('&Retrain', self)
         self.retrain_action.triggered.connect(self.retrain_event)
 
-        self.phrase_prompts_action = QtWidgets.QAction('&Phrase Prompts', self, checkable=True)
+        self.phrase_prompts_action = QtWidgets.QAction('&Study Mode', self, checkable=True)
         self.phrase_prompts_action.triggered.connect(self.phrase_prompts_event)
 
         self.log_data_action = QtWidgets.QAction('&Data Logging', self, checkable=True)
@@ -317,7 +318,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self.phrase_prompts = phrase_status
         if phrase_status == True:
             self.phrases.sample()
-            self.update_phrases(self.typed_versions[-1])
+            self.update_phrases(self.typed_versions[-1], "")
+
+            self.mainWidget.cb_learn.setChecked(True)
+            self.mainWidget.cb_pause.setChecked(True)
+
+            self.mainWidget.cb_learn.setEnabled(False)
+            self.mainWidget.cb_pause.setEnabled(False)
+            self.mainWidget.speed_slider_label.setStyleSheet('QLabel { color: grey }')
+            self.mainWidget.sldLabel.setStyleSheet('QLabel { color: grey }')
+
         else:
             self.typed_versions.append("")
             self.left_context = ""
@@ -325,6 +335,15 @@ class MainWindow(QtWidgets.QMainWindow):
             self.typed = ""
             self.lm_prefix = ""
             self.mainWidget.text_box.setText("")
+
+            self.mainWidget.cb_learn.setEnabled(True)
+            self.mainWidget.cb_pause.setEnabled(True)
+            self.mainWidget.speed_slider.setEnabled(True)
+            self.mainWidget.speed_slider_label.setStyleSheet('QLabel { color: black }')
+            self.mainWidget.sldLabel.setStyleSheet('QLabel { color: black }')
+            self.mainWidget.error_label.setStyleSheet("color: rgb(0, 0, 0);")
+            self.mainWidget.wpm_label.setStyleSheet("color: rgb(0, 0, 0);")
+
 
         self.check_filemenu()
 
@@ -588,6 +607,7 @@ class MainKeyboardWidget(QtWidgets.QWidget):
         # generate slider for clock rotation speed
         self.speed_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal, self)
         self.speed_slider.setRange(config.scale_min, config.scale_max)
+        self.speed_slider.setTickInterval(1)
         self.speed_slider.setValue(self.parent.start_speed)
         self.speed_slider_label = QtWidgets.QLabel('Clock Rotation Speed:')
 
@@ -596,8 +616,11 @@ class MainKeyboardWidget(QtWidgets.QWidget):
         self.sldLabel.setFont(config.top_bar_font[self.parent.font_scale])
 
         # wpm label
-        self.wpm_label = QtWidgets.QLabel("Selections/Min: "+"----")
+        self.wpm_label = QtWidgets.QLabel("Words/Min: "+"----")
         self.wpm_label.setFont(config.top_bar_font[self.parent.font_scale])
+
+        self.error_label = QtWidgets.QLabel("Error Rate: " + "----")
+        self.error_label.setFont(config.top_bar_font[self.parent.font_scale])
 
         # generate learn, speak, talk checkboxes
         # self.cb_talk = QtWidgets.QCheckBox('Talk', self)
@@ -634,11 +657,20 @@ class MainKeyboardWidget(QtWidgets.QWidget):
         # layout slider and checkboxes
         top_hbox = QtWidgets.QHBoxLayout()
         top_hbox.addWidget(self.speed_slider_label, 1)
+        top_hbox.addStretch(1)
         top_hbox.addWidget(self.speed_slider, 16)
+        top_hbox.addStretch(1)
         top_hbox.addWidget(self.sldLabel, 1)
         top_hbox.addStretch(2)
-        top_hbox.addWidget(self.wpm_label, 1)
-        top_hbox.addStretch(2)
+
+
+        # entry metrics vbox
+        text_stat_vbox = QtWidgets.QVBoxLayout()
+        text_stat_vbox.addWidget(self.wpm_label)
+        text_stat_vbox.addWidget(self.error_label)
+
+        top_hbox.addLayout(text_stat_vbox)
+        top_hbox.addStretch(5)
 
         # top_hbox.addWidget(self.cb_talk, 1)
         top_hbox.addWidget(self.cb_learn, 1)
@@ -668,6 +700,10 @@ class MainKeyboardWidget(QtWidgets.QWidget):
         self.frame_timer = QtCore.QTimer()
         self.frame_timer.timeout.connect(self.parent.on_timer)
         self.frame_timer.start(config.ideal_wait_s * 1000)
+
+        self.data_save_timer = QtCore.QTimer()
+        self.data_save_timer.timeout.connect(self.parent.data_auto_save)
+        self.data_save_timer.start(config.auto_save_time * 60000)
 
         self.pause_timer = QtCore.QTimer()
         self.pause_timer.setSingleShot(True)
@@ -731,12 +767,18 @@ class MainKeyboardWidget(QtWidgets.QWidget):
                 clock.redraw_text = True
                 clock.update()
 
-
     def change_value(self, value):  # Change clock speed
+        if self.parent.phrase_prompts:
+            inc_dir = np.sign(value - self.parent.rotate_index)
+            value = self.parent.rotate_index + inc_dir
+            self.speed_slider.setValue(value)
+            self.speed_slider.setEnabled(False)
+            self.speed_slider_label.setStyleSheet('QLabel { color: grey }')
+            self.sldLabel.setStyleSheet('QLabel { color: grey }')
+
         self.sldLabel.setText(str(self.speed_slider.value()))
         self.parent.change_speed(value)
-        self.parent.start_speed = value
-
+        self.parent.rotate_index = value
 
     def get_words(self, char):  # Reformat word list into blueprint for GUI construction
         i = 0
@@ -748,7 +790,8 @@ class MainKeyboardWidget(QtWidgets.QWidget):
                 i += 1
                 if i > 3:
                     break
-                output += [word]
+                if word not in output:
+                    output += [word]
         return output
 
     def generate_clocks(self):  # Generate the clock widgets according to blueprint from self.get_words
@@ -814,7 +857,10 @@ class MainKeyboardWidget(QtWidgets.QWidget):
                     index += 1
                 self.clocks[index].set_text(text)
                 index += 1
+
         if self.parent.word_pred_on == 1:
+            word_clocks = word_clocks[:5]
+            print(word_clocks)
             self.reduced_word_clock_indices = [self.clocks.index(clock) for clock in word_clocks]
             for clock_num in range(len(word_clocks)):
                 shadow_clock = self.reduced_word_clocks[clock_num]
@@ -972,6 +1018,7 @@ class MainKeyboardWidget(QtWidgets.QWidget):
         self.undo_unit.addWidget(HorizontalSeparator(), 3, 0, 1, 2)
         if combine_back_clocks:
             self.undo_unit.addWidget(undo_clocks[2], 1, 1)
+            self.undo_unit.addWidget(self.undo_label, 2, 1)
         else:
             self.undo_unit.addWidget(undo_clocks[0], 1, 1)
             self.undo_unit.addWidget(self.undo_label, 2, 1)

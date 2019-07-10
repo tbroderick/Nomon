@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import re
 
 
 class Phrases:
@@ -9,9 +10,12 @@ class Phrases:
         phrases_file.close()
         self.phrases = []
         for phrase in phrases_text.split("\n"):
-            if 3 <= len(phrase.split(" ")) <= 10:
+            if 5 <= len(phrase.split(" ")) <= 10:
+                phrase = re.sub(r"[^a-z \']+", '', phrase.lower())
                 self.phrases.append(phrase)
         self.num_phrases = len(self.phrases)
+        print("loaded "+str(self.num_phrases)+" phrases")
+
         self.cur_phrase = None
         self.sample()
 
@@ -62,12 +66,46 @@ class Phrases:
                 base_typed = base_typed[1:]
         return base_typed, finished
 
+    def highlight(self, input_phrase):
+        cur_phrase_words = self.cur_phrase.split(" ")
+        input_phrase_words = input_phrase.split(" ")
+
+        highlighted_text = ""
+        for word_index in range(len(cur_phrase_words)):
+            phrase_word = cur_phrase_words[word_index]
+
+            if word_index < len(input_phrase_words):
+                input_word = input_phrase_words[word_index]
+                if phrase_word == input_word:
+                    highlighted_text += "<t>" + phrase_word + " </t>"
+                elif input_word == "":
+                    highlighted_text += "<y>" + phrase_word + " </y>"
+                else:
+                    highlighted_text += "<f>" + phrase_word + " </f>"
+            else:
+                highlighted_text += "<b>" + phrase_word + " </b>"
+
+        highlighted_text = re.sub("</t><t>", "", highlighted_text)
+        highlighted_text = re.sub("</f><f>", "", highlighted_text)
+        highlighted_text = re.sub("</b><b>", "", highlighted_text)
+
+        highlighted_text = re.sub("<t>", "<span style='color:#00dd00;'>", highlighted_text)
+        highlighted_text = re.sub("</t>", "</span>", highlighted_text)
+        highlighted_text = re.sub("<f>", "<span style='color:#dd0000;'>", highlighted_text)
+        highlighted_text = re.sub("</f>", "</span>", highlighted_text)
+        highlighted_text = re.sub("<b>", "<span style='color:#000000;'>", highlighted_text)
+        highlighted_text = re.sub("</b>", "</span>", highlighted_text)
+        highlighted_text = re.sub("<y>", "<span style='color:#dd9900;'>", highlighted_text)
+        highlighted_text = re.sub("</y>", "</span>", highlighted_text)
+
+        return highlighted_text
 
 
 def main():
-    phrases = Phrases("resources/all_lower_nopunc.txt")
-    print(phrases.sample())
-    print(phrases.compare("hello my name issdf "))
+    phrases = Phrases("resources/comm2.dev")
+    # print(phrases.sample())
+    phrases.cur_phrase = "hello my name is nicholas ryan bonaker"
+    print(phrases.highlight("hello my name is n"))
 
 
 if __name__ == "__main__":

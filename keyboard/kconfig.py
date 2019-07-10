@@ -35,6 +35,7 @@ clear_char = '$'
 
 # word length to display in completions
 max_chars_display = 11
+num_words_total = 17
 ## alphabetic
 # always put alpha-numeric keys first (self.N_alpha_keys)
 
