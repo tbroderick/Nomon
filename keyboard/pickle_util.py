@@ -27,16 +27,16 @@ class PickleUtil:
             try:
                 cPickle.load(open(self.path, 'rb'))
                 #Need to close?
-                print(str(self.path) + "all good")
+                # print(str(self.path) + " all good")
                 return False
             except EOFError:
-                print(str(self.path) + "not corrupt but empty")
+                print(str(self.path) + " not corrupt but empty")
                 return True
             except IOError:
-                print(str(self.path) + "not empty but can't be opened(corrupt)")
+                print(str(self.path) + " not empty but can't be opened(corrupt)")
                 return False
         else:
-            print(str(self.path) + "does not exist")
+            print(str(self.path) + " does not exist")
             return False
     
     def is_corrupt(self):
@@ -44,7 +44,7 @@ class PickleUtil:
             try:
                 cPickle.load(open(self.path, 'rb'))
                 #Need to close?
-                print(str(self.path) + "all good")
+                # print(str(self.path) + "all good")
                 return False
             except EOFError:
                 print(str(self.path) + "not corrupt but empty")

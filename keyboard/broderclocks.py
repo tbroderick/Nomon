@@ -29,9 +29,13 @@ class BroderClocks:
         #SPECIFIC FILE NAMES
         #SAVING AND LOADING
         self.get_all_data()
-    
-        self.latest_time = time.time()
-        self.last_press_time = time.time()
+
+        if isinstance(self.parent, SimulatedUser):
+            self.latest_time = self.parent.time.time()
+            self.last_press_time = self.parent.time.time()
+        else:
+            self.latest_time = time.time()
+            self.last_press_time = time.time()
         self.last_gap_time_li = []
         self.last_press_time_li = []
         
@@ -100,8 +104,6 @@ class BroderClocks:
             PickleUtil(self.prev_data_path).safe_save({'li': self.clock_inf.kde.dens_li, 'z': self.clock_inf.kde.Z, 'opt_sig': self.clock_inf.kde.ksigma, 'y_li': self.clock_inf.kde.y_li, 'yksigma':self.clock_inf.kde.y_ksigma})
             PickleUtil(self.params_data_path).safe_save(self.parent.params_handle_dict)
 
-
-
     def quit_bc(self):
 
         if self.parent.is_write_data:
@@ -111,7 +113,10 @@ class BroderClocks:
 
     def select(self):
         ####CLOCKUTIL에서 달라진 INCREMTNT, 달라진 KDE, 달라진 SCOREFUNCTION 갖다 바꾸기
-        time_in = time.time()
+        if isinstance(self.parent, SimulatedUser):
+            time_in = self.parent.time.time()
+        else:
+            time_in = time.time()
         # update scores of each clock
         self.clock_inf.update_scores(time_in - self.latest_time)
         # update history of key presses
@@ -133,6 +138,11 @@ class BroderClocks:
 
         # proceed based on whether there was a winner
         if (self.clock_inf.is_winner()):
+            if isinstance(self.parent, SimulatedUser):
+                self.parent.winner = True
+                self.parent.winner_text = self.parent.clock_to_text(self.clock_inf.sorted_inds[0])
+                # print("WINNER",  self.clock_inf.sorted_inds[0])
+
             # record winner
             self.clock_inf.win_history[0] = self.clock_inf.sorted_inds[0]
             # update number of bits recorded
@@ -154,7 +164,11 @@ class BroderClocks:
     #CAN DO BETTER FOR THIS PART
     def init_bits(self):
         self.bits_per_select = log(len(self.clock_inf.clocks_on)) / log(2)
-        self.start_time = time.time()
+        if isinstance(self.parent, SimulatedUser):
+            self.start_time = self.parent.time.time()
+        else:
+            self.start_time = time.time()
+
         self.last_win_time = self.start_time
         self.num_bits = 0
         self.num_selects = 0

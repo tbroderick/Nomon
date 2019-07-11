@@ -2,20 +2,20 @@
 
 ######################################
 #    Copyright 2009 Tamara Broderick
-#    This file is part of Nomon Keyboard.
+#    This file is part of Nomon SimulatedUser.
 #
-#    Nomon Keyboard is free software: you can redistribute it and/or modify
+#    Nomon SimulatedUser is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
 #
-#    Nomon Keyboard is distributed in the hope that it will be useful,
+#    Nomon SimulatedUser is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
 #
 #    You should have received a copy of the GNU General Public License
-#    along with Nomon Keyboard.  If not, see <http://www.gnu.org/licenses/>.
+#    along with Nomon SimulatedUser.  If not, see <http://www.gnu.org/licenses/>.
 ######################################
 
 import kconfig
@@ -155,8 +155,8 @@ class DTree:
         for line in self.file_handle.xreadlines():
             # read each line
             toks = line.split()
-            if (len(toks) != 2):
-                print "Error: len(toks) = %d" % (len(toks))
+            # if (len(toks) != 2):
+                # print "Error: len(toks) = %d" % (len(toks))
 
             # add word to the tree
             self.dt.add_word(toks[0], int(toks[1]))
@@ -164,7 +164,7 @@ class DTree:
             n_line += 1
             if n_line % 20000 == 0:
                 if self.loading_text[n_line / 20000] != "":
-                    print self.loading_text[n_line / 20000]
+                    # print self.loading_text[n_line / 20000]
                     subWindows.loading_text = self.loading_text[n_line / 20000]  # send messages to GUI splash screen
 
                     self.parent.app.processEvents()  # allow splash screen to refresh
@@ -206,7 +206,7 @@ class DTree:
 
 
 def main():
-    print "in dtree.py"
+    # print "in dtree.py"
 
     # file
     file_name = kconfig.train_file_name_default

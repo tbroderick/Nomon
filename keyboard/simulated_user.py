@@ -2,27 +2,24 @@
 
 ######################################
 #    Copyright 2009 Tamara Broderick
-#    This file is part of Nomon Keyboard.
+#    This file is part of Nomon SimulatedUser.
 #
-#    Nomon Keyboard is free software: you can redistribute it and/or modify
+#    Nomon SimulatedUser is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
 #
-#    Nomon Keyboard is distributed in the hope that it will be useful,dfg
+#    Nomon SimulatedUser is distributed in the hope that it will be useful,dfg
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
 #
 #    You should have received a copy of the GNU General Public License
-#    along with Nomon Keyboard.  If not, see <http://www.gnu.org/licenses/>.
+#    along with Nomon SimulatedUser.  If not, see <http://www.gnu.org/licenses/>.
 ######################################
+import numpy as np
+# from matplotlib import pyplot as plt
 
-from numpy import zeros, array, log, exp
-from PyQt5 import QtCore, QtGui, QtWidgets, QtMultimedia
-
-from mainWindow import MainWindow
-from subWindows import Pretraining, StartWindow
 from phrases import Phrases
 # import dtree
 from kenlm_lm import LanguageModel
@@ -33,9 +30,7 @@ import os
 # import string
 import kconfig
 import config
-import time
-from appdirs import user_data_dir
-import pathlib
+# from appdirs import user_data_dir
 from broderclocks import BroderClocks
 
 sys.path.insert(0, os.path.realpath('../KernelDensityEstimation'))
@@ -43,13 +38,39 @@ sys.path.insert(0, os.path.realpath('../KernelDensityEstimation'))
 # sys._excepthook = sys.excepthook
 
 
-class Keyboard(MainWindow):
+class Time():
+    def __init__(self):
+        self.cur_time = 0
 
-    def __init__(self, screen_res, app):
-        super(Keyboard, self).__init__(screen_res)
+    def time(self):
+        return self.cur_time
 
-        self.app = app
-        self.pretrain_window = False
+    def set_time(self, t):
+        self.cur_time = t
+
+
+class SimulatedUser:
+    def __init__(self, cwd=os.getcwd(), job_num=None, sub_call=False):
+
+        if not sub_call:
+            click_dist = np.zeros(80)
+            click_dist[40] = 1
+            self.click_dist = list(click_dist)
+
+        self.job_num = job_num
+        self.plot = None
+
+
+        self.working_dir=cwd
+
+        self.time = Time()
+        self.prev_time = 0
+
+        if not sub_call:
+            self.N_pred = kconfig.N_pred
+            self.prob_thres = kconfig.prob_thres
+            self.num_words_total = 26*self.N_pred
+            self.lm_left_context = True
 
         # 2 is turn fully on, 1 is turn on but reduce, 0 is turn off
         self.word_pred_on = 2
@@ -65,11 +86,8 @@ class Keyboard(MainWindow):
             self.start_speed, self.is_write_data = user_preferences
 
         self.phrase_prompts = False  # set to true for data collection mode
+        self.phrases = Phrases("resources/all_lower_nopunc.txt")
 
-        if self.layout_preference == 'alpha':
-            self.target_layout = kconfig.alpha_target_layout
-        elif self.layout_preference == 'qwerty':
-            self.target_layout = kconfig.qwerty_target_layout
         self.key_chars = kconfig.key_chars
 
         # set up dictionary tree
@@ -83,24 +101,7 @@ class Keyboard(MainWindow):
         lm_path = os.path.join(os.path.join(self.cwd, 'resources'), 'lm_word_medium.kenlm')
         vocab_path = os.path.join(os.path.join(self.cwd, 'resources'), 'vocab_100k')
 
-        self.lm = LanguageModel(lm_path, vocab_path)
-
-        # initialize pygame and joystick
-        if kconfig.target_evt is kconfig.joy_evt:
-            pygame.init()
-            if pygame.joystick.get_count() < 1:
-                # no joysticks found
-                print("Please connect a joystick.\n")
-                self.quit(None)
-            else:
-                # create a new joystick object from
-                # ---the first joystick in the list of joysticks
-                Joy0 = pygame.joystick.Joystick(0)
-                # tell pygame to record joystick events
-                Joy0.init()
-            # start looking for events
-            self.parent.after(0, self.find_events)
-        # not in selection pause
+        self.lm = LanguageModel(lm_path, vocab_path, parent=self)
         self.in_pause = False
 
         # determine keyboard positions
@@ -111,12 +112,6 @@ class Keyboard(MainWindow):
         # set up file handle for printing useful stuff
         self.undefined = False
 
-        self.params_handle_dict = {'speed': [], 'params': [], 'start': [], 'press': [], 'choice': []}
-        self.num_presses = 0
-
-        self.params_handle_dict['params'].append([config.period_li[config.default_rotate_ind], config.theta0])
-        self.params_handle_dict['start'].append(time.time())
-
         self.gen_scale()
         self.pause_set = True
         # set up "typed" text
@@ -125,15 +120,10 @@ class Keyboard(MainWindow):
         self.context = ""
         self.old_context_li = [""]
         self.last_add_li = [0]
-        # set up "talked" text
-        # self.talk_file = "talk.txt"
+
         self.sound_set = True
 
-        # check for speech
-        # talk_fid = open(self.talk_file, 'wb')
-        # write words
         self.init_words()
-
 
         self.bars = kconfig.bars
 
@@ -146,92 +136,231 @@ class Keyboard(MainWindow):
         self.clear_text = False
         self.pretrain = False
 
-        self.init_ui()
-
         self.time_rotate = config.period_li[self.start_speed]
         # get language model results
         self.gen_word_prior(False)
 
-        self.clock_spaces = zeros((len(self.clock_centers), 2))
+        self.clock_spaces = np.zeros((len(self.clock_centers), 2))
 
         self.bc = BroderClocks(self)
-        self.mainWidget.change_value(self.start_speed)
 
         self.bc.init_follow_up(self.word_score_prior)
 
-        self.clock_params = zeros((len(self.clock_centers), 8))
-
-        self.bc.clock_inf.clock_util.calcualte_clock_params('default', recompute=True)
-
-        # draw histogram
-        self.init_histogram()
-
-        self.save_environment()
+        self.clock_params = np.zeros((len(self.clock_centers), 8))
 
         self.consent = False
 
-        # if first_load:
-        #     self.pretrain = True
-        #     self.welcome = Pretraining(self, screen_res)
+    def init_sim_data(self):
+        # self.init_clocks()
+        self.num_selections = 0
+        self.sel_per_min = []
 
-        # animate
-        # record to prevent double tap
-        self.last_key_press_time = time.time()
-        self.last_release_time = time.time()
+        self.num_chars = 0
+        self.char_per_min = []
 
-        self.init_clocks()
+        self.num_words = 0
+
+        self.num_presses = 0
+        self.press_per_sel = []
+        self.press_per_char = []
+        self.press_per_word = []
+
+        self.num_errors = 0
+        self.error_rate_avg = []
+        self.kde_errors = []
+        self.kde_errors_avg = None
+
         self.update_radii = False
-        self.on_timer()
+        # self.on_timer()
+        self.winner = False
+        self.winner_text = ""
 
-    def save_environment(self):
-        self.rotate_index_past = self.rotate_index
-        self.window_size_past = self.frameGeometry()
-        self.clock_type_past = self.clock_type
-        self.layout_preference_past = self.layout_preference
-        self.high_contrast_past = self.high_contrast
+    def parameter_metrics(self, parameters, num_clicks=500, trials=1, attribute=None):
+        self.init_sim_data()
+        # Load parameters or use defaults
+        if "click_dist" in parameters:
+            self.click_dist = parameters["click_dist"]
+        else:
+            click_dist = np.zeros(80)
+            click_dist[40] = 1
+            self.click_dist = list(click_dist)
 
-    def init_clocks(self):
-        self.update_clock_radii()
+        if "N_pred" in parameters:
+            self.N_pred = parameters["N_pred"]
+        else:
+            self.N_pred = kconfig.N_pred
 
-        self.bc.clock_inf.clock_util.calcualte_clock_params(self.clock_type, recompute=True)
-        for clock in self.words_on:
-            self.mainWidget.clocks[clock].set_params(self.clock_params[clock, :], recompute=True)
-            self.mainWidget.clocks[clock].redraw_text = True
-            if self.word_pred_on == 1:
-                if clock in self.mainWidget.reduced_word_clock_indices:
-                    word_clock = self.mainWidget.reduced_word_clocks[self.mainWidget.reduced_word_clock_indices.index(clock)]
-                    word_clock.set_params(self.clock_params[clock, :], recompute=True)
-        for clock in self.words_off:
-            self.mainWidget.clocks[clock].redraw_text = True
+        if "prob_thresh" in parameters:
+            self.prob_thres = parameters["prob_thresh"]
+        else:
+            self.prob_thres = kconfig.prob_thres
 
-    def update_clock_radii(self):
-        for clock in self.words_on:
-            self.clock_spaces[clock, :] = array([self.mainWidget.clocks[clock].w, self.mainWidget.clocks[clock].h])
-            if self.word_pred_on == 1:
-                if clock in self.mainWidget.reduced_word_clock_indices:
-                    word_clock = self.mainWidget.reduced_word_clocks[
-                        self.mainWidget.reduced_word_clock_indices.index(clock)]
-                    self.clock_spaces[clock, :] = array(
-                        [word_clock.w, word_clock.h])
+        if "num_words" in parameters:
+            self.num_words_total = parameters["num_words"]
+        else:
+            self.num_words_total = 26*self.N_pred
 
-        self.bc.clock_inf.clock_util.calcualte_clock_params(self.clock_type, recompute=True)
-        self.update_radii = False
+        if "num_words" in parameters:
+            self.num_words_total = parameters["num_words"]
+        else:
+            self.num_words_total = 26*self.N_pred
 
-    def find_events(self):
-        # check everything in the queue of pygame events
-        events = pygame.event.get()
-        for event in events:
-            # event type for pressing any of the joystick buttons down
-            if event.type == pygame.JOYBUTTONDOWN:
-                # generate the event I've defined
-                self.canvas.event_generate(kconfig.joy_evt)
+        if "left_context" in parameters:
+            self.lm_left_context = parameters["left_context"]
+        else:
+            self.lm_left_context = True
 
-        # return to check for more events in a moment
-        self.parent.after(20, self.find_events)
+        self.gen_data_dir()
+        for trial in range(trials):
+            self.__init__(sub_call=True)
 
-    def keyPressEvent(self, e):
-        if e.key() == QtCore.Qt.Key_Space:
+            while self.num_presses < num_clicks:
+                text = self.phrases.sample()
+                self.type_text(text, verbose=False)
+                print(round(self.num_presses/num_clicks*100), " %")
+                self.typed = ""  # reset tracking and context for lm -- new sentence
+                self.num_words += len(text.split(" "))
+
+            print("selections per minute: ", self.num_selections / (self.time.time() / 60))
+            print("characters per minute: ", self.num_chars / (self.time.time() / 60))
+            print("presses per selection: ", self.num_presses / self.num_selections)
+            print("presses per character: ", self.num_presses / self.num_chars)
+            print("presses per word: ", self.num_presses / self.num_words)
+            print("error rate: ", self.num_errors / self.num_selections)
+
+            self.update_sim_averages(trials)
+
+            self.num_selections = 0
+            self.num_chars = 0
+            self.num_words = 0
+            self.num_presses = 0
+            self.num_errors = 0
+            self.kde_errors = []
+
+        self.save_simulation_data(attribute=attribute)
+
+    def update_sim_averages(self, num_trials):
+
+        time_int = self.time.time() - self.prev_time
+        self.prev_time = float(self.time.time())
+
+        self.sel_per_min += [self.num_selections / (time_int / 60)]
+
+        self.char_per_min += [self.num_chars / (time_int / 60)]
+
+        self.press_per_sel += [self.num_presses / self.num_selections]
+
+        self.press_per_char += [self.num_presses / self.num_chars]
+
+        self.press_per_word += [self.num_presses / self.num_words]
+
+        self.error_rate_avg += [self.num_errors / self.num_selections]
+
+        if self.kde_errors_avg is None:
+            self.kde_errors_avg = np.array(self.kde_errors) / num_trials
+        else:
+            length = min(len(self.kde_errors_avg), len(self.kde_errors))
+            if len(self.kde_errors_avg) < len(self.kde_errors):
+                self.kde_errors_avg += np.array(self.kde_errors[:length]) / num_trials
+            else:
+                self.kde_errors_avg = self.kde_errors_avg[:length] + np.array(self.kde_errors) / num_trials
+
+    def type_text(self, text, verbose=True):
+        self.target_text = text
+        while len(self.target_text) > 0:
+            target_clock, self.target_text = self.next_target(self.target_text)
+            self.select_clock(target_clock, verbose=verbose)
+
+    def select_clock(self, target_clock, verbose=True, undo_depth=0):
+
+        ndt = self.bc.clock_inf.clock_util.num_divs_time
+        num_press = 0
+        time_elapsed = 0
+        for i in range(15):
+            self.winner = False
+            if self.bc.clock_inf.clock_util.cur_hours[target_clock] > ndt // 2:
+                time_delta = (3 * ndt // 2 - self.bc.clock_inf.clock_util.cur_hours[
+                    target_clock] + 1) / ndt * self.time_rotate
+            else:
+                time_delta = (ndt // 2 - self.bc.clock_inf.clock_util.cur_hours[target_clock] + 1) / ndt * self.time_rotate
+
+            click_offset = np.float((np.random.choice(80, 1, p=self.click_dist) - 40)) / 80 * self.time_rotate
+            time_delta += click_offset
+
+            time_elapsed += time_delta
+            self.time.set_time(self.time.time() + time_delta)
+            self.on_timer()
             self.on_press()
+            num_press += 1
+            if self.winner:
+                self.num_selections += 1
+                self.num_chars += len(self.winner_text)
+                if len(self.bc.clock_inf.win_history) > 1:
+                    selected_clock = self.bc.clock_inf.win_history[1]
+                else:
+                    selected_clock = self.bc.clock_inf.win_history[0]
+                if verbose:
+                    print(">>> Clock " + str(selected_clock) + " selected in " + str(num_press) + " presses, " + str(round(time_elapsed, 2)) + " seconds")
+                    print("    Typed \"" + self.winner_text + "\"")
+                self.winner = False
+
+                if selected_clock != target_clock:
+                    self.num_errors += 1
+
+                    print("Wrong clock, backtracking . . . ")
+                    # undo_clock = self.keys_li.index(kconfig.mybad_char)*4 + 3
+                    # if undo_depth < 3:
+                    #     self.select_clock(undo_clock, undo_depth=undo_depth+1)
+                    #     if target_clock != undo_clock:
+                    #         self.select_clock(target_clock, verbose=False)
+
+                break
+
+        self.kde_errors += [self.kde_mse()]*num_press
+
+    def next_target(self, text):
+        words = text.split(" ")
+        if "" in words:
+            words.remove("")
+
+        if len(words) > 1:
+            remaining_words = ""
+            for word in words[1:]:
+                if remaining_words != "":
+                    remaining_words += " "
+                remaining_words += word
+            first_word = words[0]
+        else:
+            remaining_words = ""
+            first_word = words[0]
+
+        target_word = self.context + first_word + " "
+        if target_word in self.word_list:
+            words_list_flattened = [word for sublist in self.words_li for word in sublist+[""]]
+            return words_list_flattened.index(target_word), remaining_words
+
+        target_letter = text[0]
+        return self.keys_li.index(target_letter)*(self.N_pred+1) + self.N_pred, text[1:]
+
+    def clock_to_text(self, index):
+
+        if (index - self.N_pred) % (self.N_pred + 1) == 0:
+            typed = self.keys_li[self.index_to_wk[index]]
+        else:
+            key = self.index_to_wk[index] // self.N_pred
+            pred = self.index_to_wk[index] % self.N_pred
+            typed = self.words_li[key][pred]
+        return typed
+
+    def plot_hist(self):
+        bars = self.bc.get_histogram()
+        bars = np.array(bars)/np.sum(bars)
+        self.plot.plot_hist(bars)
+
+    def kde_mse(self):
+        bars = self.bc.get_histogram()
+        bars = np.array(bars) / np.sum(bars)
+        return np.sum(np.square(bars - self.click_dist))
 
     def init_locs(self):
         # size of keyboard
@@ -274,7 +403,7 @@ class Keyboard(MainWindow):
         index = 0  # how far into the clock_centers matrix
         word = 0  # word index
         key = 0  # key index
-        # kconfig.N_pred = 2 # number of words per key
+        # self.N_pred = 2 # number of words per key
         self.key_height = 6.5 * kconfig.clock_rad
         self.w_canvas = 0
         self.index_to_wk = []  # overall index to word or key index
@@ -284,15 +413,18 @@ class Keyboard(MainWindow):
             for col in range(0, self.N_keys_row[row]):
                 x = col * (6 * kconfig.clock_rad + kconfig.word_w)
                 # predictive words
-                self.clock_centers.append([x + word_clock_offset, y + 1 * kconfig.clock_rad])
-                self.clock_centers.append([x + word_clock_offset, y + 3 * kconfig.clock_rad])
-                self.clock_centers.append([x + word_clock_offset, y + 5 * kconfig.clock_rad])
+                for word_index in range(self.N_pred):
+                    self.clock_centers.append([x + word_clock_offset, y + (1 + word_index * 2) * kconfig.clock_rad])
+                    self.word_locs.append([x + word_offset, y + (1 + word_index * 2) * kconfig.clock_rad])
+                    # self.clock_centers.append([x + word_clock_offset, y + 3 * kconfig.clock_rad])
+                    # self.clock_centers.append([x + word_clock_offset, y + 5 * kconfig.clock_rad])
+                    self.index_to_wk.append(word + word_index)
                 # win diffs
-                self.win_diffs.extend([config.win_diff_base, config.win_diff_base, config.win_diff_base])
+                self.win_diffs.extend([config.win_diff_base for i in range(self.N_pred)])
                 # word position
-                self.word_locs.append([x + word_offset, y + 1 * kconfig.clock_rad])
-                self.word_locs.append([x + word_offset, y + 3 * kconfig.clock_rad])
-                self.word_locs.append([x + word_offset, y + 5 * kconfig.clock_rad])
+                # self.word_locs.append([x + word_offset, y + 1 * kconfig.clock_rad])
+                # self.word_locs.append([x + word_offset, y + 3 * kconfig.clock_rad])
+                # self.word_locs.append([x + word_offset, y + 5 * kconfig.clock_rad])
                 # rectangles
                 self.rect_locs.append([x + rect_offset, y, x + rect_end, y + 2 * kconfig.clock_rad])
                 self.rect_locs.append(
@@ -300,11 +432,12 @@ class Keyboard(MainWindow):
                 self.rect_locs.append(
                     [x + rect_offset, y + 4 * kconfig.clock_rad, x + rect_end, y + 6 * kconfig.clock_rad])
                 # indices
-                self.index_to_wk.append(word)
-                self.index_to_wk.append(word + 1)
-                self.index_to_wk.append(word + 2)
-                index += 3
-                word += 3
+
+                # self.index_to_wk.append(word)
+                # self.index_to_wk.append(word + 1)
+                # self.index_to_wk.append(word + 2)
+                index += self.N_pred
+                word += self.N_pred
 
                 ## key character
                 # reference to index of key character
@@ -331,22 +464,6 @@ class Keyboard(MainWindow):
         scale_length = self.w_canvas / 2  # (len(kconfig.key_chars[0])-1)*kconfig.word_w
         tick_int = int((len(config.period_li) - 1) * kconfig.word_pt * 3 / (1.0 * scale_length)) + 1
         self.time_rotate = config.period_li[self.rotate_index]
-
-    def toggle_pause_button(self, value):
-        self.pause_set = value
-        self.mainWidget.sldLabel.setFocus()
-
-    def toggle_sound_button(self, value):
-        self.sound_set = value
-        self.mainWidget.sldLabel.setFocus()
-
-    def toggle_talk_button(self, value):
-        self.talk_set = value
-        self.mainWidget.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
-
-    def toggle_learn_button(self, value):
-        config.is_learning = value
-        self.mainWidget.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
 
     def change_speed(self, index):
         # speed (as shown on scale)
@@ -378,10 +495,14 @@ class Keyboard(MainWindow):
             bars = self.bc.get_histogram()
         # bars = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.bars = bars
-        self.mainWidget.histogram.update()
+        # self.mainWidget.histogram.update()
 
     def init_words(self):
-        (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(self.left_context, self.context,
+        if self.lm_left_context:
+            lm_left_context = self.left_context
+        else:
+            lm_left_context = ""
+        (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(lm_left_context, self.context,
                                                                                  self.keys_li)
 
         self.word_id = []
@@ -396,11 +517,11 @@ class Keyboard(MainWindow):
 
         # if word prediction on but reduced
         if self.word_pred_on == 1:
-            flat_freq_list = array([freq for sublist in self.word_freq_li for freq in sublist])
+            flat_freq_list = np.array([freq for sublist in self.word_freq_li for freq in sublist])
             if len(flat_freq_list) >= self.reduce_display:
                 # replacement_count = 0
                 for arg in flat_freq_list.argsort()[-self.reduce_display:]:
-                    word_to_add = self.words_li[(arg / 3)][arg % 3]
+                    word_to_add = self.words_li[(arg // self.N_pred)][arg % self.N_pred]
                     # =============================================================================
                     #                     while len(word_to_add) == 1:
                     #                         replacement_count +=1
@@ -430,7 +551,7 @@ class Keyboard(MainWindow):
 
         len_con = len(self.context)
         for key in range(0, self.N_alpha_keys):
-            for pred in range(0, kconfig.N_pred):
+            for pred in range(0, self.N_pred):
                 word_str = self.words_li[key][pred]
                 len_word = len(word_str)
                 if (len_con > 1) and (len_word > kconfig.max_chars_display):
@@ -460,7 +581,7 @@ class Keyboard(MainWindow):
             self.word_pair.append((key,))
             index += 1
         for key in range(self.N_alpha_keys, self.N_keys):
-            for pred in range(0, kconfig.N_pred):
+            for pred in range(0, self.N_pred):
                 word_str = self.words_li[key][pred]
                 self.word_pair.append((key, pred))
                 self.words_off.append(index)
@@ -470,9 +591,13 @@ class Keyboard(MainWindow):
             index += 1
         self.typed_versions = ['']
 
-
     def draw_words(self):
-        (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(self.left_context, self.context, self.keys_li)
+        if self.lm_left_context:
+            lm_left_context = self.left_context
+        else:
+            lm_left_context = ""
+        (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(lm_left_context, self.context,
+                                                                                 self.keys_li)
         word = 0
         index = 0
         self.words_on = []
@@ -481,7 +606,7 @@ class Keyboard(MainWindow):
 
         # if word prediction on but reduced
         if self.word_pred_on == 1:
-            flat_freq_list = array([exp(freq) for sublist in self.word_freq_li for freq in sublist])
+            flat_freq_list = np.array([np.exp(freq) for sublist in self.word_freq_li for freq in sublist])
             if len(flat_freq_list) >= self.reduce_display:
                 for arg in flat_freq_list.argsort()[-self.reduce_display:]:
                     word_to_add = self.words_li[(arg // 3)][arg % 3]
@@ -504,7 +629,7 @@ class Keyboard(MainWindow):
 
         windex = 0
         for key in range(0, self.N_alpha_keys):
-            for pred in range(0, kconfig.N_pred):
+            for pred in range(0, self.N_pred):
                 word_str = self.words_li[key][pred]
                 len_word = len(word_str)
                 if len_con > 1 and len_word > kconfig.max_chars_display:
@@ -534,7 +659,7 @@ class Keyboard(MainWindow):
             self.word_pair.append((key,))
             index += 1
         for key in range(self.N_alpha_keys, self.N_keys):
-            for pred in range(0, kconfig.N_pred):
+            for pred in range(0, self.N_pred):
                 self.word_pair.append((key, pred))
                 self.words_off.append(index)
                 index += 1
@@ -542,8 +667,8 @@ class Keyboard(MainWindow):
             self.word_pair.append((key,))
             index += 1
 
-        self.mainWidget.update_clocks()
-        self.init_clocks()
+        # self.mainWidget.update_clocks()
+        # self.init_clocks()
 
     def gen_word_prior(self, is_undo):
         self.word_score_prior = []
@@ -554,20 +679,20 @@ class Keyboard(MainWindow):
                 # word case
                 if len(pair) == 2:
                     (key, pred) = pair
-                    prob = self.word_freq_li[key][pred] + log(kconfig.rem_prob)
+                    prob = self.word_freq_li[key][pred] + np.log(kconfig.rem_prob)
                     self.word_score_prior.append(prob)
                 else:
                     key = pair[0]
                     prob = self.key_freq_li[key]
-                    prob = prob + log(kconfig.rem_prob)
+                    prob = prob + np.log(kconfig.rem_prob)
                     if self.keys_li[key] == kconfig.mybad_char or self.keys_li[key] == kconfig.yourbad_char:
-                        prob = log(kconfig.undo_prob)
+                        prob = np.log(kconfig.undo_prob)
                     if self.keys_li[key] in kconfig.break_chars:
-                        prob = log(kconfig.break_prob)
+                        prob = np.log(kconfig.break_prob)
                     if self.keys_li[key] == kconfig.back_char:
-                        prob = log(kconfig.back_prob)
+                        prob = np.log(kconfig.back_prob)
                     if self.keys_li[key] == kconfig.clear_char:
-                        prob = log(kconfig.undo_prob)
+                        prob = np.log(kconfig.undo_prob)
 
                     self.word_score_prior.append(prob)
         else:
@@ -577,7 +702,7 @@ class Keyboard(MainWindow):
                     key = pair[0]
                     if (self.keys_li[key] == kconfig.mybad_char) or (self.keys_li[key] == kconfig.yourbad_char):
                         prob = kconfig.undo_prob
-                        self.word_score_prior.append(log(prob))
+                        self.word_score_prior.append(np.log(prob))
                     else:
                         self.word_score_prior.append(0)
                 else:
@@ -589,25 +714,6 @@ class Keyboard(MainWindow):
         self.typed = ""
         self.lm_prefix = ""
         self.draw_words()
-
-    def update_phrases(self, cur_text):
-        cur_phrase_typed, next_phrase = self.phrases.compare(cur_text)
-
-        if next_phrase:
-            self.typed_versions += ['']
-            self.mainWidget.text_box.setText('')
-            self.clear_text = False
-            undo_text = 'Clear'
-
-            self.phrases.sample()
-            cur_phrase_typed = ""
-            self.reset_context()
-
-        new_text = self.mainWidget.text_box.toPlainText()
-
-        self.mainWidget.text_box.setText(
-            "<p><span style='color:#00dd00;'>" + cur_phrase_typed + "</span><span style='color:#000000;'>"
-            + self.phrases.cur_phrase[len(cur_phrase_typed):] + "<\p><p>" + new_text + "</span><\p>")
 
     def draw_typed(self):
         self.wpm_update()
@@ -634,6 +740,8 @@ class Keyboard(MainWindow):
         else:
             new_text = ''
             undo_text = new_text
+
+        self.winner_text = new_text
 
         if new_text in  [". ",", ","? ", "! "]:
             previous_text = previous_text[:-1]
@@ -682,108 +790,29 @@ class Keyboard(MainWindow):
             self.reset_context()
 
         if self.phrase_prompts:
-            print("fuckkk")
             self.update_phrases(self.typed_versions[-1])
 
-
-    def wpm_update(self):
-        time_diff = (time.time() - self.wpm_time)
-        if time_diff < 15. * 10 / self.time_rotate:
-            self.wpm_data + time_diff
-            self.wpm_time = 0
-            self.mainWidget.wpm_label.setText("Selections/Min: " + str(round(self.wpm_data.average(), 2)))
-
-    def on_pause(self):
-
-        self.mainWidget.pause_timer.start(kconfig.pause_length)
-        self.in_pause = True
-        self.setStyleSheet("background-color:" + config.bg_color_highlt + ";")
-        self.mainWidget.text_box.setStyleSheet("background-color:#ffffff;")
-        for clock in self.mainWidget.clocks:
-            clock.redraw_text = True
-
-    def end_pause(self):
-        self.mainWidget.pause_timer.stop()
-        self.in_pause = False
-        self.setStyleSheet("")
-        self.on_timer()
-        for clock in self.mainWidget.clocks:
-            clock.redraw_text = True
-
     def on_timer(self):
-        if self.wpm_time != 0:
-            if time.time() - self.wpm_time > 15:  # reset wrd prior and click history after inactivity
-                self.wpm_time = 0
-                self.bc.clock_inf.clock_history = [[]]
-                self.bc.is_undo = True
-                self.bc.init_round(True, False, self.bc.clock_inf.prev_cscores)
-                self.wpm_time = 0
-
-        if self.focusWidget() == self.mainWidget.text_box:
-            self.mainWidget.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
-
-        if self.bc_init:
-            if not self.in_pause:
-                self.bc.clock_inf.clock_util.increment(self.words_on)
+        self.bc.clock_inf.clock_util.increment(self.words_on)
 
     def on_press(self):
-        # self.canvas.focus_set()
-        if self.wpm_time == 0:
-            self.wpm_time = time.time()
-
-        if not self.in_pause:
-            if self.is_write_data:
-                self.num_presses += 1
-
-            self.bc.select()
-        if self.sound_set:
-            self.play()
-
-    def play(self):
-        sound_file = "icons/bell.wav"
-        QtMultimedia.QSound(sound_file).play()
-
-    def highlight_winner(self, index):
-        if self.word_pred_on == 1:
-            if index in self.mainWidget.reduced_word_clock_indices:
-                word_clock = self.mainWidget.reduced_word_clocks[self.mainWidget.reduced_word_clock_indices.index(index)]
-                word_clock.selected = True
-        if self.mainWidget.clocks[index] != '':
-            self.mainWidget.clocks[index].selected = True
-            self.mainWidget.clocks[index].update()
-            self.mainWidget.highlight_timer.start(2000)
-
-    def end_highlight(self):
-        index = self.previous_winner
-        if self.word_pred_on == 1:
-            for word_clock in self.mainWidget.reduced_word_clocks:
-                word_clock.selected = False
-        if self.mainWidget.clocks[index] != '':
-            self.mainWidget.clocks[index].selected = False
-            self.mainWidget.clocks[index].update()
-            self.mainWidget.highlight_timer.stop()
-
-    def talk_winner(self, talk_string):
-        pass
+        self.num_presses += 1
+        self.bc.select()
 
     def make_choice(self, index):
         is_undo = False
         is_equalize = False
 
-        # now pause (if desired)
-        if self.pause_set == 1:
-            self.on_pause()
-            self.mainWidget.pause_timer.start(kconfig.pause_length)
 
         # highlight winner
         self.previous_winner = index
-        self.highlight_winner(index)
+        # self.highlight_winner(index)
 
         # initialize talk string
         talk_string = ""
 
         # if selected a key
-        if (index - kconfig.N_pred) % (kconfig.N_pred + 1) == 0:
+        if (index - self.N_pred) % (self.N_pred + 1) == 0:
             new_char = self.keys_li[self.index_to_wk[index]]
             # special characters
             if new_char == kconfig.space_char:
@@ -866,8 +895,8 @@ class Keyboard(MainWindow):
 
         # if selected a word
         else:
-            key = self.index_to_wk[index] // kconfig.N_pred
-            pred = self.index_to_wk[index] % kconfig.N_pred
+            key = self.index_to_wk[index] // self.N_pred
+            pred = self.index_to_wk[index] % self.N_pred
             new_word = self.words_li[key][pred]
             new_selection = new_word
             length = len(self.context)
@@ -886,7 +915,7 @@ class Keyboard(MainWindow):
             self.left_context = self.typed
 
         self.draw_words()
-        self.draw_typed()
+        # self.draw_typed()
         # update the word prior
         self.gen_word_prior(is_undo)
 
@@ -902,10 +931,71 @@ class Keyboard(MainWindow):
 
         return self.words_on, self.words_off, self.word_score_prior, is_undo, is_equalize
 
+    def save_simulation_data(self, attribute=None):
+        data_file = os.path.join(self.data_loc, "npred_"+str(self.N_pred)+"_nwords_"+str(self.num_words_total)+"_lcon_"
+                                 +str(int(self.lm_left_context))+".p")
+        data_handel = PickleUtil(data_file)
 
-    def present_choice(self):
-        self.draw_histogram()
-        # self.canvas.update_idletasks()
+        dist_id_file = os.path.join(self.data_loc, "dist_id.p")
+        dist_id_handel = PickleUtil(dist_id_file)
+        dist_id_handel.safe_save(self.click_dist)
+
+        data_dict = dict()
+        data_dict["N_pred"] = self.N_pred
+        data_dict["prob_thresh"] = self.prob_thres
+        data_dict["num_words"] = self.num_words_total
+        data_dict["errors"] = self.error_rate_avg
+        data_dict["selections"] = self.sel_per_min
+        data_dict["characters"] = self.char_per_min
+        data_dict["presses_sel"] = self.press_per_sel
+        data_dict["presses_char"] = self.press_per_char
+        data_dict["presses_word"] = self.press_per_word
+        data_dict["kde_mses"] = self.kde_errors_avg
+        data_dict["kde"] = self.bc.get_histogram()
+        data_dict["kde"] = self.bc.get_histogram()
+        if attribute is not None:
+            data_dict["attribute"] = attribute
+        data_handel.safe_save(data_dict)
+
+    def gen_data_dir(self):
+        if self.job_num is not None:
+            if not os.path.exists(os.path.join(self.working_dir, "sim_data")):
+                try:
+                    os.mkdir(os.path.join(self.working_dir, "sim_data"))
+                except FileExistsError:
+                    pass
+
+            if not os.path.exists(os.path.join(os.path.join(self.working_dir, "sim_data"), str(self.job_num))):
+                try:
+                    os.mkdir(os.path.join(os.path.join(self.working_dir, "sim_data"), str(self.job_num)))
+                except FileExistsError:
+                    pass
+            self.data_loc = os.path.join(os.path.join(self.working_dir, "sim_data"), str(self.job_num))
+        else:
+            dist_found = False
+            highest_user_num = 0
+            if not os.path.exists(os.path.join(self.working_dir, "sim_data")):
+                try:
+                    os.mkdir(os.path.join(self.working_dir, "sim_data"))
+                except FileExistsError:
+                    pass
+
+            for path, dir, files in os.walk(os.path.join(self.working_dir, "sim_data")):
+                highest_user_num = max(max([0]+[int(d) for d in dir]), highest_user_num)
+                for file in files:
+                    if "dist_id" in file:
+                        file_handel = PickleUtil(os.path.join(path, file))
+                        dist_id = file_handel.safe_load()
+                        if np.sum(np.array(dist_id) - np.array(self.click_dist)) == 0:
+                            dist_found = True
+                            self.data_loc = path
+
+            if not dist_found:
+                try:
+                    os.mkdir(os.path.join(os.path.join(self.working_dir, "sim_data"), str(highest_user_num+1)))
+                except FileExistsError:
+                    pass
+                self.data_loc = os.path.join(os.path.join(self.working_dir, "sim_data"), str(highest_user_num+1))
 
     def closeEvent(self, event):
         print("CLOSING THRU CLOSEEVENT")
@@ -916,41 +1006,61 @@ class Keyboard(MainWindow):
         self.bc.quit_bc()
         self.close()
 
-    def launch_help(self):
-        help_window = Pretraining(self, self.mainWidget.screen_res, help_screen=True)
-        help_window.show()
 
-        self.pretrain = True
-        self.mainWidget.repaint()
+def normal_hist(mu, sigma):
+    n_bars = config.num_divs_click
+    bars = (np.arange(n_bars) - n_bars//2)
+    bars_over = (np.arange(n_bars) + n_bars//2)
+    bars_under = (np.arange(n_bars) - n_bars*3//2)
+    out = np.exp(-np.square(bars - mu) / (2 * sigma ** 2)) / np.sqrt(2 * np.pi * sigma ** 2)
+    out += np.exp(-np.square(bars_over - mu) / (2 * sigma ** 2)) / np.sqrt(2 * np.pi * sigma ** 2)
+    out += np.exp(-np.square(bars_under - mu) / (2 * sigma ** 2)) / np.sqrt(2 * np.pi * sigma ** 2)
+    return out/np.sum(out)
 
-    def launch_retrain(self):
-        retrain_window = Pretraining(self, self.mainWidget.screen_res)
-        retrain_window.screen_num=3
-        retrain_window.next_screen()
-        retrain_window.show()
-        # retrain_window.setCentralWidget(retrain_window.mainWidget)
 
-        retrain_window.retrain = True
-        self.pretrain = True
-        self.mainWidget.repaint()
+class HistPlot():
+    def __init__(self):
+        self.plot_colors = ["#0000ff", "#00aa00", "#aa0000", "#ff7700", "#aa00aa"]
+        self.color_num = 0
+
+        self.fig = plt.figure()
+        self.ax = plt.subplot(111)
+
+    def plot_hist(self, bars):
+        plot_color = self.plot_colors[self.color_num]
+        self.color_num += 1
+
+        bars = np.array(bars)
+
+        mean = np.average(np.arange(len(bars)), weights=bars)
+        std = np.sqrt(np.average((np.arange(len(bars)) - mean)**2, weights=bars))
+        plt.bar(np.arange(len(bars)), bars, color=plot_color, alpha=0.3)
+
+        plt.axvline(mean, color=plot_color, linestyle="--", alpha=0.8)
+        for i in [-1, 1]:
+            plt.axvline(mean + i * std, color=plot_color, linestyle=":", alpha=0.6)
+
+    def show(self):
+        self.ax.legend()
+        plt.show()
 
 
 def main():
-    print("****************************\n****************************\n[Loading...]")
 
-    app = QtWidgets.QApplication(sys.argv)
-    app.setQuitOnLastWindowClosed(True)
-    screen_res = (app.desktop().screenGeometry().width(), app.desktop().screenGeometry().height())
+    # hp = HistPlot()
+    #
+    click_dist = (normal_hist(0, 2))
+    # plt.bar(np.arange(80), click_dist)
+    # plt.show()
 
-    # splash = StartWindow(screen_res, True)
-    app.processEvents()
-    ex = Keyboard(screen_res, app)
+    # parameters_list = [{"click_dist": normal_hist(0, i/2)} for i in range(1,20)]
+    # attributes = [i/2 for i in range(1,20)]
+    # for parameters, attribute in zip(parameters_list, attributes):
+    sim = SimulatedUser()
+    params = {"click_dist": np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.2541902814340914e-302, 1.0086920087521047e-277, 2.8017768030774834e-254, 6.97389115643989e-232, 1.5555835990773636e-210, 3.1095775396616144e-190, 5.570794140969275e-171, 8.94467281789515e-153, 1.2872875071646395e-135, 1.6607085657419055e-119, 1.920771245754656e-104, 1.9920447984272592e-90, 1.8529607235269678e-77, 1.5463683968953674e-65, 1.1582947252356645e-54, 7.791492555082668e-45, 4.7100487027093804e-36, 2.561120272382475e-28, 1.2541184057662315e-21, 5.538343539955984e-16, 2.2096339845198593e-11, 7.981536210952814e-08, 2.618827825243114e-05, 0.0007949017590679527, 0.002939855982818132, 0.007217111156261723, 0.01679789411973851, 0.030908818633498824, 0.05635108325405936, 0.11262268243539836, 0.17695142390178886, 0.20578901049860043, 0.1744946466354673, 0.09524813814187554, 0.04850083996058762, 0.021921830919505506, 0.011967478203211755, 0.00813832156682416, 0.007841924210574362, 0.008098493619665307, 0.006811765628866165, 0.004688177640230059, 0.0009410819727846906, 0.0007283322303701631, 0.00021416177778084704, 5.743827035235781e-06, 1.380530439691128e-08, 2.9732327999420265e-12, 5.737858391249442e-17, 9.922216900531416e-23, 1.537466237077811e-29, 2.1347176378774797e-37, 2.6559094827667993e-46, 2.9609023239215924e-56, 2.95782770331805e-67, 2.647644329255964e-79, 2.1236571076584065e-92, 1.5263253854212654e-106, 9.829871470823408e-122, 5.672657089846724e-138, 2.9333453978668607e-155, 1.3591827560712067e-173, 5.643265570307204e-193, 2.099525245610389e-213, 6.999220796510647e-235, 2.0908181758324322e-257, 5.596555563744285e-281, 1.3423425384172324e-305]), 'N_Pred': 2, 'prob_thresh': 0.0}
+    params = {"click_dist": click_dist, "N_pred": 3, "num_words": 5, "left_context": False}
 
-    # if first_load:
-    #     ex.first_load = True
-    #     welcome = Pretraining(screen_res, ex)
-
-    sys.exit(app.exec_())
+    sim.parameter_metrics(params, num_clicks=100, trials=10)
 
 
 if __name__ == "__main__":

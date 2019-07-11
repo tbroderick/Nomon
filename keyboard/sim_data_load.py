@@ -135,8 +135,8 @@ class SimDataUtil:
                 if param != "click_dist":
                     if param not in average_data:
                         average_data[param] = {'errors': [], 'selections': [], 'characters': [], 'presses_sel': [],
-                                               'presses_char': [], 'presses_word': []}
-                    for data_label in ['selections', 'characters', 'presses_sel', 'presses_char','presses_word', 'errors']:
+                                               'presses_char': []}
+                    for data_label in ['selections', 'characters', 'presses_sel', 'presses_char', 'errors']:
                         average_data[param][data_label] += user_data[param][data_label]
         N_preds = list(set([param[0] for param in average_data]))
         N_preds.sort()
@@ -160,7 +160,7 @@ class SimDataUtil:
 
 
                             all_data=[]
-                            for key in ['selections', 'characters', 'presses_sel', 'presses_char', 'presses_word', 'errors']:
+                            for key in ['selections', 'characters', 'presses_sel', 'presses_char', 'errors']:
                                 all_data += [data_dict[key]]
                             data_points = np.array(all_data).T
 
@@ -169,16 +169,15 @@ class SimDataUtil:
                                     [prob_thresh, int(N_pred), bool(l_cont)]+points)
 
         df_columns = ["Word Predictions Max Count", "Words Per Character", "Left Context", "Selections per Minute",
-                      "Characters per Minute", "Presses per Selection", "Presses per Character", "Presses per Word",
+                      "Characters per Minute", "Presses per Selection", "Presses per Character",
                       "Error Rate (Errors/Selection)"]
         df = pd.DataFrame(formatted_data_points, columns=df_columns)
-        df["Selections per Word"] = df["Presses per Selection"]/df["Presses per Word"]
         self.DF = df
 
     def plot_across_params(self):
 
         ind_var_name = "Left Context"
-        for data_label in ['selections','sel_word', 'characters', 'presses_sel', 'presses_char', 'presses_word', 'errors']:
+        for data_label in ['selections', 'characters', 'presses_sel', 'presses_char', 'errors']:
             if data_label == 'selections':
                 dep_var_name = "Selections per Minute"
             elif data_label == 'characters':
@@ -187,10 +186,6 @@ class SimDataUtil:
                 dep_var_name = "Presses per Selection"
             elif data_label == 'presses_char':
                 dep_var_name = "Presses per Character"
-            elif data_label == 'presses_word':
-                dep_var_name = "Presses per Word"
-            elif data_label == 'sel_word':
-                dep_var_name = "Selections per Word"
             elif data_label == 'errors':
                 dep_var_name = "Error Rate (Errors/Selection)"
             else:
@@ -226,7 +221,7 @@ class SimDataUtil:
                                 palette=sns.cubehelix_palette(3, start=2, rot=0.2, dark=.2, light=.7, reverse=True), data=DF)
 
 
-            plt.title("Unigram and N-gram LM: "+dep_var_name+" vs. "+ind_var_name)
+            plt.title("Unigram LM: "+dep_var_name+" vs. "+ind_var_name)
 
             plt.show()
 
@@ -265,7 +260,7 @@ def main():
     #                "y": "Average (-) Gradient of MSE Over Presses"}
     # sdu.plot_across_user("kde_mses", (3, 0.008), trends=True, log=False, legend=plot_legend)
 
-    sdu = SimDataUtil("simulations/language_model/supercloud_results_1")
+    sdu = SimDataUtil("simulations/language_model/supercloud_results_3")
     sdu.plot_across_params()
 
     # plot_legend = {"title": "MSE of Nomon KDE vs Bimodal Distance",

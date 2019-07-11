@@ -90,7 +90,6 @@ class DataUtil:
         plt.show()
 
         if len(self.abs_click_data) != len(self.rel_click_data):
-            print(len(self.abs_click_data), len(self.rel_click_data))
             raise ValueError("Click data length does not match context data length!")
         print("Loaded " + str(len(self.abs_click_data)) + " clicks")
 

@@ -102,7 +102,7 @@ class KernelDensityEstimation:
         ave_sigma_sq = self.ave_sigma_sq(eff_num_points, yLenEff)
 
         # optimal bandwidth
-        self.ksigma = self.ns_factor * np.sqrt(ave_sigma_sq)
+        self.ksigma = self.ns_factor * np.sqrt(max(0.0001, ave_sigma_sq))
         return self.ksigma
 
     # When a new yin comes in, add that yin to kernel density estimation
