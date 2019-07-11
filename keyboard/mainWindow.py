@@ -96,7 +96,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.bc_text_align_action = QtWidgets.QAction('&Bottom Center', self, checkable=True)
         self.bc_text_align_action.triggered.connect(lambda: self.clock_text_align('bc'))
 
-        # SimulatedUser Layout Menu Actions
+        # Keyboard Layout Menu Actions
         self.default_layout_action = QtWidgets.QAction('&Alphabetical (Default)', self, checkable=True)
         self.default_layout_action.triggered.connect(lambda: self.layout_change_event('alpha'))
 
@@ -160,7 +160,7 @@ class MainWindow(QtWidgets.QMainWindow):
         font_menu.addAction(self.small_font_action)
         font_menu.addAction(self.med_font_action)
         font_menu.addAction(self.large_font_action)
-        keyboard_menu = view_menu.addMenu('&SimulatedUser Layout')
+        keyboard_menu = view_menu.addMenu('&Keyboard Layout')
         keyboard_menu.addAction(self.default_layout_action)
         keyboard_menu.addAction(self.qwerty_layout_action)
         # word prediction
@@ -181,7 +181,7 @@ class MainWindow(QtWidgets.QMainWindow):
         help_menu.addSeparator()
         help_menu.addAction(about_action)
 
-        self.setWindowTitle('Nomon SimulatedUser')
+        self.setWindowTitle('Nomon Keyboard')
 
         self.icon = QtGui.QIcon(os.path.join("icons/", 'nomon.png'))
         self.setWindowIcon(self.icon)
@@ -313,20 +313,41 @@ class MainWindow(QtWidgets.QMainWindow):
             phrase_status = True
 
         if self.phrases is None:
-            self.phrases = Phrases("resources/all_lower_nopunc.txt")
+            self.phrases = Phrases("resources/comm2.dev")
 
         self.phrase_prompts = phrase_status
         if phrase_status == True:
             self.phrases.sample()
             self.update_phrases(self.typed_versions[-1], "")
+            self.is_write_data = True
 
             self.mainWidget.cb_learn.setChecked(True)
             self.mainWidget.cb_pause.setChecked(True)
+            self.default_clock_action.trigger()
+            self.high_word_action.trigger()
+            self.med_font_action.trigger()
+            self.default_layout_action.trigger()
 
             self.mainWidget.cb_learn.setEnabled(False)
             self.mainWidget.cb_pause.setEnabled(False)
             self.mainWidget.speed_slider_label.setStyleSheet('QLabel { color: grey }')
             self.mainWidget.sldLabel.setStyleSheet('QLabel { color: grey }')
+
+            self.default_clock_action.setEnabled(False)
+            self.radar_clock_action.setEnabled(False)
+            self.ball_clock_action.setEnabled(False)
+            self.pacman_clock_action.setEnabled(False)
+            self.bar_clock_action.setEnabled(False)
+            self.default_layout_action.setEnabled(False)
+            self.qwerty_layout_action.setEnabled(False)
+            self.high_contrast_action.setEnabled(False)
+            self.low_word_action.setEnabled(False)
+            self.high_word_action.setEnabled(False)
+            self.off_word_action.setEnabled(False)
+            self.small_font_action.setEnabled(False)
+            self.med_font_action.setEnabled(False)
+            self.large_font_action.setEnabled(False)
+            self.log_data_action.setEnabled(False)
 
         else:
             self.typed_versions.append("")
@@ -339,10 +360,30 @@ class MainWindow(QtWidgets.QMainWindow):
             self.mainWidget.cb_learn.setEnabled(True)
             self.mainWidget.cb_pause.setEnabled(True)
             self.mainWidget.speed_slider.setEnabled(True)
+
+            self.default_clock_action.setEnabled(True)
+            self.radar_clock_action.setEnabled(True)
+            self.ball_clock_action.setEnabled(True)
+            self.pacman_clock_action.setEnabled(True)
+            self.bar_clock_action.setEnabled(True)
+            self.default_layout_action.setEnabled(True)
+            self.qwerty_layout_action.setEnabled(True)
+            self.high_contrast_action.setEnabled(True)
+            self.low_word_action.setEnabled(True)
+            self.high_word_action.setEnabled(True)
+            self.off_word_action.setEnabled(True)
+            self.small_font_action.setEnabled(True)
+            self.med_font_action.setEnabled(True)
+            self.large_font_action.setEnabled(True)
+            self.log_data_action.setEnabled(True)
+
             self.mainWidget.speed_slider_label.setStyleSheet('QLabel { color: black }')
             self.mainWidget.sldLabel.setStyleSheet('QLabel { color: black }')
             self.mainWidget.error_label.setStyleSheet("color: rgb(0, 0, 0);")
             self.mainWidget.wpm_label.setStyleSheet("color: rgb(0, 0, 0);")
+
+            self.mainWidget.wpm_label.setText("Words/Min: " + "----")
+            self.mainWidget.error_label.setText("Error Rate: " + "----")
 
 
         self.check_filemenu()
@@ -361,9 +402,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.up_handel.safe_save([design, self.font_scale, self.high_contrast, self.layout_preference,
                                   self.pf_preference, self.start_speed, self.is_write_data])
         self.check_filemenu()
-        self.mainWidget.wpm_label.setText("Selections/Min: "+"----")
-        self.wpm_data = config.Stack(config.wpm_history_length)
-        self.wpm_time = 0
 
         if self.mainWidget.text_alignment == 'auto':
             self.clock_text_align('auto', message=False)
@@ -373,7 +411,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.environment_change = True
 
     def layout_change_event(self, layout):
-        message_box = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "Change SimulatedUser Layout", "This will change the clock "
+        message_box = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "Change Keyboard Layout", "This will change the clock "
                                                                                          "layout to <b>" + layout + "</b"
                                                                                          "> order. <b>NOTICE:</b> You "
                                                                                          "will have to restart Nomon for"
@@ -547,24 +585,34 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def about_event(self):
         # noinspection PyTypeChecker
-        QtWidgets.QMessageBox.question(self, 'About Nomon', "Copyright 2009 Tamara Broderick\n"
-                                                        "This file is part of Nomon SimulatedUser.\n\n"
-
-                                                        "Nomon SimulatedUser is free software: you can redistribute "
-                                                        "it and/or modify the Free Software Foundation, either "
-                                                        "version 3 of the License, or (at your option) any "
-                                                        "later version.\n\n"
-
-                                                        "Nomon SimulatedUser is distributed in the hope that it will"
-                                                        " be useful, but WITHOUT ANY WARRANTY; without even the"
-                                                        " implied warranty of MERCHANTABILITY or FITNESS FOR A "
-                                                        "PARTICULAR PURPOSE.  See the GNU General Public "
-                                                        "License for more details.\n\n"
-
-                                                        "You should have received a copy of the GNU General "
-                                                        "Public License along with Nomon SimulatedUser.  If not, see"
-                                                        " <http://www.gnu.org/licenses/>.",
-                                   QtWidgets.QMessageBox.Ok)
+        QtWidgets.QMessageBox.question(self, 'About Nomon', " Copyright 2019 Nicholas Bonaker, Keith Vertanen,"
+                                                            " Emli-Mari Nel, Tamara Broderick. This file is part of "
+                                                            "the Nomon software. Nomon is free software: you can "
+                                                            "redistribute it and/or modify it under the terms of the "
+                                                            "MIT License reproduced below.\n\n "
+                                                            "Permission is hereby granted, free of charge, to any "
+                                                            "person obtaining a copy of this software and associated"
+                                                            " documentation files (the \"Software\"), to deal in the"
+                                                            " Software without restriction, including without "
+                                                            "limitation the rights to use, copy, modify, merge, "
+                                                            "publish, distribute, sublicense, and/or sell copies of the"
+                                                            " Software,and to permit persons to whom the Software is"
+                                                            " furnished to do so, subject to the following conditions: "
+                                                            "The above copyright notice and this permission notice"
+                                                            " shall be included in all copies or substantial portions"
+                                                            " of the Software. \n\n "
+                                                            "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY" 
+                                                            "OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT"
+                                                            " LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS"
+                                                            " FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO"
+                                                            " EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE"
+                                                            " LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,"
+                                                            " WHETHER IN AN ACTION OF CONTRACT, TORT OR"
+                                                            " OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION"
+                                                            " WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS"
+                                                            " IN THE SOFTWARE.\n\n"
+                                                            " <https://opensource.org/licenses/mit-license.html>",
+                                       QtWidgets.QMessageBox.Ok)
 
     def help_event(self):
         self.launch_help()
@@ -716,7 +764,7 @@ class MainKeyboardWidget(QtWidgets.QWidget):
         # Tool Tips
         # noinspection PyCallByClass
         QtWidgets.QToolTip.setFont(QtGui.QFont('Monospace', 12))
-        self.setToolTip("This is the Nomon SimulatedUser. To select an option, \n "
+        self.setToolTip("This is the Nomon Keyboard. To select an option, \n "
                         "find the clock immediately to its left. Press the \n"
                         "spacebar when the moving hand is near noon.")
         self.speed_slider_label.setToolTip("This slider scales the speed of clock rotation. Higher \nvalues correspond "

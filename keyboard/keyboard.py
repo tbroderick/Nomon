@@ -60,6 +60,7 @@ class Keyboard(MainWindow):
         super(Keyboard, self).__init__(screen_res)
 
         self.app = app
+        self.is_simulation = False
         self.pretrain_window = False
 
         # 2 is turn fully on, 1 is turn on but reduce, 0 is turn off
@@ -157,7 +158,6 @@ class Keyboard(MainWindow):
         # talk_fid = open(self.talk_file, 'wb')
         # write words
         self.init_words()
-
 
         self.bars = kconfig.bars
 
@@ -577,7 +577,6 @@ class Keyboard(MainWindow):
             num_words_total = 5
         else:
             num_words_total = kconfig.num_words_total
-
         (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(self.left_context, self.context, self.keys_li, num_words_total=num_words_total)
         word = 0
         index = 0
@@ -736,6 +735,9 @@ class Keyboard(MainWindow):
         else:
             previous_text = self.mainWidget.text_box.toPlainText()
 
+        if len(previous_text) > 0 and previous_text[-1] == "_":
+            previous_text = previous_text[:-1] + " "
+
         if len(self.last_add_li) > 1:
             last_add = self.last_add_li[-1]
             if last_add > 0:  # typed something
@@ -773,21 +775,35 @@ class Keyboard(MainWindow):
             # self.prefix = self.prefix[:-1]
             if self.typed_versions[-1] != '':
                 self.typed_versions += [previous_text[:-1]]
-                input_text = "<span style='color:#000000;'>" + self.typed_versions[-1] + "</span>"
-                self.mainWidget.text_box.setText("<span style='color:#000000;'>" + self.typed_versions[-1] + "</span>")
+                new_text = self.typed_versions[-1]
+                if new_text[-1] == " ":
+                    new_text = new_text[:-1] + "_"
+
+                input_text = "<span style='color:#000000;'>" + new_text + "</span>"
+                self.mainWidget.text_box.setText("<span style='color:#000000;'>" + new_text + "</span>")
             else:
                 input_text = ""
         elif undo:
             if len(self.typed_versions) > 1:
                 self.typed_versions = self.typed_versions[:-1]
-                input_text = "<span style='color:#000000;'>" + self.typed_versions[-1] + "</span>"
-                self.mainWidget.text_box.setText("<span style='color:#000000;'>" + self.typed_versions[-1] + "</span>")
+
+                new_text = self.typed_versions[-1]
+                if new_text[-1] == " ":
+                    new_text = new_text[:-1] + "_"
+
+                input_text = "<span style='color:#000000;'>" + new_text + "</span>"
+                self.mainWidget.text_box.setText("<span style='color:#000000;'>" + new_text + "</span>")
             else:
                 input_text = ""
         else:
             self.typed_versions += [previous_text + new_text]
+            if new_text[-1] == " ":
+                new_text = new_text[:-1] + "_"
+
             input_text = "<span style='color:#000000;'>" + previous_text + "</span><span style='color:#0000dd;'>"\
                          + new_text + "</span>"
+
+
             self.mainWidget.text_box.setText(
                 "<span style='color:#000000;'>" + previous_text + "</span><span style='color:#0000dd;'>"
                 + new_text + "</span>")

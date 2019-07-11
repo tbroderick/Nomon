@@ -52,34 +52,33 @@ class LanguageModel():
         word_preds = []
         word_probs = []
 
-        lm_results = self.word_predictor.get_words_with_context(prefix, context, self.vocab_id, self.num_predictions, self.min_log_prob)
+        lm_results = self.word_predictor.get_words_with_context(prefix, context, self.vocab_id, self.num_predictions,
+                                                                self.min_log_prob)
         word_dict = {}
         for word_list in lm_results:
             if len(word_list) > 0:
                 word_dict[word_list[0][0][len(prefix)]] = word_list
         for key in keys_li:
-            key_word_preds = ["" for i in range(self.num_predictions)]
-            key_word_probs = [-float("inf") for i in range(self.num_predictions)]
+            key_word_preds = ["", "", ""]
+            key_word_probs = [-float("inf"), -float("inf"), -float("inf")]
             if key in word_dict:
                 index = 0
                 for word_tuple in word_dict[key]:
                     if word_tuple[1] >= self.min_log_prob:
-                        key_word_preds[index] = word_tuple[0]+" "
+                        key_word_preds[index] = word_tuple[0] + " "
                         key_word_probs[index] = word_tuple[1]
                     index += 1
             word_preds += [key_word_preds]
             word_probs += [key_word_probs]
 
-
         key_probs, total_log_prob = self.get_char_probs(word_dict, keys_li)
         word_probs = np.array(word_probs) - total_log_prob
-        if self.num_words_total == 0:
-            nth_min_log_prob = 0
-        else:
-            nth_min_log_prob = np.partition(word_probs.flatten(), -self.num_words_total)[-self.num_words_total]
+
+        nth_min_log_prob = np.partition(word_probs.flatten(), -num_words_total)[-num_words_total]
 
         word_probs = np.where(word_probs >= nth_min_log_prob, word_probs, -float("inf"))
         word_preds = np.where(word_probs != -float("inf"), word_preds, "")
+        word_preds = np.where(word_probs >= nth_min_log_prob, word_preds, "")
 
         return word_preds.tolist(), word_probs.tolist(), key_probs
 

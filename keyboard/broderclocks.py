@@ -17,6 +17,7 @@ import config
 class BroderClocks:
     def __init__(self, parent):
         self.parent = parent
+        print(type(self.parent))
         self.parent.bc_init = True
         self.clock_inf = ClockInference(self.parent, self)
         
@@ -30,7 +31,7 @@ class BroderClocks:
         #SAVING AND LOADING
         self.get_all_data()
 
-        if isinstance(self.parent, SimulatedUser):
+        if self.parent.is_simulation:
             self.latest_time = self.parent.time.time()
             self.last_press_time = self.parent.time.time()
         else:
@@ -113,7 +114,7 @@ class BroderClocks:
 
     def select(self):
         ####CLOCKUTIL에서 달라진 INCREMTNT, 달라진 KDE, 달라진 SCOREFUNCTION 갖다 바꾸기
-        if isinstance(self.parent, SimulatedUser):
+        if self.parent.is_simulation:
             time_in = self.parent.time.time()
         else:
             time_in = time.time()
@@ -138,7 +139,7 @@ class BroderClocks:
 
         # proceed based on whether there was a winner
         if (self.clock_inf.is_winner()):
-            if isinstance(self.parent, SimulatedUser):
+            if self.parent.is_simulation:
                 self.parent.winner = True
                 self.parent.winner_text = self.parent.clock_to_text(self.clock_inf.sorted_inds[0])
                 # print("WINNER",  self.clock_inf.sorted_inds[0])
@@ -164,7 +165,7 @@ class BroderClocks:
     #CAN DO BETTER FOR THIS PART
     def init_bits(self):
         self.bits_per_select = log(len(self.clock_inf.clocks_on)) / log(2)
-        if isinstance(self.parent, SimulatedUser):
+        if self.parent.is_simulation:
             self.start_time = self.parent.time.time()
         else:
             self.start_time = time.time()
@@ -216,20 +217,21 @@ class BroderClocks:
         # highlight all clockfaces "near" the winning score
         bound_score = top_score - self.parent.win_diffs[self.clock_inf.sorted_inds[0]]
 
-        for clock_index in self.clock_inf.clocks_on:
-            clock = self.parent.mainWidget.clocks[clock_index]
-            if self.parent.word_pred_on == 1:
-                if clock_index in self.parent.mainWidget.reduced_word_clock_indices:
-                    clock = self.parent.mainWidget.reduced_word_clocks[
-                        self.parent.mainWidget.reduced_word_clock_indices.index(clock_index)]
-            if self.clock_inf.cscores[clock_index] > bound_score:
-                clock.highlighted = True
-            else:
-                clock.highlighted = False
-            clock.update()
-            #HIGHLIGHT에 관한 부분 추가
-            v = self.clock_inf.clock_util.hl.hour_locs[self.clock_inf.clock_util.cur_hours[clock_index] - 1]
-            angle =v[0]
-            self.clock_inf.clock_util.repaint_one_clock(clock_index, angle)
+        if not self.parent.is_simulation:
+            for clock_index in self.clock_inf.clocks_on:
+                clock = self.parent.mainWidget.clocks[clock_index]
+                if self.parent.word_pred_on == 1:
+                    if clock_index in self.parent.mainWidget.reduced_word_clock_indices:
+                        clock = self.parent.mainWidget.reduced_word_clocks[
+                            self.parent.mainWidget.reduced_word_clock_indices.index(clock_index)]
+                if self.clock_inf.cscores[clock_index] > bound_score:
+                    clock.highlighted = True
+                else:
+                    clock.highlighted = False
+                clock.update()
+                #HIGHLIGHT에 관한 부분 추가
+                v = self.clock_inf.clock_util.hl.hour_locs[self.clock_inf.clock_util.cur_hours[clock_index] - 1]
+                angle =v[0]
+                self.clock_inf.clock_util.repaint_one_clock(clock_index, angle)
 
        

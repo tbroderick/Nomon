@@ -2,9 +2,10 @@ import os
 from pickle_util import PickleUtil
 from matplotlib import pyplot as plt
 from scipy import stats
+from config import period_li, default_rotate_ind
 import numpy as np
 
-data_dir = "C:\\Users\\nickb\\Downloads\\nomon_data_motor impaired"
+data_dir = "C:\\Users\\nickb\\AppData\\Local\\Nomon\data\\420"
 
 click_data_files = []
 click_context_files = []
@@ -119,11 +120,16 @@ class DataUtil:
         print("Data partitioned into " + str(len(self.clicks_by_speed.keys())) + " sets by clock rotation speed")
 
     def correct_data(self):
+        if 1.44 in self.clicks_by_speed.keys():
+            base_index = 1.44
 
-        if 1.44 not in self.clicks_by_speed.keys():
+        elif round(period_li[default_rotate_ind], 2) in self.clicks_by_speed.keys():
+            base_index = round(period_li[default_rotate_ind], 2)
+
+        else:
             raise ValueError("Base rotation speed not in data!")
 
-        base_clicks = self.clicks_by_speed[1.44]
+        base_clicks = self.clicks_by_speed[base_index]
         base_clicks_mean = np.mean(base_clicks)
         # base_clicks = base_clicks - base_clicks_mean
         base_clicks_std = np.std(base_clicks)
@@ -159,7 +165,7 @@ class DataUtil:
             # clicks = clicks - clicks_mean
 
             plot_label = "rotation: "+str(clock_speed)+" ("+str(len(clicks))+" points)"
-            ax.hist(clicks, 15, range=[0, 80], density=True, color=plot_color, alpha=0.3, label=plot_label)
+            ax.hist(clicks, 30, range=[0, 80], density=True, color=plot_color, alpha=0.3, label=plot_label)
 
             kernel = stats.gaussian_kde(clicks)
             res = 10
@@ -188,6 +194,6 @@ class DataUtil:
 du = DataUtil(data_dir)
 du.load_data()
 du.split_data()
-# du.correct_data()
+du.correct_data()
 # du.save_hist()
 du.plot_data()

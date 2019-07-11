@@ -71,7 +71,7 @@ clock_text_color = [QtGui.QColor(0, 0, 0), QtGui.QColor(0, 0, 0)]
 clock_text_hl_color = [QtGui.QColor(0, 0, 0), QtGui.QColor(200, 0, 0)]
 clock_text_reg_color = [QtGui.QColor(0, 0, 0), QtGui.QColor(0, 0, 200)]
 # default
-default_hh_color = [QtGui.QColor(255, 0, 0), QtGui.QColor(0, 200, 0)]
+default_hh_color = [QtGui.QColor(255, 0, 0), QtGui.QColor(0, 0, 0)]
 
 default_selct_color = [QtGui.QColor(20, 245, 20), QtGui.QColor(20, 245, 20)]
 default_highlt_color = [QtGui.QColor(0, 0, 255), QtGui.QColor(255, 0, 0)]

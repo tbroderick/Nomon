@@ -338,8 +338,10 @@ class ClockWidget(QtWidgets.QWidget):
                 brush.setColor(config.pac_man_reg_color[self.parent.color_index])
             qp.setBrush(brush)
 
-            if abs(self.minute_hand_angle) < 100:
+            if self.minute_hand_angle > self.previous_angle:
                 self.color_switch = self.color_switch == False
+
+            self.previous_angle = self.minute_hand_angle
 
             if self.color_switch:
                 qp.drawEllipse(self.center, self.outer_radius, self.outer_radius)

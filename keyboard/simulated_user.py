@@ -52,6 +52,8 @@ class Time():
 class SimulatedUser:
     def __init__(self, cwd=os.getcwd(), job_num=None, sub_call=False):
 
+        self.is_simulation = True
+
         if not sub_call:
             click_dist = np.zeros(80)
             click_dist[40] = 1
@@ -131,7 +133,7 @@ class SimulatedUser:
 
         self.previous_undo_text = ''
         self.previous_winner = 0
-        self.wpm_data = config.Stack(config.wpm_history_length)
+        # self.wpm_data = config.Stack(config.wpm_history_length)
         self.wpm_time = 0
         self.clear_text = False
         self.pretrain = False
