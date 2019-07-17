@@ -31,7 +31,7 @@ def calc_MSD(a, b):
     return D[-1, -1], D[-1, -1] / max(a.size, b.size)*100
 
 
-MSD, error_rate = calc_MSD(np.array(list(target)), np.array(list(response)))
+# MSD, error_rate = calc_MSD(np.array(list(target)), np.array(list(response)))
 
 
-print("Min String Distance: ", MSD, "\nError Rate: ", error_rate)
+# print("Min String Distance: ", MSD, "\nError Rate: ", error_rate)

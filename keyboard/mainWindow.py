@@ -9,6 +9,7 @@ from phrases import Phrases
 import os
 import zipfile
 import numpy as np
+import time
 
 from widgets import ClockWidget, HistogramWidget, VerticalSeparator, HorizontalSeparator
 
@@ -319,6 +320,10 @@ class MainWindow(QtWidgets.QMainWindow):
         if phrase_status == True:
             self.phrases.sample()
             self.update_phrases(self.typed_versions[-1], "")
+
+            choice_dict = {"time": time.time(), "undo": False, "backspace": False, "typed": "", "target": self.phrases.cur_phrase}
+            self.params_handle_dict['choice'].append(choice_dict)
+
             self.is_write_data = True
 
             self.mainWidget.cb_learn.setChecked(True)

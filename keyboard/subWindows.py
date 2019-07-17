@@ -390,6 +390,7 @@ class Pretraining(StartWindow):
         self.sister.pretrain = True
         self.pretrain_window = True
         self.saved_data = False
+        self.is_simulation = self.sister.is_simulation
 
         self.clock_type, self.font_scale, self.high_contrast, self.layout_preference, self.pf_preference, \
             self.start_speed, self.is_write_data = self.sister.up_handel.safe_load()

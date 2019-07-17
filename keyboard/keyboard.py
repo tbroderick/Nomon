@@ -721,6 +721,10 @@ class Keyboard(MainWindow):
             cur_phrase_highlighted = self.phrases.highlight("")
             self.reset_context()
 
+            if self.is_write_data:
+                choice_dict = {"time": time.time(), "undo": False, "backspace": False, "typed": "", "target": self.phrases.cur_phrase}
+                self.params_handle_dict['choice'].append(choice_dict)
+
         self.mainWidget.text_box.setText(
             "<p>" + cur_phrase_highlighted + "<\p><p>" + input_text + "</span><\p>")
 
@@ -941,6 +945,7 @@ class Keyboard(MainWindow):
     def make_choice(self, index):
         is_undo = False
         is_equalize = False
+        is_backspace = False
 
         # now pause (if desired)
         if self.pause_set == 1:
@@ -986,6 +991,7 @@ class Keyboard(MainWindow):
                 is_undo = True
             elif new_char == kconfig.back_char:
                 talk_string = new_char
+                is_backspace = True
                 # if delete the last character that turn
                 self.old_context_li.append(self.context)
                 print(self.context)
@@ -1055,6 +1061,14 @@ class Keyboard(MainWindow):
         else:
             self.left_context = self.typed
 
+        # write output
+        if self.is_write_data:
+            choice_dict = {"time": time.time(), "undo": is_undo, "backspace": is_backspace, "typed": self.typed}
+            if self.phrase_prompts:
+                choice_dict["target"] = self.phrases.cur_phrase
+
+            self.params_handle_dict['choice'].append(choice_dict)
+
         self.draw_words()
         self.draw_typed()
         # update the word prior
@@ -1063,12 +1077,6 @@ class Keyboard(MainWindow):
         # # talk the string
         # if self.talk_set.get() == 1:
         #     self.talk_winner(talk_string)
-
-        # write output
-        if self.is_write_data:
-            self.params_handle_dict['choice'].append([time.time(), is_undo, is_equalize, self.typed])
-
-
 
         return self.words_on, self.words_off, self.word_score_prior, is_undo, is_equalize
 

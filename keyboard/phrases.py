@@ -14,7 +14,7 @@ class Phrases:
                 phrase = re.sub(r"[^a-z \']+", '', phrase.lower())
                 self.phrases.append(phrase)
         self.num_phrases = len(self.phrases)
-        print("loaded "+str(self.num_phrases)+" phrases")
+        # print("loaded "+str(self.num_phrases)+" phrases")
 
         self.cur_phrase = None
         self.sample()
@@ -24,11 +24,14 @@ class Phrases:
         # self.cur_phrase = "hello my name is nick"
         return self.cur_phrase
 
-    def compare(self, input_phrase):
+    def compare(self, input_phrase, target=None):
         input_words = input_phrase.split(" ")
         # if "" in input_words:
         #     input_words.remove("")
-        cur_phrase_words = self.cur_phrase.split(" ")
+        if target is None:
+            target = self.cur_phrase
+
+        cur_phrase_words = target.split(" ")
 
         finished = False
         if len(input_words) == 0:
@@ -45,7 +48,6 @@ class Phrases:
             else:
                 base_typed = ' '.join(cur_phrase_words[:len(input_words)])
 
-
         elif len(input_words) == len(cur_phrase_words):
             cur_phrase_word = cur_phrase_words[len(input_words) - 1]
             cur_input_word = input_words[-1]
@@ -55,11 +57,11 @@ class Phrases:
                 base_typed += ' ' + cur_phrase_word[:len(cur_input_word)]
 
             else:
-                base_typed = self.cur_phrase
+                base_typed = target
                 finished = True
 
         else:
-            base_typed = curbase_typed = self.cur_phrase
+            base_typed = target
             finished = True
         if len(base_typed) > 0:
             if base_typed[0] == " ":
