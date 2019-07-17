@@ -17,16 +17,9 @@ The software is licensed under the [MIT license](https://opensource.org/licenses
 
 Installing Nomon on Windows
 ================
-1. Download the Nomon folder by clicking on the green "clone or download" button on the right and then "download as zip".
-<<<<<<< HEAD
-2. Click the "keyboard" folder, then the "dist" folder to locate the installer. 
-3. Click on the installer (Nomon-0.4-amd64.msi)
-=======
-2. Navigate to Keyboard/dist or follow to get from google drive (https://drive.google.com/open?id=1VvtzymjkKMjzNXFzJ6oT12m_MjbWAV8B)
-3. Download the installer (Nomon-1.0-amd64.msi)
->>>>>>> origin/Master
-4. Choose a directory for Nomon (example: C:\Nomon) **Important:** Do not choose a directory in Program Files or Program Files (x86).
-5. "Do you want to allow an unknown publisher to make changes to your device?" may appear. If it does, click "yes."
+1. Download the latest installer from our google drive (https://drive.google.com/open?id=1VvtzymjkKMjzNXFzJ6oT12m_MjbWAV8B)
+2. Choose a directory for Nomon (example (default): "C:\Program Files\Nomon")
+3. "Do you want to allow an unknown publisher to make changes to your device?" may appear. If it does, click "yes."
 
 We have succesfully tested the installer on Windows 7 and Windows 10.
 
@@ -36,7 +29,7 @@ You can also watch [this video](https://youtu.be/fv-WvW0JktE) for instructions o
 1. Locate the Nomon desktop icon (it is a yellow "N")
 2. Click on the icon
 
-If you get an error "IOError: [Errno13] Permission denied" error, you have installed Nomon in the Program Files directory and will need to run Nomon as Administrator:
+If you get an error "IOError: [Errno13] Permission denied" error, you will need to run Nomon as Administrator:
 1. Right click on the icon
 2. Select "Run as Administrator" from the list of options
 3. "Do you want this app from an unknown publisher to make changes to your device?" may appear. If it does, click "yes."
@@ -47,10 +40,10 @@ Troubleshooting
 ====================
 **IOError: [Errno13] Permission denied**
 
-You have Nomon installed in the Program Files directory. You can resolve this issue permanently by reinstalling Nomon in a different dirctory (such as C:\Nomon), or you can run Nomon as Administrator (see instructions on how to do this in "Running Nomon").
+Check that you are not using an old version of Nomon (version 2 or earlier). If this is the case--and you wish to install an older version--make sure you have not installed Nomon in the Program Files directory. You can resolve this issue permanently by reinstalling Nomon in a different dirctory (such as C:\Nomon), or you can run Nomon as Administrator (see instructions on how to do this in "Running Nomon").
 ====================
-How to Use Nomon 
-
+How to Use Nomon:
+[This same video](https://youtu.be/fv-WvW0JktE) also has instructions for using Nomon.
 
 
 
