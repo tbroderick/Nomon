@@ -707,7 +707,7 @@ class Keyboard(MainWindow):
         if next_phrase:
             self.text_stat_update(self.phrases.cur_phrase, self.typed_versions[-1])
 
-            self.typed_versions += ['']
+            self.typed_versions = ['']
             self.mainWidget.text_box.setText('')
             self.mainWidget.speed_slider.setEnabled(True)
             self.mainWidget.speed_slider_label.setStyleSheet('QLabel { color: blue }')
@@ -893,8 +893,7 @@ class Keyboard(MainWindow):
             self.mainWidget.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
 
         if self.bc_init:
-            if not self.in_pause:
-                self.bc.clock_inf.clock_util.increment(self.words_on)
+            self.bc.clock_inf.clock_util.increment(self.words_on)
 
     def on_press(self):
         # self.canvas.focus_set()
@@ -906,11 +905,10 @@ class Keyboard(MainWindow):
             self.mainWidget.speed_slider_label.setStyleSheet('QLabel { color: grey }')
             self.mainWidget.sldLabel.setStyleSheet('QLabel { color: grey }')
 
-        if not self.in_pause:
-            if self.is_write_data:
-                self.num_presses += 1
+        if self.is_write_data:
+            self.num_presses += 1
 
-            self.bc.select()
+        self.bc.select()
 
         if self.sound_set:
             self.play()

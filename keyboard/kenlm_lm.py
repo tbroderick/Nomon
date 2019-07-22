@@ -47,17 +47,26 @@ class LanguageModel():
 
         self.context = context
         self.prefix = prefix
-        print("prefix: ", prefix, ", context: ", context)
+        # print("prefix: ", prefix, ", context: ", context)
 
         word_preds = []
         word_probs = []
 
         lm_results = self.word_predictor.get_words_with_context(prefix, context, self.vocab_id, self.num_predictions,
                                                                 self.min_log_prob)
+        flattened_results = [freq for sublist in lm_results for freq in sublist]
+        flattened_results.sort(key=lambda x: -x[1])
+        flattened_results = [word_pair[0] for word_pair in flattened_results[:num_words_total]]
+
         word_dict = {}
         for word_list in lm_results:
             if len(word_list) > 0:
-                word_dict[word_list[0][0][len(prefix)]] = word_list
+                cur_word_list = []
+                for word_pair in word_list:
+                    if word_pair[0] in flattened_results:
+                        cur_word_list.append(word_pair)
+                word_dict[word_list[0][0][len(prefix)]] = cur_word_list
+
         for key in keys_li:
             key_word_preds = ["", "", ""]
             key_word_probs = [-float("inf"), -float("inf"), -float("inf")]
@@ -74,11 +83,11 @@ class LanguageModel():
         key_probs, total_log_prob = self.get_char_probs(word_dict, keys_li)
         word_probs = np.array(word_probs) - total_log_prob
 
-        nth_min_log_prob = np.partition(word_probs.flatten(), -num_words_total)[-num_words_total]
-
-        word_probs = np.where(word_probs >= nth_min_log_prob, word_probs, -float("inf"))
+        # nth_min_log_prob = np.partition(word_probs.flatten(), num_words_total)[num_words_total]
+        #
+        # word_probs = np.where(word_probs >= nth_min_log_prob, word_probs, -float("inf"))
         word_preds = np.where(word_probs != -float("inf"), word_preds, "")
-        word_preds = np.where(word_probs >= nth_min_log_prob, word_preds, "")
+        # word_preds = np.where(word_probs >= nth_min_log_prob, word_preds, "")
 
         return word_preds.tolist(), word_probs.tolist(), key_probs
 
@@ -102,7 +111,7 @@ class LanguageModel():
 def main():
 
     LM = LanguageModel('../keyboard/resources/lm_word_medium.kenlm', '../keyboard/resources/vocab_100k')
-    print(LM.get_words("", "", list("abcdefghijklmnopqrstuvwxyz' ")))
+    print(LM.get_words("hello ", "therapi", list("abcdefghijklmnopqrstuvwxyz' ")))
 
     # # Provide the name and path of a language model and the vocabulary
     # lm_filename = '../resources/lm_word_medium.kenlm'

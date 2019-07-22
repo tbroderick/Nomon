@@ -169,7 +169,15 @@ class ClockUtil:
                         1 - abs(self.clock_angles / pi + 0.5))
 
     def increment(self, clock_index_list):
-        if not self.bc.parent.is_simulation:
+        if self.bc.parent.is_simulation:
+            time_diff = self.bc.parent.time.time() - self.bc.latest_time
+            # print("time diff", time_diff)
+            self.bc.latest_time = self.bc.parent.time.time()
+            for clock in clock_index_list:
+                # update time indices
+                self.cur_hours[clock] = (self.cur_hours[clock] + int(
+                    time_diff / self.bc.parent.time_rotate * self.num_divs_time)) % self.num_divs_time
+        else:
             if self.bc.parent.update_radii:
                 self.bc.parent.update_clock_radii()
             # only update when pretrain=False (actual Nomon application)
@@ -204,6 +212,7 @@ class ClockUtil:
                         clock.set_params(self.bc.parent.clock_params[clock_index, :3])
                     clock.update()
 
+
     def set_radius(self, radius):
         self.radius = radius
         self.hl = HourLocs(self.num_divs_time)
@@ -226,9 +235,6 @@ class ClockUtil:
     # whether is_win, is_start true or False, the locations , UI are all same
     def init_round(self, clock_index_list):
         self.update_curhours(clock_index_list)
-        if not self.bc.parent.is_simulation:
-            for clock in self.bc.parent.mainWidget.clocks:
-                clock.new_round = True
 
     def highlight_clock(self, clock_index):
         if self.parent.mainWidget.clocks[clock_index] != '':

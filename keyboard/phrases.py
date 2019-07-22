@@ -12,6 +12,7 @@ class Phrases:
         for phrase in phrases_text.split("\n"):
             if 5 <= len(phrase.split(" ")) <= 10:
                 phrase = re.sub(r"[^a-z \']+", '', phrase.lower())
+                phrase = re.sub(r"  ", ' ', phrase.lower())
                 self.phrases.append(phrase)
         self.num_phrases = len(self.phrases)
         # print("loaded "+str(self.num_phrases)+" phrases")

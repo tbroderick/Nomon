@@ -50,7 +50,7 @@ num_divs_click = 80
 # seconds / frame; display update rate to aim for
 ideal_wait_s = 0.05
 # auto save time in minutes
-auto_save_time = 5
+auto_save_time = 1
 # starting point of the highest scorer
 frac_period = 4.0 / 8.0  # 4.0/8.0 # 7, 6, 5, 4, 3, 2, 1
 theta0 = frac_period * 2.0 * np.pi  # numpy.pi

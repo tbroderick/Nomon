@@ -73,6 +73,7 @@ class SimulatedUser:
             self.prob_thres = kconfig.prob_thres
             self.num_words_total = 26*self.N_pred
             self.lm_left_context = True
+            self.win_diff_base = config.win_diff_base
 
         # 2 is turn fully on, 1 is turn on but reduce, 0 is turn off
         self.word_pred_on = 2
@@ -212,12 +213,18 @@ class SimulatedUser:
         else:
             self.lm_left_context = True
 
+        if "win_diff" in parameters:
+            self.win_diff_base = parameters["win_diff"]
+        else:
+            self.win_diff_base = config.win_diff_base
+
         self.gen_data_dir()
         for trial in range(trials):
             self.__init__(sub_call=True)
 
             while self.num_presses < num_clicks:
                 text = self.phrases.sample()
+                # print("New Phrase: \"" + text + "\"")
                 self.type_text(text, verbose=False)
                 print(round(self.num_presses/num_clicks*100), " %")
                 self.typed = ""  # reset tracking and context for lm -- new sentence
@@ -225,10 +232,10 @@ class SimulatedUser:
 
             print("selections per minute: ", self.num_selections / (self.time.time() / 60))
             print("characters per minute: ", self.num_chars / (self.time.time() / 60))
-            print("presses per selection: ", self.num_presses / self.num_selections)
-            print("presses per character: ", self.num_presses / self.num_chars)
-            print("presses per word: ", self.num_presses / self.num_words)
-            print("error rate: ", self.num_errors / self.num_selections)
+            print("presses per selection: ", self.num_presses / (self.num_selections + 1))
+            print("presses per character: ", self.num_presses / (self.num_chars + 1))
+            print("presses per word: ", self.num_presses / (self.num_words + 1))
+            print("error rate: ", self.num_errors / (self.num_selections + 1))
 
             self.update_sim_averages(trials)
 
@@ -250,13 +257,24 @@ class SimulatedUser:
 
         self.char_per_min += [self.num_chars / (time_int / 60)]
 
-        self.press_per_sel += [self.num_presses / self.num_selections]
+        if self.num_selections > 0:
+            self.press_per_sel += [self.num_presses / self.num_selections]
 
-        self.press_per_char += [self.num_presses / self.num_chars]
+            self.error_rate_avg += [self.num_errors / self.num_selections]
+        else:
+            self.press_per_sel += [float("inf")]
 
-        self.press_per_word += [self.num_presses / self.num_words]
+            self.error_rate_avg += [float("inf")]
 
-        self.error_rate_avg += [self.num_errors / self.num_selections]
+        if self.num_chars > 0:
+            self.press_per_char += [self.num_presses / self.num_chars]
+        else:
+            self.press_per_char += [float("inf")]
+
+        if self.num_words > 0:
+            self.press_per_word += [self.num_presses / self.num_words]
+        else:
+            self.press_per_word += [float("inf")]
 
         if self.kde_errors_avg is None:
             self.kde_errors_avg = np.array(self.kde_errors) / num_trials
@@ -267,13 +285,15 @@ class SimulatedUser:
             else:
                 self.kde_errors_avg = self.kde_errors_avg[:length] + np.array(self.kde_errors) / num_trials
 
-    def type_text(self, text, verbose=True):
+    def type_text(self, text, verbose=False):
         self.target_text = text
         while len(self.target_text) > 0:
             target_clock, self.target_text = self.next_target(self.target_text)
+            if verbose:
+                print("Target: ", self.clock_to_text(target_clock), target_clock)
             self.select_clock(target_clock, verbose=verbose)
 
-    def select_clock(self, target_clock, verbose=True, undo_depth=0):
+    def select_clock(self, target_clock, verbose=False, undo_depth=0):
 
         ndt = self.bc.clock_inf.clock_util.num_divs_time
         num_press = 0
@@ -288,7 +308,6 @@ class SimulatedUser:
 
             click_offset = np.float((np.random.choice(80, 1, p=self.click_dist) - 40)) / 80 * self.time_rotate
             time_delta += click_offset
-
             time_elapsed += time_delta
             self.time.set_time(self.time.time() + time_delta)
             self.on_timer()
@@ -422,7 +441,7 @@ class SimulatedUser:
                     # self.clock_centers.append([x + word_clock_offset, y + 5 * kconfig.clock_rad])
                     self.index_to_wk.append(word + word_index)
                 # win diffs
-                self.win_diffs.extend([config.win_diff_base for i in range(self.N_pred)])
+                self.win_diffs.extend([self.win_diff_base for i in range(self.N_pred)])
                 # word position
                 # self.word_locs.append([x + word_offset, y + 1 * kconfig.clock_rad])
                 # self.word_locs.append([x + word_offset, y + 3 * kconfig.clock_rad])
@@ -458,7 +477,7 @@ class SimulatedUser:
                         key_char == kconfig.back_char):  # or (key_char == kconfig.break_char)
                     self.win_diffs.append(config.win_diff_high)
                 else:
-                    self.win_diffs.append(config.win_diff_base)
+                    self.win_diffs.append(self.win_diff_base)
                 index += 1
                 key += 1
 
@@ -935,7 +954,8 @@ class SimulatedUser:
 
     def save_simulation_data(self, attribute=None):
         data_file = os.path.join(self.data_loc, "npred_"+str(self.N_pred)+"_nwords_"+str(self.num_words_total)+"_lcon_"
-                                 +str(int(self.lm_left_context))+".p")
+                                 +str(int(self.lm_left_context))+"_wdiff_"+str(round(np.exp(self.win_diff_base), 0))
+                                 +".p")
         data_handel = PickleUtil(data_file)
 
         dist_id_file = os.path.join(self.data_loc, "dist_id.p")
@@ -945,6 +965,7 @@ class SimulatedUser:
         data_dict = dict()
         data_dict["N_pred"] = self.N_pred
         data_dict["prob_thresh"] = self.prob_thres
+        data_dict["win_diff"] = self.win_diff_base
         data_dict["num_words"] = self.num_words_total
         data_dict["errors"] = self.error_rate_avg
         data_dict["selections"] = self.sel_per_min
@@ -1059,10 +1080,14 @@ def main():
     # attributes = [i/2 for i in range(1,20)]
     # for parameters, attribute in zip(parameters_list, attributes):
     sim = SimulatedUser()
-    params = {"click_dist": np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.2541902814340914e-302, 1.0086920087521047e-277, 2.8017768030774834e-254, 6.97389115643989e-232, 1.5555835990773636e-210, 3.1095775396616144e-190, 5.570794140969275e-171, 8.94467281789515e-153, 1.2872875071646395e-135, 1.6607085657419055e-119, 1.920771245754656e-104, 1.9920447984272592e-90, 1.8529607235269678e-77, 1.5463683968953674e-65, 1.1582947252356645e-54, 7.791492555082668e-45, 4.7100487027093804e-36, 2.561120272382475e-28, 1.2541184057662315e-21, 5.538343539955984e-16, 2.2096339845198593e-11, 7.981536210952814e-08, 2.618827825243114e-05, 0.0007949017590679527, 0.002939855982818132, 0.007217111156261723, 0.01679789411973851, 0.030908818633498824, 0.05635108325405936, 0.11262268243539836, 0.17695142390178886, 0.20578901049860043, 0.1744946466354673, 0.09524813814187554, 0.04850083996058762, 0.021921830919505506, 0.011967478203211755, 0.00813832156682416, 0.007841924210574362, 0.008098493619665307, 0.006811765628866165, 0.004688177640230059, 0.0009410819727846906, 0.0007283322303701631, 0.00021416177778084704, 5.743827035235781e-06, 1.380530439691128e-08, 2.9732327999420265e-12, 5.737858391249442e-17, 9.922216900531416e-23, 1.537466237077811e-29, 2.1347176378774797e-37, 2.6559094827667993e-46, 2.9609023239215924e-56, 2.95782770331805e-67, 2.647644329255964e-79, 2.1236571076584065e-92, 1.5263253854212654e-106, 9.829871470823408e-122, 5.672657089846724e-138, 2.9333453978668607e-155, 1.3591827560712067e-173, 5.643265570307204e-193, 2.099525245610389e-213, 6.999220796510647e-235, 2.0908181758324322e-257, 5.596555563744285e-281, 1.3423425384172324e-305]), 'N_Pred': 2, 'prob_thresh': 0.0}
-    params = {"click_dist": click_dist, "N_pred": 3, "num_words": 5, "left_context": False}
+    params = {"N_pred": 3, "num_words": 17, "win_diff": np.log(20), "click_dist": click_dist}
 
-    sim.parameter_metrics(params, num_clicks=100, trials=10)
+    sim.parameter_metrics(params, num_clicks=500, trials=1)
+
+    sim = SimulatedUser()
+    params = {"N_pred": 3, "num_words": 17, "win_diff": np.log(99), "click_dist": click_dist}
+
+    sim.parameter_metrics(params, num_clicks=500, trials=1)
 
 
 if __name__ == "__main__":

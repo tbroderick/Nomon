@@ -7,7 +7,7 @@ from phrases import Phrases
 from text_stats import calc_MSD
 import numpy as np
 
-data_dir = "C:\\Users\\nickb\\AppData\\Local\\Nomon\data\\2"
+data_dir = "D:\\Users\\nickb\\Study Data\\nomon_data\\951"
 
 
 def flatten(l):
@@ -123,10 +123,12 @@ class DataUtil:
             phrase_abs_clicks = self.abs_click_data[phrase_click_indices]
             phrase_rel_clicks = self.rel_click_data[phrase_click_indices]
 
+            first_click_time = min(phrase_abs_clicks)
+
             self.clicks_by_phrase[phrase] = {"abs": phrase_abs_clicks, "rel": phrase_rel_clicks}
 
             num_clicks = len(phrase_abs_clicks)
-            time_int = phrase_end - phrase_start
+            time_int = phrase_end - first_click_time
             num_characters = len(phrase)
             num_words = len(phrase.split(" "))
 
@@ -258,7 +260,7 @@ class DataUtil:
         plt.plot(chars_min)
         plt.ylabel("Characters per Min")
         plt.xlabel("Phrase Number")
-        plt.title("Characters per Min by Phrase")
+        plt.title("Nomon: Characters per Min by Phrase")
         plt.show()
 
 
