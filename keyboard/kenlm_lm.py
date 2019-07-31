@@ -47,7 +47,7 @@ class LanguageModel():
 
         self.context = context
         self.prefix = prefix
-        # print("prefix: ", prefix, ", context: ", context)
+        print("prefix: ", prefix, ", context: ", context)
 
         word_preds = []
         word_probs = []
@@ -57,6 +57,8 @@ class LanguageModel():
         flattened_results = [freq for sublist in lm_results for freq in sublist]
         flattened_results.sort(key=lambda x: -x[1])
         flattened_results = [word_pair[0] for word_pair in flattened_results[:num_words_total]]
+
+        # print(flattened_results)
 
         word_dict = {}
         for word_list in lm_results:
@@ -111,7 +113,7 @@ class LanguageModel():
 def main():
 
     LM = LanguageModel('../keyboard/resources/lm_word_medium.kenlm', '../keyboard/resources/vocab_100k')
-    print(LM.get_words("hello ", "therapi", list("abcdefghijklmnopqrstuvwxyz' ")))
+    print(LM.get_words("hello there and ", "", list("abcdefghijklmnopqrstuvwxyz' ")))
 
     # # Provide the name and path of a language model and the vocabulary
     # lm_filename = '../resources/lm_word_medium.kenlm'

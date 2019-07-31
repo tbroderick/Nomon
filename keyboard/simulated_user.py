@@ -74,6 +74,8 @@ class SimulatedUser:
             self.num_words_total = 26*self.N_pred
             self.lm_left_context = True
             self.win_diff_base = config.win_diff_base
+            self.rotate_index = config.default_rotate_ind
+            self.time_rotate = config.period_li[self.rotate_index]
 
         # 2 is turn fully on, 1 is turn on but reduce, 0 is turn off
         self.word_pred_on = 2
@@ -111,7 +113,6 @@ class SimulatedUser:
         self.init_locs()
         # get old data if there is such
         # Just for default. Loaded again when bc initializes
-        self.rotate_index = config.default_rotate_ind
         # set up file handle for printing useful stuff
         self.undefined = False
 
@@ -139,7 +140,6 @@ class SimulatedUser:
         self.clear_text = False
         self.pretrain = False
 
-        self.time_rotate = config.period_li[self.start_speed]
         # get language model results
         self.gen_word_prior(False)
 
@@ -217,6 +217,14 @@ class SimulatedUser:
             self.win_diff_base = parameters["win_diff"]
         else:
             self.win_diff_base = config.win_diff_base
+
+        if "time_rotate" in parameters:
+            self.rotate_index = parameters["time_rotate"]
+            self.time_rotate = config.period_li[self.rotate_index]
+            self.change_speed()
+        else:
+            self.rotate_index = config.default_rotate_ind
+            self.time_rotate = config.period_li[self.rotate_index]
 
         self.gen_data_dir()
         for trial in range(trials):
@@ -486,20 +494,9 @@ class SimulatedUser:
         tick_int = int((len(config.period_li) - 1) * kconfig.word_pt * 3 / (1.0 * scale_length)) + 1
         self.time_rotate = config.period_li[self.rotate_index]
 
-    def change_speed(self, index):
-        # speed (as shown on scale)
-        speed_index = int(index)
-        # period (as stored in config.py)
-        self.rotate_index = config.scale_max - speed_index + 1
-        old_rotate = self.time_rotate
-        self.time_rotate = config.period_li[self.rotate_index]
+    def change_speed(self):
         self.bc.clock_inf.clock_util.change_period(self.time_rotate)
 
-        # note period change in log file
-        self.params_handle_dict['speed'].append([time.time(), old_rotate, self.time_rotate])
-
-        # update the histogram
-        self.draw_histogram()
 
     def init_histogram(self):
         # histogram
@@ -954,7 +951,8 @@ class SimulatedUser:
 
     def save_simulation_data(self, attribute=None):
         data_file = os.path.join(self.data_loc, "npred_"+str(self.N_pred)+"_nwords_"+str(self.num_words_total)+"_lcon_"
-                                 +str(int(self.lm_left_context))+"_wdiff_"+str(round(np.exp(self.win_diff_base), 0))
+                                 +str(int(self.lm_left_context))+"_wdiff_"+str(round(np.exp(self.win_diff_base)))
+                                 +"_rot_"+str(self.rotate_index)
                                  +".p")
         data_handel = PickleUtil(data_file)
 
@@ -967,6 +965,7 @@ class SimulatedUser:
         data_dict["prob_thresh"] = self.prob_thres
         data_dict["win_diff"] = self.win_diff_base
         data_dict["num_words"] = self.num_words_total
+        data_dict["time_rotate"] = self.time_rotate
         data_dict["errors"] = self.error_rate_avg
         data_dict["selections"] = self.sel_per_min
         data_dict["characters"] = self.char_per_min

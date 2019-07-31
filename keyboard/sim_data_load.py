@@ -27,18 +27,21 @@ class SimDataUtil:
                 if len(files) > 0:
                     user_data = dict()
                     for file in files:
+                        file_data = PickleUtil(os.path.join(path, file)).safe_load()
                         if "dist_id" in file:
-                            user_data["click_dist"] = PickleUtil(os.path.join(path, file)).safe_load()
+                            user_data["click_dist"] = file_data
+                            continue
                         elif "npred" in file:
-                            params = file.split("npred_")
-                            params = [p.split("_nwords_") for p in params][1]
-                            params = [p for sublist in params for p in sublist.split("_lcon_")]
-                            params = [p for sublist in params for p in sublist.split(".p")][:3]
-                            if len(params) == 2:
-                                params = tuple([float(p) for p in params]+[1.0])
+
+                            if 'win_diff' in file_data:
+                                params = (file_data['N_pred'], file_data['num_words'], round(np.exp(file_data['win_diff'])))
                             else:
-                                params = tuple([float(p) for p in params])
-                            user_data[params] = PickleUtil(os.path.join(path, file)).safe_load()
+                                params = (file_data['N_pred'], file_data['num_words'])
+                        else:
+                            continue
+
+                        print(params)
+                        user_data[params] = file_data
                     data_by_user[int(user_dir)] = user_data
         return data_by_user
 
@@ -166,9 +169,9 @@ class SimDataUtil:
 
                             for points in data_points.tolist():
                                 formatted_data_points.append(
-                                    [prob_thresh, int(N_pred), bool(l_cont)]+points)
+                                    [prob_thresh, int(N_pred), l_cont]+points)
 
-        df_columns = ["Word Predictions Max Count", "Words Per Character", "Left Context", "Selections per Minute",
+        df_columns = ["Word Predictions Max Count", "Words Per Character", "Win Diff", "Selections per Minute",
                       "Characters per Minute", "Presses per Selection", "Presses per Character",
                       "Error Rate (Errors/Selection)"]
         df = pd.DataFrame(formatted_data_points, columns=df_columns)
@@ -176,8 +179,8 @@ class SimDataUtil:
 
     def plot_across_params(self):
 
-        ind_var_name = "Left Context"
-        for data_label in ['selections', 'characters', 'presses_sel', 'presses_char', 'errors']:
+        ind_var_name = "Win Diff"
+        for data_label in ['errors', 'selections', 'characters', 'presses_sel' , 'presses_char', 'errors']:
             if data_label == 'selections':
                 dep_var_name = "Selections per Minute"
             elif data_label == 'characters':
@@ -214,14 +217,15 @@ class SimDataUtil:
                 plt.axhline(lc_true_mean, linestyle='--', color=(0.9, 0.9, 0.4))
 
                 t_value, p_value = stats.ttest_ind(lc_false, lc_true, equal_var=False)
-                plt.text(0.9, -.1, 'p-value: '+str(round(p_value,2)), ha='center', va='center', transform=ax.transAxes)
+                plt.text(0.9, -.1, 'p-value: '+str(round(p_value, 2)), ha='center', va='center', transform=ax.transAxes)
 
             else:
-                sns.scatterplot(x=ind_var_name, y=dep_var_name, hue="Words Per Character",
-                                palette=sns.cubehelix_palette(3, start=2, rot=0.2, dark=.2, light=.7, reverse=True), data=DF)
+                sns.lineplot(x=ind_var_name, y=dep_var_name,
+                             palette=sns.cubehelix_palette(1, start=2, rot=0.2, dark=.2, light=.7, reverse=True),
+                             data=DF, ci="sd")
 
 
-            plt.title("Unigram LM: "+dep_var_name+" vs. "+ind_var_name)
+            plt.title(dep_var_name+" vs. "+ind_var_name)
 
             plt.show()
 
@@ -260,7 +264,7 @@ def main():
     #                "y": "Average (-) Gradient of MSE Over Presses"}
     # sdu.plot_across_user("kde_mses", (3, 0.008), trends=True, log=False, legend=plot_legend)
 
-    sdu = SimDataUtil("simulations/language_model/supercloud_results_3")
+    sdu = SimDataUtil("simulations/win_diff/supercloud_results")
     sdu.plot_across_params()
 
     # plot_legend = {"title": "MSE of Nomon KDE vs Bimodal Distance",

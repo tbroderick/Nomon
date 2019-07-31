@@ -792,7 +792,7 @@ class Keyboard(MainWindow):
                 self.typed_versions = self.typed_versions[:-1]
 
                 new_text = self.typed_versions[-1]
-                if new_text[-1] == " ":
+                if len(new_text) > 0 and new_text[-1] == " ":
                     new_text = new_text[:-1] + "_"
 
                 input_text = "<span style='color:#000000;'>" + new_text + "</span>"
@@ -925,7 +925,7 @@ class Keyboard(MainWindow):
         if self.mainWidget.clocks[index] != '':
             self.mainWidget.clocks[index].selected = True
             self.mainWidget.clocks[index].update()
-            self.mainWidget.highlight_timer.start(2000)
+            self.mainWidget.highlight_timer.start(kconfig.pause_length)
 
     def end_highlight(self):
         index = self.previous_winner
