@@ -4,16 +4,24 @@ import re
 
 
 class Phrases:
-    def __init__(self, phrases_file):
-        phrases_file = open(phrases_file, "r")
+    def __init__(self, phrases_file_name):
+        phrases_file = open(phrases_file_name, "r")
         phrases_text = phrases_file.read()
         phrases_file.close()
         self.phrases = []
-        for phrase in phrases_text.split("\n"):
-            if 5 <= len(phrase.split(" ")) <= 10:
-                phrase = re.sub(r"[^a-z \']+", '', phrase.lower())
-                phrase = re.sub(r"  ", ' ', phrase.lower())
-                self.phrases.append(phrase)
+        if "twitter" in phrases_file_name:
+            phrases = [phrase[phrase.index("\t") + 1:] for phrase in phrases_text.split("\n") if "\t" in phrase]
+            for phrase in phrases:
+                if 5 <= len(phrase.split(" ")) <= 10:
+                    phrase = re.sub(r"[^a-z \']+", '', phrase.lower())
+                    phrase = re.sub(r"  ", ' ', phrase.lower())
+                    self.phrases.append(phrase)
+        else:
+            for phrase in phrases_text.split("\n"):
+                if 5 <= len(phrase.split(" ")) <= 10:
+                    phrase = re.sub(r"[^a-z \']+", '', phrase.lower())
+                    phrase = re.sub(r"  ", ' ', phrase.lower())
+                    self.phrases.append(phrase)
         self.num_phrases = len(self.phrases)
         # print("loaded "+str(self.num_phrases)+" phrases")
 

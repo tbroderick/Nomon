@@ -124,7 +124,7 @@ class WordPredictor:
                 new_context += word + ' '
             else:
                 new_context += '<unk>' + ' '
-                print('Vocab does not contain word ' + word)
+                # print('Vocab does not contain word ' + word)
 
         # print(new_context)
         return new_context
@@ -137,7 +137,7 @@ class WordPredictor:
         context_words = context.split()
         for w in context_words:
             # print('Context', '{0}\t{1}'.format(model.BaseScore(state_in, w.lower(), state_out), w.lower()))
-            print('Context', '{0}\t{1}'.format(model.BaseScore(state_in, w, state_out), w))
+            '{0}\t{1}'.format(model.BaseScore(state_in, w, state_out), w)
             state_in = state_out
             state_out = kenlm.State()
 

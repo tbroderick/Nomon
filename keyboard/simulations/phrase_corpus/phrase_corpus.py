@@ -19,28 +19,27 @@ try:
     num_tasks = int(sys.argv[2])
 except IndexError:
     my_task_id = 1
-    num_tasks = 20
+    num_tasks = 1
 
 
-click_dists = [PickleUtil(os.path.join("simulations/rotation_speed/click_distributions", file)).safe_load()
-               for file in os.listdir("simulations/rotation_speed/click_distributions")]
-
-period_li = np.arange(21)
-period_li = 3*np.exp((-period_li)/12)
+click_dists = [PickleUtil(os.path.join("simulations/phrase_corpus/click_distributions", file)).safe_load()
+               for file in os.listdir("simulations/phrase_corpus/click_distributions")]
 
 parameters_list = []
 parameters_dict = dict()
+corpora = ["resources/twitter-phrases/twitter-oov.txt", "resources/comm2.dev"]
 
-for period_num, period in enumerate(period_li):
-    param_dict = dict()
-    parameters_dict["time_rotate"] = period_num
-    param_dict["N_pred"] = 3
-    param_dict["num_words"] = 17
+for dist in click_dists:
+    for corpus in corpora:
+        param_dict = dict()
+        parameters_dict["time_rotate"] = 16
+        param_dict["N_pred"] = 3
+        param_dict["num_words"] = 17
 
-    for dist in click_dists:
         hist = dist(np.arange(80))
         hist = hist / np.sum(hist)
         param_dict["click_dist"] = hist.tolist()
+        parameters_dict["corpus"] = corpus
 
         parameters_list += [parameters_dict.copy()]
 
@@ -54,4 +53,4 @@ for job_index in job_indicies:
     user_num = int((job_index*0.999)/num_jobs)
     print(user_num)
     sim = SimulatedUser(parentdir, job_num=user_num)
-    sim.parameter_metrics(parameters, num_clicks=500, trials=30)
+    sim.parameter_metrics(parameters, num_clicks=500, trials=20)

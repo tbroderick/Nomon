@@ -31,16 +31,13 @@ class SimDataUtil:
                         if "dist_id" in file:
                             user_data["click_dist"] = file_data
                             continue
-                        elif "npred" in file:
-
-                            if 'win_diff' in file_data:
-                                params = (file_data['N_pred'], file_data['num_words'], round(np.exp(file_data['win_diff'])))
-                            else:
-                                params = (file_data['N_pred'], file_data['num_words'])
                         else:
-                            continue
-
-                        print(params)
+                            data_value_names = {'errors', 'selections', 'characters', 'presses_sel', 'presses_char',
+                                                   'presses_word', 'kde_mses', 'kde'}
+                            self.param_names = set(file_data.keys()) - data_value_names
+                            params = tuple(file_data[name] for name in self.param_names)
+                        # print(self.param_names)
+                        # print(params)
                         user_data[params] = file_data
                     data_by_user[int(user_dir)] = user_data
         return data_by_user
@@ -141,58 +138,38 @@ class SimDataUtil:
                                                'presses_char': []}
                     for data_label in ['selections', 'characters', 'presses_sel', 'presses_char', 'errors']:
                         average_data[param][data_label] += user_data[param][data_label]
-        N_preds = list(set([param[0] for param in average_data]))
-        N_preds.sort()
-        N_preds.reverse()
-        prob_threshs = list(set([param[1] for param in average_data]))
-        prob_threshs.sort()
-        if len(list(average_data.keys())[0]) > 2:
-            left_contexts = list(set([param[2] for param in average_data]))
-            left_contexts.sort()
-        formatted_data_points = []
-        for y_index, N_pred in enumerate(N_preds):
-            sub_plot_values = []
-            x_labels = []
-            for x_index, prob_thresh in enumerate(prob_threshs):
-                for z_index, l_cont in enumerate(left_contexts):
-                    if (N_pred, prob_thresh, l_cont) in average_data:
-                        if not isinstance(average_data[(N_pred, prob_thresh, l_cont)][data_label], int):
-                            x_labels.append(str(int(prob_thresh)))
 
-                            data_dict = average_data[(N_pred, prob_thresh, l_cont)]
+        data_labels = {'errors', 'selections', 'characters', 'presses_sel', 'presses_char'}
+        param_name_dict = {'num_words': "Word Predictions Max Count", 'time_rotate': "Time Rotate",
+                           'win_diff': "Win Difference", 'N_pred': "Words Per Character",
+                           'prob_thresh': "Probability Threshold", 'attribute': 'Attribute'}
+        var_name_dict = {'selections': "Selections/Min", 'characters': "Characters/Min",
+                         'presses_char': "Clicks/Character",
+                         'presses_sel': "Clicks/Selection", 'errors': "Error Rate"}
 
+        long_form_data = []
+        for params in average_data.keys():
+            param_names = [param_name_dict[name] for name in self.param_names]
+            observation = dict(zip(param_names, params))
 
-                            all_data=[]
-                            for key in ['selections', 'characters', 'presses_sel', 'presses_char', 'errors']:
-                                all_data += [data_dict[key]]
-                            data_points = np.array(all_data).T
+            param_data = average_data[params]
+            num_observations = len(param_data['errors'])
 
-                            for points in data_points.tolist():
-                                formatted_data_points.append(
-                                    [prob_thresh, int(N_pred), l_cont]+points)
+            for obs in range(num_observations):
+                for data_label in data_labels:
+                    observation[var_name_dict[data_label]] = param_data[data_label][obs]
 
-        df_columns = ["Word Predictions Max Count", "Words Per Character", "Win Diff", "Selections per Minute",
-                      "Characters per Minute", "Presses per Selection", "Presses per Character",
-                      "Error Rate (Errors/Selection)"]
-        df = pd.DataFrame(formatted_data_points, columns=df_columns)
+                long_form_data += [observation.copy()]
+
+        df = pd.DataFrame(long_form_data)
         self.DF = df
 
     def plot_across_params(self):
 
-        ind_var_name = "Win Diff"
-        for data_label in ['errors', 'selections', 'characters', 'presses_sel' , 'presses_char', 'errors']:
-            if data_label == 'selections':
-                dep_var_name = "Selections per Minute"
-            elif data_label == 'characters':
-                dep_var_name = "Characters per Minute"
-            elif data_label == 'presses_sel':
-                dep_var_name = "Presses per Selection"
-            elif data_label == 'presses_char':
-                dep_var_name = "Presses per Character"
-            elif data_label == 'errors':
-                dep_var_name = "Error Rate (Errors/Selection)"
-            else:
-                raise ValueError("Data Attribute Unknown: " + data_label)
+        ind_var_name = "Time Rotate"
+
+        for dep_var_name in ['Error Rate', 'Selections/Min', 'Characters/Min', 'Clicks/Selection',
+                           'Clicks/Character', 'Error Rate']:
 
             DF = self.DF
             pd.set_option('display.max_columns', 500)
@@ -219,13 +196,19 @@ class SimDataUtil:
                 t_value, p_value = stats.ttest_ind(lc_false, lc_true, equal_var=False)
                 plt.text(0.9, -.1, 'p-value: '+str(round(p_value, 2)), ha='center', va='center', transform=ax.transAxes)
 
+            elif ind_var_name == "Easy Corpus":
+                sns.violinplot(x=ind_var_name, y=dep_var_name,
+                            data=DF, ci="sd")
+
             else:
-                sns.lineplot(x=ind_var_name, y=dep_var_name,
-                             palette=sns.cubehelix_palette(1, start=2, rot=0.2, dark=.2, light=.7, reverse=True),
-                             data=DF, ci="sd")
+                sns.lineplot(x=ind_var_name, y=dep_var_name, color="cadetblue",
+                             data=DF, ci="sd", ax=ax)
+
+                sns.lineplot(x=ind_var_name, y=dep_var_name, color="darkslategrey",
+                             data=DF, ax=ax)
 
 
-            plt.title(dep_var_name+" vs. "+ind_var_name)
+            plt.title("Nomon: "+ dep_var_name+" vs. "+ind_var_name)
 
             plt.show()
 
@@ -264,7 +247,7 @@ def main():
     #                "y": "Average (-) Gradient of MSE Over Presses"}
     # sdu.plot_across_user("kde_mses", (3, 0.008), trends=True, log=False, legend=plot_legend)
 
-    sdu = SimDataUtil("simulations/win_diff/supercloud_results")
+    sdu = SimDataUtil("simulations/rotation_speed/supercloud_results")
     sdu.plot_across_params()
 
     # plot_legend = {"title": "MSE of Nomon KDE vs Bimodal Distance",

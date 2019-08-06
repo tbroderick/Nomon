@@ -47,7 +47,7 @@ class LanguageModel():
 
         self.context = context
         self.prefix = prefix
-        print("prefix: ", prefix, ", context: ", context)
+        # print("prefix: ", prefix, ", context: ", context)
 
         word_preds = []
         word_probs = []
@@ -113,7 +113,7 @@ class LanguageModel():
 def main():
 
     LM = LanguageModel('../keyboard/resources/lm_word_medium.kenlm', '../keyboard/resources/vocab_100k')
-    print(LM.get_words("hello there and ", "", list("abcdefghijklmnopqrstuvwxyz' ")))
+    print(LM.get_words("united states of ", "", list("abcdefghijklmnopqrstuvwxyz' ")))
 
     # # Provide the name and path of a language model and the vocabulary
     # lm_filename = '../resources/lm_word_medium.kenlm'

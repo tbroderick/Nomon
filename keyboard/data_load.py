@@ -9,9 +9,10 @@ from phrases import Phrases
 from text_stats import calc_MSD
 import numpy as np
 
-data_dir = "D:\\Users\\nickb\\Study Data\\nomon_data\\951"
-data_dir2 = "D:\\Users\\nickb\\Study Data\\row_col_data\\951"
-# data_dir = "C:\\Users\\nickb\\AppData\\Local\\Nomon\\data\\100"
+# data_dir = "D:\\Users\\nickb\\Study Data\\nomon_data\\951"
+# data_dir2 = "D:\\Users\\nickb\\Study Data\\row_col_data\\951"
+data_dir = "C:\\Users\\nickb\\AppData\\Local\\Nomon\\data\\999"
+data_dir2 = "C:\\Users\\nickb\\AppData\\Local\\RowCol\\data\\100"
 
 
 def flatten(l):
@@ -237,7 +238,7 @@ class DataUtil:
                 df = pd.DataFrame([self.phrase_stats[phrase]])
                 df["phrase"] = phrase
                 DF = DF.append(df, ignore_index=True)
-        # DF = DF.sort_values(by=['start_time'])
+        # DF = DF.sor _values(by=['start_time'])
         self.DF = DF
 
     def save_hist(self):
@@ -396,11 +397,11 @@ du.load_data()
 du.split_data_phrase()
 du.make_data_frame()
 
-du2 = DataUtil(data_dir2)
-du2.load_data()
-du2.split_data_phrase()
-du2.make_data_frame()
-
+# # du2 = DataUtil(data_dir2)
+# # du2.load_data()
+# # du2.split_data_phrase()
+# # du2.make_data_frame()
+#
 du.print_stat_avg()
-du.plot_phrase_stats(DF2=du2.DF)
-du2.test_significance()
+# du.plot_phrase_stats()
+# du.test_significance()

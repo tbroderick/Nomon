@@ -18,7 +18,7 @@
 #    along with Nomon SimulatedUser.  If not, see <http://www.gnu.org/licenses/>.
 ######################################
 import numpy as np
-# from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 
 from phrases import Phrases
 # import dtree
@@ -76,6 +76,8 @@ class SimulatedUser:
             self.win_diff_base = config.win_diff_base
             self.rotate_index = config.default_rotate_ind
             self.time_rotate = config.period_li[self.rotate_index]
+            self.phrases = Phrases("resources/comm2.dev")
+            self.easy_phrase = 1
 
         # 2 is turn fully on, 1 is turn on but reduce, 0 is turn off
         self.word_pred_on = 2
@@ -90,8 +92,7 @@ class SimulatedUser:
         self.clock_type, self.font_scale, self.high_contrast,self.layout_preference, self.pf_preference, \
             self.start_speed, self.is_write_data = user_preferences
 
-        self.phrase_prompts = False  # set to true for data collection mode
-        self.phrases = Phrases("resources/all_lower_nopunc.txt")
+        self.phrase_prompts = False  # set to true for data collection mod
 
         self.key_chars = kconfig.key_chars
 
@@ -226,6 +227,13 @@ class SimulatedUser:
             self.rotate_index = config.default_rotate_ind
             self.time_rotate = config.period_li[self.rotate_index]
 
+        if "corpus" in parameters:
+            self.phrases = Phrases(parameters["corpus"])
+            self.easy_phrase = parameters["corpus"] == "resources/comm2.dev"
+        else:
+            self.phrases = Phrases("resources/comm2.dev")
+            self.easy_phrase = 1
+
         self.gen_data_dir()
         for trial in range(trials):
             self.__init__(sub_call=True)
@@ -243,7 +251,7 @@ class SimulatedUser:
             print("presses per selection: ", self.num_presses / (self.num_selections + 1))
             print("presses per character: ", self.num_presses / (self.num_chars + 1))
             print("presses per word: ", self.num_presses / (self.num_words + 1))
-            print("error rate: ", self.num_errors / (self.num_selections + 1))
+            print("error rate: ", self.num_errors / (self.num_selections + 1) * 100)
 
             self.update_sim_averages(trials)
 
@@ -299,6 +307,11 @@ class SimulatedUser:
             target_clock, self.target_text = self.next_target(self.target_text)
             if verbose:
                 print("Target: ", self.clock_to_text(target_clock), target_clock)
+
+            recovery_time = 0.5
+            self.time.set_time(self.time.time() + recovery_time)
+            self.on_timer()
+
             self.select_clock(target_clock, verbose=verbose)
 
     def select_clock(self, target_clock, verbose=False, undo_depth=0):
@@ -314,7 +327,7 @@ class SimulatedUser:
             else:
                 time_delta = (ndt // 2 - self.bc.clock_inf.clock_util.cur_hours[target_clock] + 1) / ndt * self.time_rotate
 
-            click_offset = np.float((np.random.choice(80, 1, p=self.click_dist) - 40)) / 80 * self.time_rotate
+            click_offset = np.float(np.random.choice(80, 1, p=self.click_dist) / 80.0 - 0.5) * config.period_li[config.default_rotate_ind]
             time_delta += click_offset
             time_elapsed += time_delta
             self.time.set_time(self.time.time() + time_delta)
@@ -322,7 +335,7 @@ class SimulatedUser:
             self.on_press()
             num_press += 1
             if self.winner:
-                self.num_selections += 1
+
                 self.num_chars += len(self.winner_text)
                 if len(self.bc.clock_inf.win_history) > 1:
                     selected_clock = self.bc.clock_inf.win_history[1]
@@ -342,8 +355,15 @@ class SimulatedUser:
                     #     self.select_clock(undo_clock, undo_depth=undo_depth+1)
                     #     if target_clock != undo_clock:
                     #         self.select_clock(target_clock, verbose=False)
+                else:
+                    self.num_selections += 1
 
                 break
+
+            reaction_time = 0.3
+            self.time.set_time(self.time.time() + reaction_time)
+            time_elapsed += reaction_time
+            self.on_timer()
 
         self.kde_errors += [self.kde_mse()]*num_press
 
@@ -952,7 +972,7 @@ class SimulatedUser:
     def save_simulation_data(self, attribute=None):
         data_file = os.path.join(self.data_loc, "npred_"+str(self.N_pred)+"_nwords_"+str(self.num_words_total)+"_lcon_"
                                  +str(int(self.lm_left_context))+"_wdiff_"+str(round(np.exp(self.win_diff_base)))
-                                 +"_rot_"+str(self.rotate_index)
+                                 +"_rot_"+str(self.rotate_index)+"_cor_"+str(self.easy_phrase)
                                  +".p")
         data_handel = PickleUtil(data_file)
 
@@ -1071,22 +1091,22 @@ def main():
 
     # hp = HistPlot()
     #
-    click_dist = (normal_hist(0, 2))
-    # plt.bar(np.arange(80), click_dist)
-    # plt.show()
+    kde = PickleUtil("C:\\Users\\nickb\\AppData\\Local\\Nomon\\data\\999\\user_histogram.p").safe_load()
+    click_dist = kde(np.arange(80))
+    click_dist /= np.sum(click_dist)
 
     # parameters_list = [{"click_dist": normal_hist(0, i/2)} for i in range(1,20)]
     # attributes = [i/2 for i in range(1,20)]
     # for parameters, attribute in zip(parameters_list, attributes):
     sim = SimulatedUser()
-    params = {"N_pred": 3, "num_words": 17, "win_diff": np.log(20), "click_dist": click_dist}
+    params = {"N_pred": 3, "num_words": 17, "time_rotate": config.default_rotate_ind, "click_dist": click_dist}
 
     sim.parameter_metrics(params, num_clicks=500, trials=1)
 
-    sim = SimulatedUser()
-    params = {"N_pred": 3, "num_words": 17, "win_diff": np.log(99), "click_dist": click_dist}
-
-    sim.parameter_metrics(params, num_clicks=500, trials=1)
+    # sim = SimulatedUser()
+    # params = {"N_pred": 3, "num_words": 17, "win_diff": np.log(99), "click_dist": click_dist}
+    #
+    # sim.parameter_metrics(params, num_clicks=500, trials=1)
 
 
 if __name__ == "__main__":
