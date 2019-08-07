@@ -8,12 +8,7 @@ os.chdir(parentdir)
 
 from simulated_user import SimulatedUser, normal_hist
 
-try:
-    my_task_id = int(sys.argv[1])
-    num_tasks = int(sys.argv[2])
-except IndexError:
-    my_task_id = 1
-    num_tasks = 4
+
 
 job_indicies = np.array_split(np.arange(1, 20), num_tasks)[my_task_id-1]
 

@@ -29,17 +29,16 @@ class simulationUtil():
         self.click_dists = [PickleUtil(os.path.join("simulations/rotation_speed/click_distributions", file)).safe_load()
                        for file in os.listdir("simulations/rotation_speed/click_distributions")]
 
-        self.period_li = np.arange(21)
-        self.period_li = 3 * np.exp((- self.period_li) / 12)
+        self.false_positives = np.arange(0, 0.2, 0.02)
 
         self.parameters_list = []
         self.parameters_dict = dict()
 
-    def run_job(self, my_task_id, num_tasks, num_clicks=500, trials=30):
+    def run_job(self, my_task_id, num_tasks, num_clicks=500, trials=20):
 
-        for period_num, period in enumerate(self.period_li):
+        for fp_rate in self.false_positives:
             param_dict = dict()
-            self.parameters_dict["time_rotate"] = period_num
+            self.parameters_dict["false_positive"] = fp_rate
             param_dict["N_pred"] = 3
             param_dict["num_words"] = 17
 

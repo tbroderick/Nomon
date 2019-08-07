@@ -18,7 +18,7 @@
 #    along with Nomon SimulatedUser.  If not, see <http://www.gnu.org/licenses/>.
 ######################################
 import numpy as np
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 
 from phrases import Phrases
 # import dtree
@@ -39,14 +39,29 @@ sys.path.insert(0, os.path.realpath('../KernelDensityEstimation'))
 
 
 class Time():
-    def __init__(self):
+    def __init__(self, parent):
+        self.parent = parent
         self.cur_time = 0
+        self.update_fp_time()
 
     def time(self):
         return self.cur_time
 
     def set_time(self, t):
-        self.cur_time = t
+        if t > self.next_fp_time:
+            self.cur_time = self.next_fp_time
+            self.update_fp_time()
+            self.parent.gen_false_positive(t)
+
+        else:
+            self.cur_time = t
+
+    def update_fp_time(self):
+        if self.parent.false_positive_rate == 0:
+            self.next_fp_time = float("inf")
+        else:
+            self.next_fp_time = self.cur_time + np.random.exponential(scale=1 / self.parent.false_positive_rate, size=1)[0]
+        # print(self.next_fp_time)
 
 
 class SimulatedUser:
@@ -65,9 +80,6 @@ class SimulatedUser:
 
         self.working_dir=cwd
 
-        self.time = Time()
-        self.prev_time = 0
-
         if not sub_call:
             self.N_pred = kconfig.N_pred
             self.prob_thres = kconfig.prob_thres
@@ -78,6 +90,17 @@ class SimulatedUser:
             self.time_rotate = config.period_li[self.rotate_index]
             self.phrases = Phrases("resources/comm2.dev")
             self.easy_phrase = 1
+            self.false_positive_rate = 0.01
+            self.num_fp = 0
+
+            self.cwd = os.getcwd()
+            lm_path = os.path.join(os.path.join(self.cwd, 'resources'), 'lm_word_medium.kenlm')
+            vocab_path = os.path.join(os.path.join(self.cwd, 'resources'), 'vocab_100k')
+
+            self.lm = LanguageModel(lm_path, vocab_path, parent=self)
+
+        self.time = Time(self)
+        self.prev_time = 0
 
         # 2 is turn fully on, 1 is turn on but reduce, 0 is turn off
         self.word_pred_on = 2
@@ -103,11 +126,6 @@ class SimulatedUser:
         self.lm_prefix = ""
         self.left_context = ""
 
-        self.cwd = os.getcwd()
-        lm_path = os.path.join(os.path.join(self.cwd, 'resources'), 'lm_word_medium.kenlm')
-        vocab_path = os.path.join(os.path.join(self.cwd, 'resources'), 'vocab_100k')
-
-        self.lm = LanguageModel(lm_path, vocab_path, parent=self)
         self.in_pause = False
 
         # determine keyboard positions
@@ -234,6 +252,11 @@ class SimulatedUser:
             self.phrases = Phrases("resources/comm2.dev")
             self.easy_phrase = 1
 
+        if "false_positive" in parameters:
+            self.false_positive_rate = parameters["false_positive"]
+        else:
+            self.false_positive_rate = 0.01
+
         self.gen_data_dir()
         for trial in range(trials):
             self.__init__(sub_call=True)
@@ -242,7 +265,7 @@ class SimulatedUser:
                 text = self.phrases.sample()
                 # print("New Phrase: \"" + text + "\"")
                 self.type_text(text, verbose=False)
-                print(round(self.num_presses/num_clicks*100), " %")
+                # print(round(self.num_presses/num_clicks*100), " %")
                 self.typed = ""  # reset tracking and context for lm -- new sentence
                 self.num_words += len(text.split(" "))
 
@@ -252,6 +275,7 @@ class SimulatedUser:
             print("presses per character: ", self.num_presses / (self.num_chars + 1))
             print("presses per word: ", self.num_presses / (self.num_words + 1))
             print("error rate: ", self.num_errors / (self.num_selections + 1) * 100)
+            print("fp rate: ", self.num_fp / self.time.time())
 
             self.update_sim_averages(trials)
 
@@ -400,6 +424,13 @@ class SimulatedUser:
             pred = self.index_to_wk[index] % self.N_pred
             typed = self.words_li[key][pred]
         return typed
+
+    def gen_false_positive(self, return_time):
+        self.num_fp += 1
+        self.on_timer()
+        self.on_press()
+        self.time.set_time(return_time)
+        self.on_timer()
 
     def plot_hist(self):
         bars = self.bc.get_histogram()
@@ -883,7 +914,7 @@ class SimulatedUser:
                 talk_string = new_char
                 # if delete the last character that turn
                 self.old_context_li.append(self.context)
-                print(self.context)
+                # print(self.context)
                 lt = len(self.typed)
                 if lt > 0:  # typed anything yet?
                     self.btyped += self.typed[-1]
@@ -972,8 +1003,8 @@ class SimulatedUser:
     def save_simulation_data(self, attribute=None):
         data_file = os.path.join(self.data_loc, "npred_"+str(self.N_pred)+"_nwords_"+str(self.num_words_total)+"_lcon_"
                                  +str(int(self.lm_left_context))+"_wdiff_"+str(round(np.exp(self.win_diff_base)))
-                                 +"_rot_"+str(self.rotate_index)+"_cor_"+str(self.easy_phrase)
-                                 +".p")
+                                 +"_rot_"+str(self.rotate_index)+"_cor_"+str(self.easy_phrase)+"_fp_"
+                                 +str(self.false_positive_rate)+".p")
         data_handel = PickleUtil(data_file)
 
         dist_id_file = os.path.join(self.data_loc, "dist_id.p")
@@ -986,6 +1017,7 @@ class SimulatedUser:
         data_dict["win_diff"] = self.win_diff_base
         data_dict["num_words"] = self.num_words_total
         data_dict["time_rotate"] = self.time_rotate
+        data_dict["false_positive"] = self.false_positive_rate
         data_dict["errors"] = self.error_rate_avg
         data_dict["selections"] = self.sel_per_min
         data_dict["characters"] = self.char_per_min
