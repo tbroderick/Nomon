@@ -127,6 +127,7 @@ class ClockInference:
         self.clocks_li = range(0, len(self.parent.clock_centers))
         
         self.clocks_on = self.parent.words_on
+        self.press_cscores = []
         self.cscores = [0] * len(self.parent.clock_centers)
         self.clock_locs = []
         self.prev_cscores = list(self.cscores)
@@ -190,11 +191,14 @@ class ClockInference:
         for clock in self.clocks_on:
             time_in = self.clock_util.cur_hours[
                           clock] * self.time_rotate * 1.0 / self.clock_util.num_divs_time + time_diff_in - self.time_rotate * config.frac_period
-            self.cscores[clock] += self.get_score_inc(time_in)
+
+            self.cscores[clock] = self.get_score_inc(time_in)
             clock_locs[clock] = time_in
+
+        self.press_cscores += [self.cscores.copy()]
         self.clock_locs += [clock_locs]
         self.update_sorted_inds()
-        
+
     def update_dens(self, new_time_rotate):
         # reset period
         self.time_rotate = new_time_rotate
@@ -233,13 +237,22 @@ class ClockInference:
 
     # Determines if there exists a winner at the current moment
     def is_winner(self):
-        loc_win_diff = self.win_diffs[self.sorted_inds[0]]
-        if len(self.clocks_on) <= 1:
-            return True  # just for testing
-        elif self.cscores[self.sorted_inds[0]] - self.cscores[self.sorted_inds[1]] > loc_win_diff:
-            return True
-        else:
-            return False
+        if self.bc.word_press_index >= 1:
+            space_index = self.parent.keys_li.index(" ")
+
+            scores = np.sum(self.press_cscores[-1:], axis=0)
+
+            log_prob_sum = -float("inf")
+            for log_prob in scores:
+                log_prob_sum = np.logaddexp(log_prob_sum, log_prob)
+            scores -= log_prob_sum
+
+            space_prob = scores[space_index]
+
+            print(space_prob)
+            if space_prob > -2:
+                return True
+        return False
 
     # win_history -> GUESS FINE
         

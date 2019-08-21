@@ -1,9 +1,13 @@
 from __future__ import division
-from numpy import pi, zeros, ceil, cos, sin, where
+import numpy as np
 import math
 import time
 import config
 import kconfig
+
+import viterbi
+from predictor import WordPredictor
+import os
 
 
 # Locations of MinuteHands
@@ -16,7 +20,7 @@ class HourLocs:
         self.hour_locs = []
         self.hl_base = []
         for index in range(0, num_divs_time):
-            base = - pi / 2.0 + (2.0 * pi * index) / num_divs_time
+            base = - np.pi / 2.0 + (2.0 * np.pi * index) / num_divs_time
             theta = -config.theta0 + base
             self.hour_locs.append([theta])
             self.hl_base.append(base)
@@ -25,7 +29,7 @@ class HourLocs:
     def set(self, theta):
         for index in range(0, self.num_divs_time):
             base = self.hl_base[index]
-            self.hour_locs[index] = [self.radius * cos(-theta + base), self.radius * sin(-theta + base)]
+            self.hour_locs[index] = [self.radius * np.cos(-theta + base), self.radius * np.sin(-theta + base)]
 
 
 # an array where the smallest integers (with 0 in front) are arranged
@@ -70,38 +74,36 @@ class ClockUtil:
         else:
             self.cur_hours = [0.0] * len(self.parent.clock_centers)
 
-        self.clock_angles = zeros(len(self.cur_hours))
+        self.clock_angles = np.zeros(len(self.cur_hours))
         self.time_rotate = self.parent.time_rotate
         # LOOKATHERE
-        self.num_divs_time = int(ceil(parent.time_rotate / config.ideal_wait_s))
-        self.spaced = SpacedArray(self.num_divs_time)
+        self.num_divs_time = int(np.ceil(parent.time_rotate / config.ideal_wait_s))
+        print("NUM DIV TIME: ", self.num_divs_time)
+        self.spaced = SpacedArray(self.num_divs_time - 4)
         self.hl = HourLocs(self.num_divs_time)
 
         self.adt = [0, 0]
-        # self.highlight_timer =
-
-    # cur_hours
-    # clocks_index_list can be actual clocks_on or sorted_inds(anyways list of indices)
-
-    # =============================================================================
-    #     def init_curhours(self, all_clocks_list):
-    #         count = 0
-    #         for sind in self.sorted_inds:
-    #             self.cur_hours[sind] = self.spaced.arr[count % self.num_divs_time]
-    #             count += 1
-    # =============================================================================
 
     def update_curhours(self, update_clocks_list):
         count = 0
-        for sind in update_clocks_list:
-            self.cur_hours[sind] = self.spaced.arr[count % self.num_divs_time]
-            count += 1
+        print(update_clocks_list)
+        space_index = update_clocks_list.index(self.bc.parent.keys_li.index(" "))
+        space_sa_index = self.spaced.arr[space_index % (self.num_divs_time - 4)]
 
-    # =============================================================================
-    #     def set_curhours(self, whole_clock_list, clocks_on_list):
-    #         self.cur_hours = [self.spaced.arr[i % self.num_divs_time] for i in range(len(whole_clock_list))]
-    #
-    # =============================================================================
+        for sind in update_clocks_list:
+            array_index = count % (self.num_divs_time - 4)
+            sa_index = self.spaced.arr[array_index]
+
+            if sa_index > space_sa_index:
+                sa_index += 4
+            elif sa_index == space_sa_index:
+                if sind == self.bc.parent.keys_li.index(" "):
+                    sa_index += 2
+                else:
+                    sa_index -= 1
+
+            self.cur_hours[sind] = sa_index
+            count += 1
 
     def change_period(self, new_period):
         # set the period
@@ -113,14 +115,14 @@ class ClockUtil:
 
         # related quantities
         # number of unique clock positions in the animation
-        self.num_divs_time = int(ceil(self.time_rotate / config.ideal_wait_s))
+        self.num_divs_time = int(np.ceil(self.time_rotate / config.ideal_wait_s))
         # reset wait_s so num_divs_time is integer
         # BUT DON"T REALLY SEEM TO USE THIS SO DON"T KNOW
         self.wait_s = self.time_rotate / self.num_divs_time
         # find coordinates of hour hand positions
         self.hl = HourLocs(self.num_divs_time)
         # array of spacings for high scorers
-        self.spaced = SpacedArray(self.num_divs_time)
+        self.spaced = SpacedArray(self.num_divs_time - 4)
 
         # restart rotation
         # IS THIS JUST UPDATING CURHOURS OR ALSO CSCORES= JUST CURHOURS
@@ -137,20 +139,20 @@ class ClockUtil:
         if clock_type == 'default':
             # clock_params = array([[center_x = center_y, outer_radius, minute_x, minute_y] x num_clocks])
             self.bc.parent.clock_params[:, 2] = self.bc.parent.clock_params[:, 0] * (
-                    1 + 0.7 * cos(self.clock_angles))
+                    1 + 0.7 * np.cos(self.clock_angles))
             self.bc.parent.clock_params[:, 3] = self.bc.parent.clock_params[:, 0] * (
-                    1 + 0.7 * sin(self.clock_angles))
+                    1 + 0.7 * np.sin(self.clock_angles))
 
         elif clock_type == 'ball':
             # clock_params = array([[center_x = center_y, outer_radius, inner_radius] x num_clocks])
             self.bc.parent.clock_params[:, 2] = self.bc.parent.clock_params[:, 1] * (
-                        1 - abs(self.clock_angles / pi + 0.5))
+                        1 - abs(self.clock_angles / np.pi + 0.5))
 
         elif clock_type == 'radar':
             # clock_params = array([[center_x = center_y, outer_radius, minute_angle1 ... minute_anglen] x num_clocks])
             inc_angle = 20
-            self.bc.parent.clock_params[:, 2] = (90 - self.clock_angles * 180. / math.pi)
-            angle_correction = where(self.bc.parent.clock_params[:, 2] > 0, -360, 0)
+            self.bc.parent.clock_params[:, 2] = (90 - self.clock_angles * 180. / math.np.pi)
+            angle_correction = np.where(self.bc.parent.clock_params[:, 2] > 0, -360, 0)
             self.bc.parent.clock_params[:, 2] += angle_correction
             self.bc.parent.clock_params[:, 2] *= 16
             for i in range(1, 4):
@@ -158,15 +160,15 @@ class ClockUtil:
 
         elif clock_type == 'pac_man':
             # clock_params = array([[center_x = center_y, outer_radius, minute_angle1] x num_clocks])
-            self.bc.parent.clock_params[:, 2] = -90 - (self.clock_angles * 180.) / math.pi
-            angle_correction = where(self.bc.parent.clock_params[:, 2] > 0, -360, 0)
+            self.bc.parent.clock_params[:, 2] = -90 - (self.clock_angles * 180.) / math.np.pi
+            angle_correction = np.where(self.bc.parent.clock_params[:, 2] > 0, -360, 0)
             self.bc.parent.clock_params[:, 2] += angle_correction
             self.bc.parent.clock_params[:, 2] *= 16
 
         elif clock_type == 'bar':
             # clock_params = array([[center_x = center_y, bar_length, bar_position] x num_clocks])
             self.bc.parent.clock_params[:, 2] = self.bc.parent.clock_params[:, 1] * (
-                        1 - abs(self.clock_angles / pi + 0.5))
+                        1 - abs(self.clock_angles / np.pi + 0.5))
 
     def increment(self, clock_index_list):
         if self.bc.parent.is_simulation:
@@ -226,7 +228,7 @@ class ClockUtil:
                 self.parent.mainWidget.clocks[i].update()
 
     def repaint_one_clock(self, clock_index, angle):
-        # self.parent.mainWidget.clocks[clock_index].angle = angle + math.pi*0.5
+        # self.parent.mainWidget.clocks[clock_index].angle = angle + math.np.pi*0.5
         # self.parent.mainWidget.clocks[clock_index].update()
         pass
 
@@ -256,3 +258,19 @@ class ClockUtil:
             clock.selected = False
             clock.update()
             clock.stop()
+
+
+def main():
+    S = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', "'", ' ', "'", '.', ',', '?', '!', '#', '$', '@']
+    lm_path = os.path.join(os.path.join(os.getcwd(), 'resources'), 'lm_word_medium.kenlm')
+    vocab_path = os.path.join(os.path.join(os.getcwd(), 'resources'), 'vocab_100k')
+    wp = WordPredictor(lm_path, vocab_path)
+
+    S_probs = viterbi.get_char_prior(3, S, wp, "")[0]
+    SA = SpacedArray(36)
+
+    print(SA.arr)
+
+
+if __name__ == '__main__':
+    main()

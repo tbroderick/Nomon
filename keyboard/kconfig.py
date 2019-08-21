@@ -103,7 +103,7 @@ clock_rad = 10  # 10
 base_word_w = 160
 word_w = 160
 # words per key
-N_pred = 3
+N_pred = 0
 ## colors
 # color of key text
 key_text_color = "black"

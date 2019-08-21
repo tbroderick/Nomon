@@ -26,8 +26,11 @@ from subWindows import Pretraining, StartWindow
 from phrases import Phrases
 # import dtree
 from kenlm_lm import LanguageModel
+from predictor import WordPredictor
 from pickle_util import PickleUtil
 from text_stats import calc_MSD
+
+import viterbi
 
 import sys
 import os
@@ -64,7 +67,7 @@ class Keyboard(MainWindow):
         self.pretrain_window = False
 
         # 2 is turn fully on, 1 is turn on but reduce, 0 is turn off
-        self.word_pred_on = 2
+        self.word_pred_on = 0
         # Number of word clocks to display in case word prediction == 1 (reduced)
         self.reduce_display = 5
 
@@ -109,6 +112,7 @@ class Keyboard(MainWindow):
         vocab_path = os.path.join(os.path.join(self.cwd, 'resources'), 'vocab_100k')
 
         self.lm = LanguageModel(lm_path, vocab_path)
+        self.wp = WordPredictor(lm_path, vocab_path)
 
         # initialize pygame and joystick
         if kconfig.target_evt is kconfig.joy_evt:
@@ -157,6 +161,7 @@ class Keyboard(MainWindow):
         # check for speech
         # talk_fid = open(self.talk_file, 'wb')
         # write words
+        self.clock_spaces = np.zeros((len(self.clock_centers), 2))
         self.init_words()
 
         self.bars = kconfig.bars
@@ -175,21 +180,22 @@ class Keyboard(MainWindow):
         self.clear_text = False
         self.pretrain = False
 
-        self.init_ui()
 
         self.time_rotate = config.period_li[self.start_speed]
         # get language model results
-        self.gen_word_prior(False)
+        # self.gen_word_prior(False)
 
-        self.clock_spaces = np.zeros((len(self.clock_centers), 2))
 
         self.bc = BroderClocks(self)
-        self.mainWidget.change_value(self.start_speed)
-
-        self.bc.init_follow_up(self.word_score_prior)
-
         self.clock_params = np.zeros((len(self.clock_centers), 8))
 
+        self.init_ui()
+        self.mainWidget.change_value(self.start_speed)
+
+
+        char_prior = viterbi.get_char_prior(0, self.keys_li, self.wp, "")[0]
+
+        self.bc.init_follow_up(char_prior)
         self.bc.clock_inf.clock_util.calcualte_clock_params('default', recompute=True)
 
         # draw histogram
@@ -203,7 +209,6 @@ class Keyboard(MainWindow):
             self.pretrain = True
             self.welcome = Pretraining(self, screen_res)
 
-
         # animate
 
         # record to prevent double tap
@@ -213,7 +218,6 @@ class Keyboard(MainWindow):
         self.init_clocks()
         self.update_radii = False
         self.on_timer()
-
 
     def gen_data_handel(self):
         self.cwd = os.getcwd()
@@ -385,15 +389,14 @@ class Keyboard(MainWindow):
             for col in range(0, self.N_keys_row[row]):
                 x = col * (6 * kconfig.clock_rad + kconfig.word_w)
                 # predictive words
-                self.clock_centers.append([x + word_clock_offset, y + 1 * kconfig.clock_rad])
-                self.clock_centers.append([x + word_clock_offset, y + 3 * kconfig.clock_rad])
-                self.clock_centers.append([x + word_clock_offset, y + 5 * kconfig.clock_rad])
+                for i in range(kconfig.N_pred):
+                    self.clock_centers.append([x + word_clock_offset, y + (i*2 + 1) * kconfig.clock_rad])
                 # win diffs
-                self.win_diffs.extend([config.win_diff_base, config.win_diff_base, config.win_diff_base])
+                self.win_diffs.extend([config.win_diff_base for i in range(kconfig.N_pred)])
                 # word position
-                self.word_locs.append([x + word_offset, y + 1 * kconfig.clock_rad])
-                self.word_locs.append([x + word_offset, y + 3 * kconfig.clock_rad])
-                self.word_locs.append([x + word_offset, y + 5 * kconfig.clock_rad])
+                for i in range(kconfig.N_pred):
+                    self.word_locs.append([x + word_offset, y + (i*2 + 1) * kconfig.clock_rad])
+
                 # rectangles
                 self.rect_locs.append([x + rect_offset, y, x + rect_end, y + 2 * kconfig.clock_rad])
                 self.rect_locs.append(
@@ -482,8 +485,6 @@ class Keyboard(MainWindow):
         self.mainWidget.histogram.update()
 
     def init_words(self):
-        (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(self.left_context, self.context,
-                                                                                 self.keys_li)
 
         self.word_id = []
         self.word_pair = []

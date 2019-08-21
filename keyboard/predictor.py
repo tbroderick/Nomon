@@ -181,6 +181,20 @@ class WordPredictor:
 
         return suggestion_list
 
+    def get_all_words(self, prefix, context):
+        (state_in, state_out) = self.get_context_state(context, self.language_model, '')
+        flag, current_trie = self.get_vocab_trie('')
+
+        all_words = []
+        for char in self.char_list['']:
+            new_prefix = prefix + char
+            # print(new_prefix)
+            words_with_logprob = current_trie.get_words_with_prefix(new_prefix, self.language_model, state_in,
+                                                                    state_out)
+            all_words += words_with_logprob
+        return all_words
+
+
     def get_most_probable_word(self, prefix, context='', vocab_id='', min_log_prob=-float('inf')):
         (state_in, state_out) = self.get_context_state(context, self.language_model, vocab_id)
         most_prob_word = ''
@@ -230,24 +244,22 @@ def main():
     vocab_filename = 'resources/vocab_100k'
     word_predictor = WordPredictor(lm_filename, vocab_filename)
 
-    # print(predictor.create_char_list_from_vocab(vocab_filename))
 
-    # words = predictor.get_words_with_context('s', 'abra ka dabra', '', 3, -float('inf'))
-    # predictor.print_suggestions(words)
 
-    words = word_predictor.get_words_with_context('', 'hello', '', 3, -float('inf'))
-    word_predictor.print_suggestions(words)
-    # print(predictor.get_most_likely_word(words))
-    # predictor.add_vocab('vocab_100k', vocab_filename)
-
-    prefix = 'a'
-    context = 'the united states of'
-    most_prob_word, log_prob = word_predictor.get_most_probable_word(prefix, context, vocab_id='',
-                                                                     min_log_prob=-float('inf'))
-
-    print('Context: ' + context)
-    print('Prefix: ' + prefix)
-    print('Most probable word: "' + most_prob_word + '" with log probability: ' + str(log_prob))
+    words = word_predictor.get_all_words('h', '')
+    print(words)
+    # word_predictor.print_suggestions(words)
+    # # print(predictor.get_most_likely_word(words))
+    # # predictor.add_vocab('vocab_100k', vocab_filename)
+    #
+    # prefix = 'a'
+    # context = 'the united states of'
+    # most_prob_word, log_prob = word_predictor.get_most_probable_word(prefix, context, vocab_id='',
+    #                                                                  min_log_prob=-float('inf'))
+    #
+    # print('Context: ' + context)
+    # print('Prefix: ' + prefix)
+    # print('Most probable word: "' + most_prob_word + '" with log probability: ' + str(log_prob))
 
 
 if __name__ == "__main__":

@@ -52,8 +52,12 @@ class LanguageModel():
         word_preds = []
         word_probs = []
 
-        lm_results = self.word_predictor.get_words_with_context(prefix, context, self.vocab_id, self.num_predictions,
-                                                                self.min_log_prob)
+        if self.num_predictions == 0:
+            lm_results = self.word_predictor.get_words_with_context(prefix, context, self.vocab_id,
+                                                                    3, self.min_log_prob)
+        else:
+            lm_results = self.word_predictor.get_words_with_context(prefix, context, self.vocab_id, self.num_predictions,
+                                                                    self.min_log_prob)
         flattened_results = [freq for sublist in lm_results for freq in sublist]
         flattened_results.sort(key=lambda x: -x[1])
         flattened_results = [word_pair[0] for word_pair in flattened_results[:num_words_total]]
@@ -70,8 +74,8 @@ class LanguageModel():
                 word_dict[word_list[0][0][len(prefix)]] = cur_word_list
 
         for key in keys_li:
-            key_word_preds = ["", "", ""]
-            key_word_probs = [-float("inf"), -float("inf"), -float("inf")]
+            key_word_preds = ["" for i in range(self.num_predictions)]
+            key_word_probs = [-float("inf") for i in range(self.num_predictions)]
             if key in word_dict:
                 index = 0
                 for word_tuple in word_dict[key]:

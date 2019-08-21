@@ -9,14 +9,16 @@ from clock_inference_engine import *
 import time
 import os
 from numpy import log
-
+from matplotlib import pyplot as plt
 from pickle_util import PickleUtil
 import config
+import viterbi
 
 
 class BroderClocks:
     def __init__(self, parent):
         self.parent = parent
+        self.word_press_index = -1
         print(type(self.parent))
         self.parent.bc_init = True
         self.clock_inf = ClockInference(self.parent, self)
@@ -113,6 +115,7 @@ class BroderClocks:
             self.save_when_quit_noconsent()
 
     def select(self):
+        print(len(self.clock_inf.cscores))
         ####CLOCKUTIL에서 달라진 INCREMTNT, 달라진 KDE, 달라진 SCOREFUNCTION 갖다 바꾸기
         if self.parent.is_simulation:
             time_in = self.parent.time.time()
@@ -137,31 +140,30 @@ class BroderClocks:
             self.last_press_time_li += [time_in]
             # print "click time was recorded!"
 
-        # proceed based on whether there was a winner
+        # # proceed based on whether there was a winner
         if (self.clock_inf.is_winner()):
-            if self.parent.is_simulation:
-                self.parent.winner = True
-                self.parent.winner_text = self.parent.clock_to_text(self.clock_inf.sorted_inds[0])
-                # print("WINNER",  self.clock_inf.sorted_inds[0])
 
-            # record winner
-            self.clock_inf.win_history[0] = self.clock_inf.sorted_inds[0]
-            # update number of bits recorded
-            self.clock_inf.entropy.update_bits()
-            # call parent program with choice
-            #일단은 넘어가지면 NEED TO MAKE WORDPRIOR HERE
-            (self.clock_inf.clocks_on, self.clock_inf.clocks_off, clock_score_prior, self.is_undo,
-             self.is_equalize) = self.parent.make_choice(self.clock_inf.sorted_inds[0])
-            # learn new scores
-            if config.is_learning:
-                self.clock_inf.learn_scores(self.is_undo)
-            self.parent.draw_histogram()
-            # reset time indices
-            self.init_round(True, False, clock_score_prior)
+            n = self.word_press_index - 0
+            X_given_Y = []
+            S = self.parent.keys_li
+
+            for prob_array in self.clock_inf.press_cscores[:n]:
+                prob_array = np.exp(np.array(prob_array))
+                X_given_Y += [[np.array(S)[np.where(prob_array > 0.01)], prob_array[np.where(prob_array > 0.01)]]]
+
+            T, word_dict = viterbi.gen_transition(X_given_Y, S, self.parent.wp, self.parent.left_context)
+            mpc = viterbi.modified_viterbi(X_given_Y, S, T, word_dict)
+
+            print(mpc)
+
+            self.clock_inf.press_cscores = []
+            char_prior = viterbi.get_char_prior(0, self.parent.keys_li, self.parent.wp, "")[0]
+            self.init_round(True, True, char_prior)
+
         else:
-            # update time indices
-            self.init_round(False, False, [])
-         
+            char_prior = viterbi.get_char_prior(self.word_press_index, self.parent.keys_li, self.parent.wp, "")[0]
+            self.init_round(False, True, char_prior)
+
     #CAN DO BETTER FOR THIS PART
     def init_bits(self):
         self.bits_per_select = log(len(self.clock_inf.clocks_on)) / log(2)
@@ -192,6 +194,10 @@ class BroderClocks:
             if (is_win):
                 # identify the undo button as the winner to highlight
                 win_clock = self.clock_inf.sorted_inds[0]
+                self.word_press_index = 0
+            else:
+                self.word_press_index += 1
+            print("WORD INDEX: ", self.word_press_index)
 
             if (self.is_undo) and (not self.is_equalize):
                 count = 0
@@ -215,7 +221,10 @@ class BroderClocks:
         self.clock_inf.handicap_cscores(is_win, is_start)
         top_score = self.clock_inf.cscores[self.clock_inf.sorted_inds[0]]
         # highlight all clockfaces "near" the winning score
-        bound_score = top_score - self.parent.win_diffs[self.clock_inf.sorted_inds[0]]
+        bound_score = np.log(0.01)
+        # if self.word_press_index > 1:
+        #     plt.plot(np.exp(self.clock_inf.press_cscores[self.word_press_index-2]))
+        #     plt.show()
 
         if not self.parent.is_simulation:
             for clock_index in self.clock_inf.clocks_on:
@@ -224,14 +233,18 @@ class BroderClocks:
                     if clock_index in self.parent.mainWidget.reduced_word_clock_indices:
                         clock = self.parent.mainWidget.reduced_word_clocks[
                             self.parent.mainWidget.reduced_word_clock_indices.index(clock_index)]
-                if self.clock_inf.cscores[clock_index] > bound_score:
-                    clock.highlighted = True
+                if self.word_press_index <= 0:
+                    if self.clock_inf.cscores[clock_index] > bound_score:
+                        clock.highlighted = True
                 else:
-                    clock.highlighted = False
+                    if self.clock_inf.press_cscores[self.word_press_index-1][clock_index] > bound_score:
+                        clock.highlighted = True
+                    else:
+                        clock.highlighted = False
                 clock.update()
                 #HIGHLIGHT에 관한 부분 추가
                 v = self.clock_inf.clock_util.hl.hour_locs[self.clock_inf.clock_util.cur_hours[clock_index] - 1]
-                angle =v[0]
+                angle = v[0]
                 self.clock_inf.clock_util.repaint_one_clock(clock_index, angle)
 
        

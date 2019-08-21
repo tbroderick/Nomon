@@ -9,10 +9,10 @@ from phrases import Phrases
 from text_stats import calc_MSD
 import numpy as np
 
-# data_dir = "D:\\Users\\nickb\\Study Data\\nomon_data\\951"
-# data_dir2 = "D:\\Users\\nickb\\Study Data\\row_col_data\\951"
-data_dir = "C:\\Users\\nickb\\AppData\\Local\\Nomon\\data\\999"
-data_dir2 = "C:\\Users\\nickb\\AppData\\Local\\RowCol\\data\\100"
+data_dir = "D:\\Users\\nickb\\Study Data\\nomon_data\\952"
+data_dir2 = "D:\\Users\\nickb\\Study Data\\row_col_data\\952"
+# data_dir = "C:\\Users\\nickb\\AppData\\Local\\Nomon\\data\\999"
+# data_dir2 = "C:\\Users\\nickb\\AppData\\Local\\RowCol\\data\\999"
 
 
 def flatten(l):
@@ -319,7 +319,7 @@ class DataUtil:
 
             plt.legend(title='Key:', labels=['Row Col (SD)', '       (95% CI)', 'Nomon (SD)', '     (95% CI)'])
 
-            plt.title("Participant 951: " + dep_var_name + " vs. " + ind_var_name)
+            plt.title("Participant 952: " + dep_var_name + " vs. " + ind_var_name)
             sns.axes_style("darkgrid")
             plt.show()
 
@@ -397,11 +397,12 @@ du.load_data()
 du.split_data_phrase()
 du.make_data_frame()
 
-# # du2 = DataUtil(data_dir2)
-# # du2.load_data()
-# # du2.split_data_phrase()
-# # du2.make_data_frame()
+du2 = DataUtil(data_dir2)
+du2.load_data()
+du2.split_data_phrase()
+du2.make_data_frame()
 #
 du.print_stat_avg()
-# du.plot_phrase_stats()
-# du.test_significance()
+du2.print_stat_avg()
+du.plot_phrase_stats(du2.DF)
+du.test_significance(du2.DF)

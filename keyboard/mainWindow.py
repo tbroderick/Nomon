@@ -874,7 +874,7 @@ class MainKeyboardWidget(QtWidgets.QWidget):
                     word_clocks[i] = clockf
 
                     i += 1
-                for n in range(i, 3):
+                for n in range(i, kconfig.N_pred):
                     clockf = ClockWidget('', self, filler_clock=True)
                     clockf.setAttribute(QtCore.Qt.WA_OpaquePaintEvent)
                     word_clocks[n] = clockf

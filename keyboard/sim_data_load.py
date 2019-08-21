@@ -142,7 +142,8 @@ class SimDataUtil:
         data_labels = {'errors', 'selections', 'characters', 'presses_sel', 'presses_char'}
         param_name_dict = {'num_words': "Word Predictions Max Count", 'time_rotate': "Time Rotate",
                            'win_diff': "Win Difference", 'N_pred': "Words Per Character",
-                           'prob_thresh': "Probability Threshold", 'attribute': 'Attribute'}
+                           'prob_thresh': "Probability Threshold", 'attribute': 'Attribute',
+                           "false_positive": "False Positive Rate"}
         var_name_dict = {'selections': "Selections/Min", 'characters': "Characters/Min",
                          'presses_char': "Clicks/Character",
                          'presses_sel': "Clicks/Selection", 'errors': "Error Rate"}
@@ -166,7 +167,7 @@ class SimDataUtil:
 
     def plot_across_params(self):
 
-        ind_var_name = "Time Rotate"
+        ind_var_name = "False Positive Rate"
 
         for dep_var_name in ['Error Rate', 'Selections/Min', 'Characters/Min', 'Clicks/Selection',
                            'Clicks/Character', 'Error Rate']:
@@ -247,7 +248,7 @@ def main():
     #                "y": "Average (-) Gradient of MSE Over Presses"}
     # sdu.plot_across_user("kde_mses", (3, 0.008), trends=True, log=False, legend=plot_legend)
 
-    sdu = SimDataUtil("simulations/rotation_speed/supercloud_results")
+    sdu = SimDataUtil("simulations/false_positive/supercloud_results")
     sdu.plot_across_params()
 
     # plot_legend = {"title": "MSE of Nomon KDE vs Bimodal Distance",
