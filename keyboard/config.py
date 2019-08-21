@@ -44,7 +44,7 @@ period_li = 3*np.exp((-period_li)/12)
 # print(period_li)
 scale_min = 1
 scale_max = len(period_li) - 1
-default_rotate_ind = 10  # 19 # (22,) 19, 16, 13, 10, 7
+default_rotate_ind = 13  # 19 # (22,) 19, 16, 13, 10, 7
 # number of clock divisions that register as a unique place to click
 num_divs_click = 80
 # seconds / frame; display update rate to aim for

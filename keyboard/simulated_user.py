@@ -1123,15 +1123,15 @@ def main():
 
     # hp = HistPlot()
     #
-    kde = PickleUtil("C:\\Users\\nickb\\AppData\\Local\\Nomon\\data\\999\\user_histogram.p").safe_load()
-    click_dist = kde(np.arange(80))
+    kde = PickleUtil("resources\\click_distributions\\0_hist.p").safe_load()
+    click_dist = kde
     click_dist /= np.sum(click_dist)
 
     # parameters_list = [{"click_dist": normal_hist(0, i/2)} for i in range(1,20)]
     # attributes = [i/2 for i in range(1,20)]
     # for parameters, attribute in zip(parameters_list, attributes):
     sim = SimulatedUser()
-    params = {"N_pred": 3, "num_words": 17, "time_rotate": config.default_rotate_ind, "click_dist": click_dist}
+    params = {"N_pred": 3, "num_words": 17, "time_rotate": 14, "click_dist": click_dist}
 
     sim.parameter_metrics(params, num_clicks=500, trials=1)
 

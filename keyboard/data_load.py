@@ -9,10 +9,10 @@ from phrases import Phrases
 from text_stats import calc_MSD
 import numpy as np
 
-data_dir = "D:\\Users\\nickb\\Study Data\\nomon_data\\952"
-data_dir2 = "D:\\Users\\nickb\\Study Data\\row_col_data\\952"
-# data_dir = "C:\\Users\\nickb\\AppData\\Local\\Nomon\\data\\999"
-# data_dir2 = "C:\\Users\\nickb\\AppData\\Local\\RowCol\\data\\999"
+# data_dir = "D:\\Users\\nickb\\Study Data\\nomon_data\\100"
+# data_dir2 = "D:\\Users\\nickb\\Study Data\\row_col_data\\100"
+data_dir = "C:\\Users\\nickb\\AppData\\Local\\Nomon\\data\\999"
+# data_dir2 = "C:\\Users\\nickb\\AppData\\Local\\RowCol\\data\\0"
 
 
 def flatten(l):
@@ -127,6 +127,8 @@ class DataUtil:
 
         print("Data partitioned into " + str(len(self.phrases)) + " sets by phrase")
 
+        click_pause_data = []
+
         for phrase in self.phrases:  # split data according to phrase times calculated above
             phrase_start, phrase_end = self.phrase_times[phrase]
             phrase_click_indices = np.where((self.abs_click_data >= phrase_start) & (self.abs_click_data <= phrase_end))
@@ -135,6 +137,9 @@ class DataUtil:
 
             if len(phrase_abs_clicks) > 0:
                 first_click_time = min(phrase_abs_clicks)
+
+                click_pause_data += (phrase_abs_clicks[1:]-phrase_abs_clicks[:-1]).tolist()
+
 
                 self.clicks_by_phrase[phrase] = {"abs": phrase_abs_clicks, "rel": phrase_rel_clicks}
                 stat_dict = self.phrase_stats[phrase]
@@ -174,6 +179,11 @@ class DataUtil:
             self.phrases = list(self.phrase_stats.keys())
 
         # print(self.phrase_stats)
+        # click_pause_data = np.array(click_pause_data)
+        # plt.hist(click_pause_data, 20)
+        # plt.title("Nomon Expert: Time Between Presses")
+        # plt.xlabel("Seconds")
+        # plt.show()
 
     def split_data_speed(self):
         num_speed_changes = len(self.speed_changes)
@@ -390,19 +400,19 @@ class DataUtil:
 
 du = DataUtil(data_dir)
 du.load_data()
-# du.split_data_speed()
+du.split_data_speed()
 # du.correct_data_speed()
 # du.plot_data()
 # du.save_hist()
 du.split_data_phrase()
 du.make_data_frame()
 
-du2 = DataUtil(data_dir2)
-du2.load_data()
-du2.split_data_phrase()
-du2.make_data_frame()
+# du2 = DataUtil(data_dir2)
+# du2.load_data()
+# du2.split_data_phrase()
+# du2.make_data_frame()
 #
 du.print_stat_avg()
-du2.print_stat_avg()
-du.plot_phrase_stats(du2.DF)
-du.test_significance(du2.DF)
+# du2.print_stat_avg()
+du.plot_phrase_stats()
+# du.test_significance(du2.DF)

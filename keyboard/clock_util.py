@@ -86,7 +86,7 @@ class ClockUtil:
 
     def update_curhours(self, update_clocks_list):
         count = 0
-        print(update_clocks_list)
+        # print(update_clocks_list)
         space_index = update_clocks_list.index(self.bc.parent.keys_li.index(" "))
         space_sa_index = self.spaced.arr[space_index % (self.num_divs_time - 4)]
 
