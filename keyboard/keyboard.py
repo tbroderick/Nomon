@@ -1101,7 +1101,7 @@ class Keyboard(MainWindow):
 
     def launch_retrain(self):
         retrain_window = Pretraining(self, self.mainWidget.screen_res)
-        retrain_window.screen_num=3
+        retrain_window.screen_num = 3
         retrain_window.next_screen()
         retrain_window.show()
         # retrain_window.setCentralWidget(retrain_window.mainWidget)

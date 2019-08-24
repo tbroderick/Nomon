@@ -29,8 +29,9 @@ class simulationUtil():
         self.click_dists = [PickleUtil(os.path.join("simulations/rotation_speed/click_distributions", file)).safe_load()
                        for file in os.listdir("simulations/rotation_speed/click_distributions")]
 
-        self.period_li = np.arange(21)
+        self.period_li = np.arange(0, 21, 3)
         self.period_li = 3 * np.exp((- self.period_li) / 12)
+        print(self.period_li)
 
         self.parameters_list = []
         self.parameters_dict = dict()
@@ -61,7 +62,6 @@ class simulationUtil():
             print(user_num)
             sim = SimulatedUser(parentdir, job_num=user_num)
             sim.parameter_metrics(parameters, num_clicks=num_clicks, trials=trials)
-
 
 
 if __name__ == '__main__':

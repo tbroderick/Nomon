@@ -38,7 +38,7 @@ sys.path.insert(0, os.path.realpath('../KernelDensityEstimation'))
 # sys._excepthook = sys.excepthook
 
 
-class Time():
+class Time:
     def __init__(self, parent):
         self.parent = parent
         self.cur_time = 0
