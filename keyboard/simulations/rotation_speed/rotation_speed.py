@@ -29,18 +29,15 @@ class simulationUtil():
         self.click_dists = [PickleUtil(os.path.join("simulations/rotation_speed/click_distributions", file)).safe_load()
                        for file in os.listdir("simulations/rotation_speed/click_distributions")]
 
-        self.period_li = np.arange(0, 21, 3)
-        self.period_li = 3 * np.exp((- self.period_li) / 12)
-        print(self.period_li)
+        self.period_li = np.arange(0, 21, 1)
 
         self.parameters_list = []
-        self.parameters_dict = dict()
 
-    def run_job(self, my_task_id, num_tasks, num_clicks=500, trials=30):
+    def run_job(self, my_task_id, num_tasks, num_clicks=1500, trials=20):
 
-        for period_num, period in enumerate(self.period_li):
+        for period_num in self.period_li:
             param_dict = dict()
-            self.parameters_dict["time_rotate"] = period_num
+            param_dict["time_rotate"] = period_num
             param_dict["N_pred"] = 3
             param_dict["num_words"] = 17
 
@@ -49,7 +46,7 @@ class simulationUtil():
                 hist = hist / np.sum(hist)
                 param_dict["click_dist"] = hist.tolist()
 
-                self.parameters_list += [self.parameters_dict.copy()]
+                self.parameters_list += [param_dict.copy()]
 
         print(len(self.parameters_list))
         num_jobs = len(self.parameters_list)

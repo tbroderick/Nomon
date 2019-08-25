@@ -141,7 +141,7 @@ class ClockUtil:
         self.clock_inf.time_rotate = new_period
         self.clock_inf.update_dens(new_period)
         self.time_rotate = new_period
-        self.parent.time_rotate = new_period
+        # self.parent.time_rotate = new_period
 
         # related quantities
         # number of unique clock positions in the animation

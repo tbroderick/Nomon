@@ -32,11 +32,11 @@
 ######################################
 
 
-
 import numpy as np
 # from matplotlib import pyplot as plt
 
 from phrases import Phrases
+from text_stats import calc_MSD
 # import dtree
 from kenlm_lm import LanguageModel
 from pickle_util import PickleUtil
@@ -106,8 +106,10 @@ class SimulatedUser:
             self.time_rotate = config.period_li[self.rotate_index]
             self.phrases = Phrases("resources/comm2.dev")
             self.easy_phrase = 1
-            self.false_positive_rate = 0.01
+            self.false_positive_rate = 0.0
             self.num_fp = 0
+
+            self.init_sim_data()
 
             self.cwd = os.getcwd()
             lm_path = os.path.join(os.path.join(self.cwd, 'resources'), 'lm_word_medium.kenlm')
@@ -238,11 +240,6 @@ class SimulatedUser:
         else:
             self.num_words_total = 26*self.N_pred
 
-        if "num_words" in parameters:
-            self.num_words_total = parameters["num_words"]
-        else:
-            self.num_words_total = 26*self.N_pred
-
         if "left_context" in parameters:
             self.lm_left_context = parameters["left_context"]
         else:
@@ -271,7 +268,7 @@ class SimulatedUser:
         if "false_positive" in parameters:
             self.false_positive_rate = parameters["false_positive"]
         else:
-            self.false_positive_rate = 0.01
+            self.false_positive_rate = 0.00
 
         self.gen_data_dir()
         for trial in range(trials):
@@ -282,8 +279,14 @@ class SimulatedUser:
                 # print("New Phrase: \"" + text + "\"")
                 self.type_text(text, verbose=False)
                 # print(round(self.num_presses/num_clicks*100), " %")
+                self.num_chars += int(len(self.typed))
+                self.num_words += int(len(self.typed.split(" ")))
+                self.num_errors += calc_MSD(self.typed, text)[0]
+                print(calc_MSD(self.typed, text))
+
+                print(self.typed)
                 self.typed = ""  # reset tracking and context for lm -- new sentence
-                self.num_words += len(text.split(" "))
+
 
             print("selections per minute: ", self.num_selections / (self.time.time() / 60))
             print("characters per minute: ", self.num_chars / (self.time.time() / 60))
@@ -343,16 +346,40 @@ class SimulatedUser:
 
     def type_text(self, text, verbose=False):
         self.target_text = text
-        while len(self.target_text) > 0:
-            target_clock, self.target_text = self.next_target(self.target_text)
+        prev_target_text = self.target_text
+        success = True
+        while len(self.target_text) > 0 or not success:
+            if success:
+                prev_target_text = self.target_text
+                target_clock, self.target_text = self.next_target(self.target_text)
+            else:
+                target_clock, self.target_text = self.next_target(prev_target_text)
+
             if verbose:
                 print("Target: ", self.clock_to_text(target_clock), target_clock)
 
-            recovery_time = 0.5
+            recovery_time = 0.9
             self.time.set_time(self.time.time() + recovery_time)
             self.on_timer()
 
-            self.select_clock(target_clock, verbose=verbose)
+            success = self.select_clock(target_clock, verbose=verbose)
+            if success is not None:
+                if not success:
+                    undo_depth = 1
+                    while undo_depth > 0:
+                        print(undo_depth)
+                        undo_clock = self.keys_li.index(kconfig.mybad_char) * (self.N_pred + 1) + self.N_pred
+                        undo_success = self.select_clock(undo_clock, verbose=verbose, undo_depth=undo_depth)
+
+                        if undo_success is not None:
+                            if undo_success:
+                                undo_depth -= 1
+                            else:
+                                undo_depth += 1
+
+                        recovery_time = 0.9
+                        self.time.set_time(self.time.time() + recovery_time)
+                        self.on_timer()
 
     def select_clock(self, target_clock, verbose=False, undo_depth=0):
 
@@ -361,51 +388,59 @@ class SimulatedUser:
         time_elapsed = 0
         for i in range(15):
             self.winner = False
-            if self.bc.clock_inf.clock_util.cur_hours[target_clock] > ndt // 2:
-                time_delta = (3 * ndt // 2 - self.bc.clock_inf.clock_util.cur_hours[
-                    target_clock] + 1) / ndt * self.time_rotate
+            if self.bc.clock_inf.clock_util.cur_hours[target_clock] > ndt / 2:
+                time_delta = (ndt * 3 / 2 - self.bc.clock_inf.clock_util.cur_hours[
+                    target_clock]) / ndt * self.time_rotate
             else:
-                time_delta = (ndt // 2 - self.bc.clock_inf.clock_util.cur_hours[target_clock] + 1) / ndt * self.time_rotate
+                time_delta = (ndt / 2 - self.bc.clock_inf.clock_util.cur_hours[target_clock]) / ndt * self.time_rotate
 
-            click_offset = np.float(np.random.choice(80, 1, p=self.click_dist) / 80.0 - 0.5) * config.period_li[config.default_rotate_ind]
+            click_offset = ((np.random.choice(80, 1, p=self.click_dist)-40) / 80.0 * config.period_li[14])[0]
+            # print(click_offset)
             time_delta += click_offset
             time_elapsed += time_delta
             self.time.set_time(self.time.time() + time_delta)
+
+            # print(self.bc.clock_inf.clock_util.cur_hours[target_clock]/ndt, time_delta)
             self.on_timer()
+            # print(self.bc.clock_inf.clock_util.cur_hours[target_clock]/ndt)
+            # print()
             self.on_press()
             num_press += 1
-            if self.winner:
 
-                self.num_chars += len(self.winner_text)
+            recovery_time = 0.4
+            self.time.set_time(self.time.time() + recovery_time)
+            self.on_timer()
+            if self.winner:
                 if len(self.bc.clock_inf.win_history) > 1:
                     selected_clock = self.bc.clock_inf.win_history[1]
                 else:
                     selected_clock = self.bc.clock_inf.win_history[0]
                 if verbose:
-                    print(">>> Clock " + str(selected_clock) + " selected in " + str(num_press) + " presses, " + str(round(time_elapsed, 2)) + " seconds")
-                    print("    Typed \"" + self.winner_text + "\"")
+                    if undo_depth > 0:
+                        tab = "    "
+                    else:
+                        tab = ""
+                    print(tab + ">>> Clock " + self.winner_text + " selected in " + str(num_press) + " presses, " + str(round(time_elapsed, 2)) + " seconds")
+                    print(tab + "    Typed \"" + self.typed + "\"")
                 self.winner = False
 
                 if selected_clock != target_clock:
-                    self.num_errors += 1
+                    undo_clock = self.keys_li.index(kconfig.mybad_char) * (self.N_pred + 1) + self.N_pred
+                    self.kde_errors += [self.kde_mse()] * num_press
 
-                    print("Wrong clock, backtracking . . . ")
-                    # undo_clock = self.keys_li.index(kconfig.mybad_char)*4 + 3
-                    # if undo_depth < 3:
-                    #     self.select_clock(undo_clock, undo_depth=undo_depth+1)
-                    #     if target_clock != undo_clock:
-                    #         self.select_clock(target_clock, verbose=False)
+                    if target_clock == undo_clock and self.winner_text == kconfig.mybad_char:  # if successful undo
+                        return True
+                    else:
+                        self.num_errors += 1
+                        print("ERROR")
+                        return False
                 else:
-                    self.num_selections += 1
+                    if undo_depth == 0:
+                        self.num_selections += 1
+                    return True
 
-                break
-
-            reaction_time = 0.3
-            self.time.set_time(self.time.time() + reaction_time)
-            time_elapsed += reaction_time
-            self.on_timer()
-
-        self.kde_errors += [self.kde_mse()]*num_press
+        self.kde_errors += [self.kde_mse()] * num_press
+        return None
 
     def next_target(self, text):
         words = text.split(" ")
@@ -456,6 +491,8 @@ class SimulatedUser:
     def kde_mse(self):
         bars = self.bc.get_histogram()
         bars = np.array(bars) / np.sum(bars)
+        # plt.plot(bars)
+        # plt.show()
         return np.sum(np.square(bars - self.click_dist))
 
     def init_locs(self):
@@ -563,7 +600,6 @@ class SimulatedUser:
 
     def change_speed(self):
         self.bc.clock_inf.clock_util.change_period(self.time_rotate)
-
 
     def init_histogram(self):
         # histogram
@@ -971,12 +1007,12 @@ class SimulatedUser:
                 self.context = ""
                 self.typed += new_char
                 if " "+new_char in self.typed:
-                    self.last_add_li.append(2)
+                    self.last_add_li.append(1)
+                else:
+                    self.last_add_li.append(1)
                 self.typed = self.typed.replace(" "+new_char, new_char+" ")
             else:
                 self.typed += new_char
-
-
 
         # if selected a word
         else:
@@ -1136,25 +1172,17 @@ class HistPlot():
 
 
 def main():
-
-    # hp = HistPlot()
-    #
-    kde = PickleUtil("C:\\Users\\nickb\\AppData\\Local\\Nomon\\data\\999\\user_histogram.p").safe_load()
-    click_dist = kde(np.arange(80))
+    click_dist = PickleUtil("simulations\\rotation_speed\\click_distributions\\999_kernel.p").safe_load()
+    click_dist = click_dist(np.arange(80))
     click_dist /= np.sum(click_dist)
 
-    # parameters_list = [{"click_dist": normal_hist(0, i/2)} for i in range(1,20)]
-    # attributes = [i/2 for i in range(1,20)]
-    # for parameters, attribute in zip(parameters_list, attributes):
+    # plt.plot(click_dist)
+    # plt.show()
+
     sim = SimulatedUser()
-    params = {"N_pred": 3, "num_words": 17, "time_rotate": config.default_rotate_ind, "click_dist": click_dist}
+    params = {"N_pred": 3, "num_words": 17, "time_rotate": 18, "click_dist": click_dist}
 
     sim.parameter_metrics(params, num_clicks=500, trials=1)
-
-    # sim = SimulatedUser()
-    # params = {"N_pred": 3, "num_words": 17, "win_diff": np.log(99), "click_dist": click_dist}
-    #
-    # sim.parameter_metrics(params, num_clicks=500, trials=1)
 
 
 if __name__ == "__main__":

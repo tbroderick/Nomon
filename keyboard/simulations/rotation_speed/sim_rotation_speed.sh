@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #SBATCH -o sim_rotation_speed.out-%j-%a
-#SBATCH -a 1-17
+#SBATCH -a 1-20
 
 # run with: sbatch jobArray.sh
 # or run with: LLsub jobArray.sh
