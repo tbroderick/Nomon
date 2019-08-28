@@ -20,7 +20,7 @@ try:
     my_task_id = int(sys.argv[1])
     num_tasks = int(sys.argv[2])
 except IndexError:
-    my_task_id = 1
+    my_task_id = 8
     num_tasks = 8
 
 
@@ -34,7 +34,7 @@ class simulationUtil():
         self.parameters_list = []
         self.parameters_dict = dict()
 
-    def run_job(self, my_task_id, num_tasks, num_clicks=500, trials=20):
+    def run_job(self, my_task_id, num_tasks, num_clicks=500, trials=1):
 
         for fp_rate in self.false_positives:
             param_dict = dict()

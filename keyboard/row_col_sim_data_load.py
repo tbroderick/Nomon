@@ -1,35 +1,3 @@
-######################################
-# Copyright 2019 Nicholas Bonaker, Keith Vertanen, Emli-Mari Nel, Tamara Broderick
-# This file is part of the Nomon software.
-# Nomon is free software: you can redistribute it and/or modify it
-# under the terms of the MIT License reproduced below.
-#
-# Permission is hereby granted, free of charge, to any person
-# obtaining a copy of this software and associated documentation
-# files (the "Software"), to deal in the Software without restriction,
-# including without limitation the rights to use, copy, modify, merge,
-# publish, distribute, sublicense, and/or sell copies of the Software,
-# and to permit persons to whom the Software is furnished to do so,
-# subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be
-# included in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY
-# OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
-# LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
-# EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-# WHETHER IN AN ACTION OF CONTRACT, TORT OR
-#OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-# IN THE SOFTWARE.
-#
-# <https://opensource.org/licenses/mit-license.html>
-######################################
-
-
 import os
 from shutil import copyfile
 from pickle_util import PickleUtil
@@ -39,10 +7,9 @@ import pandas as pd
 
 from scipy import stats
 import numpy as np
-from row_col_sim_data_load import SimDataUtil_row_col
 
 
-class SimDataUtil:
+class SimDataUtil_row_col:
 
     def __init__(self, data_dir):
         self.data_directory = data_dir
@@ -63,7 +30,6 @@ class SimDataUtil:
                         file_data = PickleUtil(os.path.join(path, file)).safe_load()
                         if "dist_id" in file:
                             user_data["click_dist"] = file_data
-                            self.click_dist = file_data
                             continue
                         else:
                             data_value_names = {'errors', 'selections', 'characters', 'presses_sel', 'presses_char',
@@ -153,6 +119,7 @@ class SimDataUtil:
                     if legend is not None:
                         plt.text(x_pos/1.075, max_y+abs(max_y*0.0075), legend["multi"], fontsize=11)
 
+
         if legend is not None:
             plt.title(legend["title"])
             plt.xlabel(legend["x"])
@@ -167,19 +134,19 @@ class SimDataUtil:
             for param in user_data:
                 if param != "click_dist":
                     if param not in average_data:
-                        average_data[param] = {'errors': [], 'selections': [], 'characters': [], 'presses_sel': [],
+                        average_data[param] = {'errors': [], 'selections': [], 'characters': [], 'presses_word': [],
                                                'presses_char': []}
-                    for data_label in ['selections', 'characters', 'presses_sel', 'presses_char', 'errors']:
+                    for data_label in ['errors', 'selections', 'characters', 'presses_char', 'presses_word']:
                         average_data[param][data_label] += user_data[param][data_label]
 
-        data_labels = {'errors', 'selections', 'characters', 'presses_sel', 'presses_char'}
-        param_name_dict = {'num_words': "Word Predictions Max Count", 'time_rotate': "Time Rotate",
-                           'win_diff': "Win Difference", 'N_pred': "Words Per Character",
-                           'prob_thresh': "Probability Threshold", 'attribute': 'Attribute',
-                           'false_positive': 'False Positive Rate'}
+        data_labels = {'errors', 'selections', 'characters', 'presses_word', 'presses_char'}
+        param_name_dict = {'num_words': "Word Predictions Max Count", 'order': 'Keyboard Layout',
+                           'words_first': "Words First", 'attribute': 'Attribute', "false_positive": "False Positive Rate",
+                           "delay": "Delay", "scan_delay": "Scanning Delay", "easy_corpus": "Corpus"}
+
         var_name_dict = {'selections': "Selections/Min", 'characters': "Characters/Min",
                          'presses_char': "Clicks/Character",
-                         'presses_sel': "Clicks/Selection", 'errors': "Error Rate"}
+                         'presses_word': "Clicks/Word", 'errors': "Error Rate"}
 
         long_form_data = []
         for params in average_data.keys():
@@ -198,22 +165,28 @@ class SimDataUtil:
         df = pd.DataFrame(long_form_data)
         self.DF = df
 
+        # # self.DF["Adjusted Scanning Delay"] = self.DF["Scanning Delay"] != 0.5
+        # self.DF["Words First | Alpha Sorted"] = self.DF["Words First"]
+        # self.DF["Words First | Freq Sorted"] = self.DF["Words First"]
+
         self.average_DF = []
-        time_rotates = list(set(self.DF["Time Rotate"]))
+        time_rotates = list(set(self.DF["Scanning Delay"]))
         time_rotates.sort(key=lambda x: x)
 
         for tr in time_rotates:
-            DF = df[df["Time Rotate"] == tr]
+            DF = df[df["Scanning Delay"] == tr]
+
+            DF = DF.drop(columns=['Keyboard Layout', 'Corpus'])
             self.average_DF += [np.average(DF, axis=0)]
-        self.average_DF = pd.DataFrame(self.average_DF, columns=self.DF.columns)
-        self.average_DF["Time Rotate"] = np.round(self.average_DF["Time Rotate"], 2)
+        self.average_DF = pd.DataFrame(self.average_DF, columns=DF.columns)
+        self.average_DF["Scanning Delay"] = np.round(self.average_DF["Scanning Delay"], 2)
 
     def plot_across_params(self, params=None, sub_plot=None):
 
         ind_var_name = "Characters/Min"
 
         if params is None:
-            params = ['Error Rate', 'Selections/Min', 'Characters/Min', 'Clicks/Selection',
+            params=['Error Rate', 'Selections/Min', 'Characters/Min', 'Clicks/Selection',
                            'Clicks/Character', 'Error Rate']
 
         for dep_var_name in params:
@@ -230,8 +203,13 @@ class SimDataUtil:
             sns.set(font_scale=1.5, rc={"lines.linewidth": 3})
             sns.set_style({'font.serif': 'Helvetica'})
             if ind_var_name == "Word Predictions Max Count":
-                sns.lineplot(x=ind_var_name, y=dep_var_name, hue="Words Per Character",
-                             palette=sns.cubehelix_palette(3, start=2, rot=0.2, dark=.2, light=.7, reverse=True), data=DF, ci="sd")
+                sns.lineplot(x=ind_var_name, y=dep_var_name, hue="Words First | Freq Sorted",
+                             palette=sns.cubehelix_palette(2, start=2, rot=0.2, dark=.2, light=.7, reverse=True),
+                             data=DF[DF["Keyboard Layout"] == "sorted"], ci="sd", ax=ax)
+                sns.lineplot(x=ind_var_name, y=dep_var_name, hue="Words First | Alpha Sorted",
+                             palette=sns.cubehelix_palette(2, start=3, rot=0.2, dark=.2, light=.7, reverse=True),
+                             data=DF[DF["Keyboard Layout"] == 'default'], ci="sd", ax=ax)
+
             elif ind_var_name == "Left Context":
 
                 sns.violinplot(x=ind_var_name, y=dep_var_name, hue="Left Context", data=DF, inner="points", figsize=(10, 8))
@@ -252,39 +230,33 @@ class SimDataUtil:
                             data=DF, ci="sd")
 
             else:
-                hue_orders = list(set(self.DF["Time Rotate"]))
-                hue_orders.sort(key=lambda x: x)
                 sns.lineplot(x=ind_var_name, y=dep_var_name,
-                             data=self.average_DF, ax=ax, legend=False, color="rosybrown", alpha=0.3, sort=False)
+                             data=self.average_DF, ax=ax, legend=False, color="steelblue", alpha=0.3, sort=False)
 
-                g = sns.scatterplot(x=ind_var_name, y=dep_var_name, hue="Time Rotate",
-                                    palette=sns.cubehelix_palette(len(hue_orders), start=0, rot=0.4, dark=.3, light=.7,
-                                                                  reverse=False),
-                                    data=self.average_DF, ax=ax, s=100, legend=False, label="Nomon")
+                hue_orders = list(set(self.DF["Scanning Delay"]))
+                hue_orders.sort(key=lambda x: x)
+                sns.scatterplot(x=ind_var_name, y=dep_var_name, hue="Scanning Delay",
+                                palette=sns.cubehelix_palette(len(hue_orders), start=5, rot=0.4, dark=0.3, light=.7,
+                                                              reverse=False),
+                                data=self.average_DF, ax=ax, legend=False, s=100, label="Row Col")
+                fig.get_axes()[0].set_yscale('log')
 
-                g.legend(loc='upper right',  ncol=1)
-
-                leg = g.axes.get_legend()
-                # change legend texts
-                new_labels = ["Row Col Scan Delay", "Nomon Time Rotate"]
-                for t, l in zip(leg.texts, new_labels): t.set_text(l)
-
-                tr_min = self.average_DF["Time Rotate"][0]
+                tr_min = self.average_DF["Scanning Delay"][0]
                 tr_min_x = self.average_DF[ind_var_name][0]
                 tr_min_y = self.average_DF[dep_var_name][0]
 
-                tr_max = self.average_DF["Time Rotate"][len(self.average_DF)-1]
-                tr_max_x = self.average_DF[ind_var_name][len(self.average_DF)-1]
-                tr_max_y = self.average_DF[dep_var_name][len(self.average_DF)-1]
+                tr_max = self.average_DF["Scanning Delay"][len(self.average_DF) - 1]
+                tr_max_x = self.average_DF[ind_var_name][len(self.average_DF) - 1]
+                tr_max_y = self.average_DF[dep_var_name][len(self.average_DF) - 1]
 
-                plt.text(tr_min_x - 1, tr_min_y + 0.25, str(tr_min)+" (s)", fontsize=12)
-                plt.text(tr_max_x - 1, tr_max_y - 0.1, str(tr_max) + " (s)", fontsize=12)
+                plt.text(tr_min_x - 1, tr_min_y + 1, str(tr_min) + " (s)", fontsize=12)
+                plt.text(tr_max_x - 1, tr_max_y - 0.125, str(tr_max) + " (s)", fontsize=12)
 
-            plt.title(dep_var_name+" vs. "+ind_var_name)
 
-            plt.show()
+            # plt.title("Row Col: "+ dep_var_name+" vs. "+ind_var_name)
 
-        return fig, ax
+            # plt.show()
+            return fig, ax
 
 
 def order_data(dir):
@@ -305,16 +277,8 @@ def order_data(dir):
 
 
 def main():
-    rc_sdu = SimDataUtil_row_col("C:\\Users\\nickb\\PycharmProjects\\RowColScanner\\simulations\\scan_delay\\supercloud_results")
-    rc_sdu.plot_across_params(params=['Error Rate'])
-    plt.show()
-
-    # param = 'Error Rate'
-    param = 'Clicks/Character'
-    sub_plot = rc_sdu.plot_across_params(params=[param])
-
-    sdu = SimDataUtil("simulations/rotation_speed/supercloud_results")
-    sdu.plot_across_params(params=[param], sub_plot=sub_plot)
+    sdu = SimDataUtil_row_col("C:\\Users\\nickb\\PycharmProjects\\RowColScanner\\simulations\\scan_delay\\supercloud_results")
+    sdu.plot_across_params()
 
 
 if __name__ == '__main__':

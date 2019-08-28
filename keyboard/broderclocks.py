@@ -45,7 +45,6 @@ import config
 class BroderClocks:
     def __init__(self, parent):
         self.parent = parent
-        print(type(self.parent))
         self.parent.bc_init = True
         self.clock_inf = ClockInference(self.parent, self)
         

@@ -273,6 +273,7 @@ class SimulatedUser:
         self.gen_data_dir()
         for trial in range(trials):
             self.__init__(sub_call=True)
+            self.update_progress_bar(trial, trials, num_clicks)
 
             while self.num_presses < num_clicks:
                 text = self.phrases.sample()
@@ -282,12 +283,16 @@ class SimulatedUser:
                 self.num_chars += int(len(self.typed))
                 self.num_words += int(len(self.typed.split(" ")))
                 self.num_errors += calc_MSD(self.typed, text)[0]
-                print(calc_MSD(self.typed, text))
-
-                print(self.typed)
+                # print(calc_MSD(self.typed, text))
+                #
+                # print(self.typed)
                 self.typed = ""  # reset tracking and context for lm -- new sentence
 
+                self.update_progress_bar(trial, trials, num_clicks)
 
+            sys.stdout.write('\r')
+            sys.stdout.write(" \n")
+            sys.stdout.flush()
             print("selections per minute: ", self.num_selections / (self.time.time() / 60))
             print("characters per minute: ", self.num_chars / (self.time.time() / 60))
             print("presses per selection: ", self.num_presses / (self.num_selections + 1))
@@ -306,6 +311,14 @@ class SimulatedUser:
             self.kde_errors = []
 
         self.save_simulation_data(attribute=attribute)
+
+    def update_progress_bar(self, trial, trials, num_clicks):
+        progress = int((trial + self.num_presses / num_clicks) / trials * 50)
+
+        sys.stdout.write('\r')
+        # the exact output you're looking for:
+        sys.stdout.write("[%-50s] %d%%" % ('=' * progress, 2 * progress))
+        sys.stdout.flush()
 
     def update_sim_averages(self, num_trials):
 
@@ -367,7 +380,6 @@ class SimulatedUser:
                 if not success:
                     undo_depth = 1
                     while undo_depth > 0:
-                        print(undo_depth)
                         undo_clock = self.keys_li.index(kconfig.mybad_char) * (self.N_pred + 1) + self.N_pred
                         undo_success = self.select_clock(undo_clock, verbose=verbose, undo_depth=undo_depth)
 
@@ -432,7 +444,6 @@ class SimulatedUser:
                         return True
                     else:
                         self.num_errors += 1
-                        print("ERROR")
                         return False
                 else:
                     if undo_depth == 0:
@@ -1182,7 +1193,7 @@ def main():
     sim = SimulatedUser()
     params = {"N_pred": 3, "num_words": 17, "time_rotate": 18, "click_dist": click_dist}
 
-    sim.parameter_metrics(params, num_clicks=500, trials=1)
+    sim.parameter_metrics(params, num_clicks=500, trials=2)
 
 
 if __name__ == "__main__":

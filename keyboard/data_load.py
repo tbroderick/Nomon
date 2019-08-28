@@ -44,7 +44,7 @@ import numpy as np
 # data_dir = "D:\\Users\\nickb\\Study Data\\nomon_data\\951"
 # data_dir2 = "D:\\Users\\nickb\\Study Data\\row_col_data\\951"
 data_dir = "C:\\Users\\nickb\\AppData\\Local\\Nomon\\data\\999"
-data_dir2 = "C:\\Users\\nickb\\AppData\\Local\\RowCol\\data\\100"
+data_dir2 = "C:\\Users\\nickb\\AppData\\Local\\RowCol\\data\\999"
 
 
 def flatten(l):
@@ -52,14 +52,14 @@ def flatten(l):
 
 
 class DataUtil:
-    def __init__(self, data_dir):
+    def __init__(self, data_directory):
+        self.data_dir = data_directory
         self.phrase_util = Phrases("resources/comm2.dev")
         self.plot_colors = ["#0000ff", "#4400ff", "#8800ff", "#cc00ff", "#ff00cc", "#ff0088", "#ff0044"]
         self.click_data_files = []
         self.click_context_files = []
         self.preconfig_file = None
-        self.data_dir = data_dir
-        for path, dir, files in os.walk(data_dir):
+        for path, dir, files in os.walk(self.data_dir):
             for file in files:
                 if "click_time_log" in file:
                     self.click_data_files += [os.path.join(path, file)]
@@ -85,7 +85,8 @@ class DataUtil:
             data_handel = PickleUtil(data_file)
             click_dict = data_handel.safe_load()
             # size_list += [len(click_dict["click time list"])]
-            self.rel_click_data += [click[1] for click in click_dict["click time list"]]
+            print(click_dict["click time list"])
+            self.rel_click_data += [click[0] for click in click_dict["click time list"]]
 
         self.rel_click_data = np.array(self.rel_click_data)
 
@@ -274,9 +275,10 @@ class DataUtil:
         self.DF = DF
 
     def save_hist(self):
-        kernel = stats.gaussian_kde(self.corrected_clicks)
-        hist = kernel(np.arange(80))
-        PickleUtil(os.path.join(data_dir, "user_histogram.p")).safe_save(kernel)
+        kernel = stats.gaussian_kde(self.rel_click_data)  # rel_click_data
+        # hist = kernel(np.arange(80))
+        print(os.path.join(self.data_dir, "user_histogram.p"))
+        PickleUtil(os.path.join(self.data_dir, "user_histogram.p")).safe_save(kernel)
 
     def plot_data(self):
         fig = plt.figure()
@@ -293,8 +295,8 @@ class DataUtil:
             # ax.hist(clicks, 30, range=[0, 80], density=True, color=plot_color, alpha=0.3, label=plot_label)
 
             kernel = stats.gaussian_kde(clicks)
-            res = 10
-            plt.plot(np.arange(80*res)/res, kernel(np.arange(80*res)/res), color=plot_color, linewidth=2, label=plot_label)
+            res = 80
+            plt.plot(np.arange(2.5*res)/res, kernel(np.arange(2.5*res)/res), color=plot_color, linewidth=2, label=plot_label)
             plot_num += 1
 
             # plt.axvline(clicks_mean, color=plot_color, linestyle="--", alpha=0.8)
@@ -303,9 +305,9 @@ class DataUtil:
 
         if self.corrected_clicks is not None:
             kernel = stats.gaussian_kde(self.corrected_clicks)
-            res = 10
+            res = 80
             plot_label = "rotation_adj (" + str(len(self.corrected_clicks)) + " points)"
-            plt.plot(np.arange(80 * res) / res, kernel(np.arange(80 * res) / res), linestyle="--", color="0000", linewidth=2, label=plot_label)
+            plt.plot(np.arange(2.5 * res) / res, kernel(np.arange(2.5 * res) / res), linestyle="--", color="0000", linewidth=2, label=plot_label)
 
 
         # ax.bar(np.arange(self.kde_list.size), self.kde_list, fill=False, edgecolor='black', label="KDE")
@@ -420,20 +422,24 @@ class DataUtil:
 
 
 
-du = DataUtil(data_dir)
-du.load_data()
+# du = DataUtil(data_dir)
+# du.load_data()
 # du.split_data_speed()
 # du.correct_data_speed()
 # du.plot_data()
 # du.save_hist()
-du.split_data_phrase()
-du.make_data_frame()
+# du.split_data_phrase()
+# du.make_data_frame()
 
-# # du2 = DataUtil(data_dir2)
-# # du2.load_data()
+du2 = DataUtil(data_dir2)
+du2.load_data()
+du2.split_data_speed()
+# du2.correct_data_speed()
+du2.plot_data()
+du2.save_hist()
 # # du2.split_data_phrase()
 # # du2.make_data_frame()
 #
-du.print_stat_avg()
+# du.print_stat_avg()
 # du.plot_phrase_stats()
 # du.test_significance()
