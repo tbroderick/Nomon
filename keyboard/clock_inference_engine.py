@@ -10,6 +10,14 @@ from clock_util import ClockUtil
 import config
 
 
+def log_normalize(dist):
+    dist = np.array(dist)
+    log_sum = -float("inf")
+    for i in dist:
+        log_sum = np.logaddexp(log_sum, i)
+    return dist - log_sum
+
+
 class Entropy:
     
     def __init__(self, clock_inf):
@@ -120,15 +128,28 @@ class KernelDensityEstimation:
 
 class ClockInference:
     
-    def __init__(self, parent, bc, past_data = None):
+    def __init__(self, parent, bc, past_data=None, fast_select=False):
         self.parent = parent
         self.bc = bc
+        self.fast_select = fast_select
         self.clock_util = ClockUtil(self.parent, self.bc, self)
+
+
+        # if not self.fast_select:
         self.clocks_li = range(0, len(self.parent.clock_centers))
-        
+
         self.clocks_on = self.parent.words_on
+
         self.press_cscores = []
         self.cscores = [0] * len(self.parent.clock_centers)
+        # else:
+        #     self.clocks_li = range(0, 4)
+        #
+        #     self.clocks_on = list(range(4))
+        #
+        #     self.press_cscores = []
+        #     self.cscores = [0] * 4
+
         self.clock_locs = []
         self.prev_cscores = list(self.cscores)
         # NOT SUPER SURE - > OKAY TO BE SURE. DONE IN KEYBOARD RIGHT NOW
@@ -237,6 +258,21 @@ class ClockInference:
 
     # Determines if there exists a winner at the current moment
     def is_winner(self):
+
+        # if len(self.press_cscores) > 0:
+        #     prod_c_scores = np.sum(self.press_cscores, axis=0)
+        #     prod_c_scores = log_normalize(prod_c_scores)
+        #
+        #     argmax_pc_score = np.argmax(prod_c_scores)
+        #     max_pc_score = prod_c_scores[argmax_pc_score]
+        #
+        #     prod_c_scores[argmax_pc_score] = -float("inf")
+        #     max_pc_score_2 = np.max(prod_c_scores)
+        #
+        #     print("AAA", max_pc_score - max_pc_score_2)
+        #     if max_pc_score - max_pc_score_2 > config.win_diff_base:
+        #         print("WINNER: ")
+
         if self.bc.word_press_index >= 1:
             space_index = self.parent.keys_li.index(" ")
 
@@ -249,7 +285,7 @@ class ClockInference:
 
             space_prob = scores[space_index]
 
-            print(space_prob)
+            # print(space_prob)
             if space_prob > -2:
                 return True
         return False

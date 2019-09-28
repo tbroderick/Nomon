@@ -881,52 +881,65 @@ class MainKeyboardWidget(QtWidgets.QWidget):
                 self.clocks += word_clocks
                 self.clocks += [clock]
 
-    def update_clocks(self):  # Used to change text and turn off clocks after initialization
-        index = 0
-        word_clocks = []
-        for row in self.layout:
-            for text in row:
-                if text == kconfig.mybad_char:
-                    text = "Undo"
-                elif text == kconfig.back_char:
-                    text = "Backspace"
-                elif text == kconfig.clear_char:
-                    text = "Clear"
-                elif text == " ":
-                    text = "_"
-                words = self.get_words(text.lower())
-                for word in words:
-                    if word[:-1] in list(string.ascii_letters):
-                        word = word[0]+"_"
-                    if self.parent.word_pred_on == 1:
-                        word_clocks += [self.clocks[index]]
+    def update_clocks(self, fast_select=False, fast_words=None):  # Used to change text and turn off clocks after initialization
+        for clock in self.clocks:
+            clock.filler_clock = False
+        if fast_select:
+            for index in range(len(self.clocks)):
+                if index in self.parent.words_on and index < len(fast_words):
+                    self.clocks[index].set_text(fast_words[index])
                     self.clocks[index].filler_clock = False
-                    self.clocks[index].set_text(word)
-                    index += 1
-                for i in range(len(words), 3):
+                    self.clocks[index].update()
+                else:
                     self.clocks[index].set_text('')
                     self.clocks[index].filler_clock = True
                     self.clocks[index].update()
+        else:
+            index = 0
+            word_clocks = []
+            for row in self.layout:
+                for text in row:
+                    if text == kconfig.mybad_char:
+                        text = "Undo"
+                    elif text == kconfig.back_char:
+                        text = "Backspace"
+                    elif text == kconfig.clear_char:
+                        text = "Clear"
+                    elif text == " ":
+                        text = "_"
+                    words = self.get_words(text.lower())
+                    for word in words:
+                        if word[:-1] in list(string.ascii_letters):
+                            word = word[0]+"_"
+                        if self.parent.word_pred_on == 1:
+                            word_clocks += [self.clocks[index]]
+                        self.clocks[index].filler_clock = False
+                        self.clocks[index].set_text(word)
+                        index += 1
+                    for i in range(len(words), kconfig.N_pred):
+                        self.clocks[index].set_text('')
+                        self.clocks[index].filler_clock = True
+                        self.clocks[index].update()
+                        index += 1
+                    self.clocks[index].set_text(text)
                     index += 1
-                self.clocks[index].set_text(text)
-                index += 1
 
-        if self.parent.word_pred_on == 1:
-            word_clocks = word_clocks[:5]
-            print(word_clocks)
-            self.reduced_word_clock_indices = [self.clocks.index(clock) for clock in word_clocks]
-            for clock_num in range(len(word_clocks)):
-                shadow_clock = self.reduced_word_clocks[clock_num]
-                true_clock = self.clocks[self.reduced_word_clock_indices[clock_num]]
+            if self.parent.word_pred_on == 1:
+                word_clocks = word_clocks[:5]
+                print(word_clocks)
+                self.reduced_word_clock_indices = [self.clocks.index(clock) for clock in word_clocks]
+                for clock_num in range(len(word_clocks)):
+                    shadow_clock = self.reduced_word_clocks[clock_num]
+                    true_clock = self.clocks[self.reduced_word_clock_indices[clock_num]]
 
-                shadow_clock.set_text(true_clock.text)
-                shadow_clock.filler_clock = False
-            for clock_num in range(len(word_clocks), 5):
-                shadow_clock = self.reduced_word_clocks[clock_num]
-                shadow_clock.filler_clock = True
-                shadow_clock.set_text("")
-                shadow_clock.background = False
-                shadow_clock.repaint()
+                    shadow_clock.set_text(true_clock.text)
+                    shadow_clock.filler_clock = False
+                for clock_num in range(len(word_clocks), 5):
+                    shadow_clock = self.reduced_word_clocks[clock_num]
+                    shadow_clock.filler_clock = True
+                    shadow_clock.set_text("")
+                    shadow_clock.background = False
+                    shadow_clock.repaint()
 
         QtCore.QTimer.singleShot(200, self.parent.init_clocks)
 

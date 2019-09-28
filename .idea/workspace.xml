@@ -5,25 +5,24 @@
   </component>
   <component name="BookmarkManager">
     <bookmark url="file://$PROJECT_DIR$/keyboard/viterbi.py" line="233" />
+    <bookmark url="file://$PROJECT_DIR$/keyboard/click_dist_prob_test.py" line="13" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ac89ebe2-b77b-446b-80d2-81c517c20547" name="Default" comment="--added false posiitive simulation">
-      <change afterPath="$PROJECT_DIR$/keyboard/resources/click_distributions/0_hist.p" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/keyboard/resources/click_distributions/69_hist.p" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/keyboard/viterbi.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/keyboard/resources/click_distributions/999_kernel.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dictionaries/nickb.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/nickb.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/keyboard/broderclocks.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/broderclocks.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/keyboard/clock_inference_engine.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/clock_inference_engine.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/keyboard/clock_util.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/clock_util.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboard/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/config.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/keyboard/data_load.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/data_load.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboard/kconfig.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/kconfig.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboard/kenlm_lm.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/kenlm_lm.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/keyboard/keyboard.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/keyboard.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/keyboard/koester_data_load" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/koester_data_load" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/keyboard/mainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/mainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboard/predictor.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/predictor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboard/sim_data_load.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/sim_data_load.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/keyboard/pretraininginference.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/pretraininginference.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/keyboard/resources/koester_data.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/resources/koester_data.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/keyboard/simulated_user.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/simulated_user.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/keyboard/simulations/koester/reaction_time.png" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard/simulations/koester/reaction_time.png" afterDir="false" />
     </list>
     <list id="aa6254be-35a7-4291-8536-037b7fa13556" name="restart no longer needed for high contrast, profanity filter. consolidated user preference pickles, prompt for data save" comment="" />
     <ignored path="keyboard/pre study plots/" />
@@ -53,76 +52,31 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/keyboard/keyboard.py">
+        <entry file="file://$PROJECT_DIR$/keyboard/koester_data_load">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="354">
-              <caret line="642" column="39" lean-forward="true" selection-start-line="642" selection-start-column="39" selection-end-line="642" selection-end-column="39" />
+            <state relative-caret-position="108">
+              <caret line="6" column="18" selection-start-line="6" selection-start-column="18" selection-end-line="6" selection-end-column="18" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/keyboard/kenlm_lm.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="310">
+              <caret line="85" column="40" selection-start-line="85" selection-start-column="40" selection-end-line="85" selection-end-column="40" />
               <folding>
-                <element signature="e#872#890#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/keyboard/mainWindow.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="739">
-              <caret line="909" column="30" selection-start-line="909" selection-start-column="30" selection-end-line="909" selection-end-column="30" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/keyboard/viterbi.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="234">
-              <caret line="286" column="32" lean-forward="true" selection-start-line="286" selection-start-column="32" selection-end-line="286" selection-end-column="32" />
-              <folding>
-                <element signature="e#38#72#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/keyboard/kconfig.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="360">
-              <caret line="36" column="22" lean-forward="true" selection-start-line="36" selection-start-column="22" selection-end-line="36" selection-end-column="22" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/keyboard/broderclocks.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="335">
-              <caret line="145" column="41" selection-start-line="145" selection-start-column="41" selection-end-line="145" selection-end-column="41" />
-              <folding>
-                <element signature="e#108#139#0" expanded="true" />
+                <element signature="e#364#378#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/keyboard/clock_inference_engine.py">
+        <entry file="file://$PROJECT_DIR$/keyboard/predictor.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="236">
-              <caret line="241" lean-forward="true" selection-start-line="241" selection-end-line="241" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/keyboard/clock_util.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="313">
-              <caret line="97" column="29" lean-forward="true" selection-start-line="97" selection-start-column="29" selection-end-line="97" selection-end-column="29" />
-              <folding>
-                <element signature="e#0#31#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="234">
+              <caret line="15" column="66" lean-forward="true" selection-start-line="15" selection-start-column="66" selection-end-line="15" selection-end-column="66" />
             </state>
           </provider>
         </entry>
@@ -138,23 +92,12 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>on pause</find>
-      <find>on_press</find>
-      <find>in_pause</find>
-      <find>config</find>
-      <find>config.win_diff_base</find>
-      <find>verbose=False</find>
-      <find>prefix</find>
-      <find>time.</find>
-      <find>t</find>
-      <find>time</find>
       <find>verbose=True</find>
       <find>Conte</find>
       <find>Vocab does n</find>
       <find>print</find>
       <find>sess</find>
       <find>error rate</find>
-      <find>print(</find>
       <find>false</find>
       <find>hello</find>
       <find>N_p</find>
@@ -168,6 +111,17 @@
       <find>where(</find>
       <find>num_d</find>
       <find>viterbi</find>
+      <find>Pick</find>
+      <find>main</find>
+      <find>on_timer</find>
+      <find>cur_hour</find>
+      <find>prin</find>
+      <find>print(</find>
+      <find>on_press</find>
+      <find>clock_centers</find>
+      <find>update_curhours</find>
+      <find>words_on</find>
+      <find>update_cur</find>
     </findStrings>
     <replaceStrings>
       <replace>self.key_chars</replace>
@@ -232,9 +186,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/data_load.py" />
-        <option value="$PROJECT_DIR$/simulated_user.py" />
-        <option value="$PROJECT_DIR$/keyboard/pickle_util.py" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_11.py" />
         <option value="$PROJECT_DIR$/keyboard/simulations/bimodal/inc_bimodal.py" />
         <option value="$PROJECT_DIR$/keyboard/dtree.py" />
@@ -264,32 +215,35 @@
         <option value="$PROJECT_DIR$/keyboard/simulations/rotation_speed/rotation_speed.py" />
         <option value="$PROJECT_DIR$/keyboard/run_parallel.py" />
         <option value="$PROJECT_DIR$/keyboard/simulations/false_positive/sim_false_positive.sh" />
-        <option value="$PROJECT_DIR$/keyboard/simulated_user.py" />
         <option value="$PROJECT_DIR$/keyboard/simulations/false_positive/false_positive.py" />
         <option value="$PROJECT_DIR$/keyboard/sim_data_load.py" />
         <option value="$PROJECT_DIR$/viterbi.py" />
         <option value="$PROJECT_DIR$/keyboard/predictor.py" />
         <option value="$PROJECT_DIR$/keyboard/config.py" />
         <option value="$PROJECT_DIR$/koester_data_load" />
-        <option value="$PROJECT_DIR$/keyboard/koester_data_load" />
-        <option value="$PROJECT_DIR$/keyboard/data_load.py" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_13.py" />
-        <option value="$PROJECT_DIR$/keyboard/mainWindow.py" />
         <option value="$PROJECT_DIR$/keyboard/kconfig.py" />
         <option value="$PROJECT_DIR$/keyboard/kenlm_lm.py" />
-        <option value="$PROJECT_DIR$/keyboard/keyboard.py" />
         <option value="$PROJECT_DIR$/keyboard/viterbi.py" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_1.txt" />
-        <option value="$PROJECT_DIR$/keyboard/clock_util.py" />
-        <option value="$PROJECT_DIR$/keyboard/broderclocks.py" />
+        <option value="$PROJECT_DIR$/click_dist_prob_test.py" />
+        <option value="$PROJECT_DIR$/keyboard/click_dist_prob_test.py" />
+        <option value="$PROJECT_DIR$/keyboard/simulated_user.py" />
         <option value="$PROJECT_DIR$/keyboard/clock_inference_engine.py" />
+        <option value="$PROJECT_DIR$/keyboard/mainWindow.py" />
+        <option value="$PROJECT_DIR$/keyboard/keyboard.py" />
+        <option value="$PROJECT_DIR$/keyboard/clock_util.py" />
+        <option value="$PROJECT_DIR$/keyboard/pretraininginference.py" />
+        <option value="$PROJECT_DIR$/keyboard/broderclocks.py" />
+        <option value="$PROJECT_DIR$/keyboard/data_load.py" />
+        <option value="$PROJECT_DIR$/keyboard/koester_data_load" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-15" />
-    <option name="width" value="925" />
-    <option name="height" value="595" />
+    <option name="x" value="-14" />
+    <option name="width" value="773" />
+    <option name="height" value="498" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -311,12 +265,13 @@
             </path>
             <path>
               <item name="Nomon" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Scratches and Consoles" type="1a2a3e82:ScratchProjectViewPane$MyProjectNode" />
+              <item name="Nomon" type="462c0819:PsiDirectoryNode" />
+              <item name="keyboard" type="462c0819:PsiDirectoryNode" />
+              <item name="resources" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="Nomon" type="b2602c69:ProjectViewProjectNode" />
               <item name="Scratches and Consoles" type="1a2a3e82:ScratchProjectViewPane$MyProjectNode" />
-              <item name="Scratches" type="d62648e6:ScratchProjectViewPane$MyRootNode" />
             </path>
           </expand>
           <select />
@@ -345,11 +300,11 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="TEXT&#10;Python" />
     <property name="full.screen.before.presentation.mode" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/keyboard/resources/click_distributions" />
+    <property name="last_opened_file_path" value="D:/Users/nickb/OneDrive/Documents/MIT/6006" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
-    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Ignored.Files" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
@@ -361,19 +316,19 @@
     <option name="myShowVariablesByDefault" value="false" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard" />
-      <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard\resources" />
-      <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard\simulations\language_model\supercloud_results_2" />
-      <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard\simulations\language_model" />
-      <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard\simulations\language_model\supercloud_results" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard\resources\click_distributions" />
       <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard\resources" />
       <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard\simulations" />
       <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard\simulations\rotation_speed\click_distributions" />
       <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard\simulations\phrase_corpus" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard" />
+      <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard\resources" />
+      <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard\simulations\language_model\supercloud_results_2" />
+      <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard\simulations\language_model" />
+      <recent name="C:\Users\nickb\PycharmProjects\Nomon\keyboard\simulations\language_model\supercloud_results" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -388,7 +343,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.keyboard">
+  <component name="RunManager" selected="Python.kenlm_lm">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="Nomon" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -433,7 +388,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="clock_inference_engine" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="data_load" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="Nomon" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -446,7 +401,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/keyboard/clock_inference_engine.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/keyboard/data_load.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -455,7 +410,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="clock_util" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="kenlm_lm" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="Nomon" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -468,7 +423,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/keyboard/clock_util.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/keyboard/kenlm_lm.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -499,7 +454,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="viterbi (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="koester_data_load" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="Nomon" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -512,7 +467,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/keyboard/viterbi.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/keyboard/koester_data_load" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -522,19 +477,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.viterbi (1)" />
       <item itemvalue="Python.keyboard" />
       <item itemvalue="Python.broderclocks" />
-      <item itemvalue="Python.clock_inference_engine" />
-      <item itemvalue="Python.clock_util" />
+      <item itemvalue="Python.koester_data_load" />
+      <item itemvalue="Python.data_load" />
+      <item itemvalue="Python.kenlm_lm" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.kenlm_lm" />
+        <item itemvalue="Python.koester_data_load" />
+        <item itemvalue="Python.data_load" />
         <item itemvalue="Python.keyboard" />
-        <item itemvalue="Python.clock_util" />
         <item itemvalue="Python.broderclocks" />
-        <item itemvalue="Python.clock_inference_engine" />
-        <item itemvalue="Python.viterbi (1)" />
       </list>
     </recent_temporary>
   </component>
@@ -604,6 +559,14 @@
       <workItem from="1566233560891" duration="18308000" />
       <workItem from="1566276610104" duration="2470000" />
       <workItem from="1566318563730" duration="18381000" />
+      <workItem from="1567003415494" duration="5084000" />
+      <workItem from="1567048945569" duration="34156000" />
+      <workItem from="1567704607617" duration="7485000" />
+      <workItem from="1567801340274" duration="18417000" />
+      <workItem from="1568085009022" duration="2632000" />
+      <workItem from="1568232668662" duration="1645000" />
+      <workItem from="1568387794641" duration="2810000" />
+      <workItem from="1569696099007" duration="2842000" />
     </task>
     <task id="LOCAL-00023" summary="Working Installer included">
       <created>1534266749869</created>
@@ -952,7 +915,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="636288000" />
+    <option name="totallyTimeSpent" value="711359000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -964,21 +927,20 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-7" y="-7" width="2062" height="1254" extended-state="6" />
-    <editor active="true" />
+    <frame x="-7" y="-7" width="1519" height="977" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49718785" visible="true" weight="0.16766468" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49718785" visible="true" weight="0.1321013" />
       <window_info id="Structure" order="1" sideWeight="0.5022971" side_tool="true" weight="0.2532512" />
       <window_info id="Favorites" order="2" sideWeight="0.50281215" side_tool="true" weight="0.16467066" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32502225" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.6207585" visible="true" weight="0.25022262" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.5699523" weight="0.3837934" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.6207585" visible="true" weight="0.20567375" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.5699523" weight="0.38290295" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="Messages" order="6" />
       <window_info anchor="bottom" id="TODO" order="7" weight="0.32827735" />
-      <window_info anchor="bottom" id="Version Control" order="8" sideWeight="0.53418124" weight="0.2901099" />
+      <window_info anchor="bottom" id="Version Control" order="8" sideWeight="0.53418124" weight="0.2895981" />
       <window_info anchor="bottom" id="Inspection Results" order="9" sideWeight="0.49960968" weight="0.3298969" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.37924153" side_tool="true" weight="0.28138915" />
       <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
@@ -994,18 +956,18 @@
       <window_info anchor="right" id="SciView" order="6" weight="0.5" />
     </layout>
     <layout-to-restore>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49718785" visible="true" weight="0.16467066" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49718785" visible="true" weight="0.1736527" />
       <window_info id="Structure" order="1" sideWeight="0.5022971" side_tool="true" weight="0.2532512" />
       <window_info id="Favorites" order="2" sideWeight="0.50281215" side_tool="true" weight="0.16467066" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32502225" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.6207585" visible="true" weight="0.20837043" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.5699523" weight="0.38468388" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.6207585" visible="true" weight="0.2733749" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.5699523" weight="0.38297874" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="Messages" order="6" />
       <window_info anchor="bottom" id="TODO" order="7" weight="0.32827735" />
-      <window_info anchor="bottom" id="Version Control" order="8" sideWeight="0.53418124" weight="0.2901099" />
+      <window_info anchor="bottom" id="Version Control" order="8" sideWeight="0.53418124" weight="0.2895981" />
       <window_info anchor="bottom" id="Inspection Results" order="9" sideWeight="0.49960968" weight="0.3298969" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.37924153" side_tool="true" weight="0.28138915" />
       <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
@@ -1105,6 +1067,13 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/keyboard/clock_util.py</url>
+          <line>70</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnlyOnFirst="true" notifyOnTerminate="true" ignoreLibraries="true" exception="BaseException">
@@ -1119,6 +1088,7 @@
       <configuration name="PythonConfigurationType">
         <watch expression="event" />
         <watch expression="prev_data" />
+        <watch expression="self.arr" />
       </configuration>
     </watches-manager>
   </component>
@@ -1127,9 +1097,9 @@
     <SUITE FILE_PATH="coverage/Nomon$text_test.coverage" NAME="text_test Coverage Results" MODIFIED="1562616934401" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$run_parallel.coverage" NAME="run_parallel Coverage Results" MODIFIED="1565123305806" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Nomon$scratch_13.coverage" NAME="scratch_13 Coverage Results" MODIFIED="1565895488348" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
-    <SUITE FILE_PATH="coverage/Nomon$broderclocks.coverage" NAME="broderclocks Coverage Results" MODIFIED="1566278355261" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
+    <SUITE FILE_PATH="coverage/Nomon$broderclocks.coverage" NAME="broderclocks Coverage Results" MODIFIED="1568083820071" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$config.coverage" NAME="config Coverage Results" MODIFIED="1564426691426" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
-    <SUITE FILE_PATH="coverage/Nomon$koester_data_load.coverage" NAME="koester_data_load Coverage Results" MODIFIED="1565795051849" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Nomon$koester_data_load.coverage" NAME="koester_data_load Coverage Results" MODIFIED="1568389935765" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$kconfig.coverage" NAME="kconfig Coverage Results" MODIFIED="1563815344126" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$viterbi.coverage" NAME="viterbi Coverage Results" MODIFIED="1565376601204" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Nomon$phrase_corpus.coverage" NAME="phrase_corpus Coverage Results" MODIFIED="1564587654362" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard/simulations/phrase_corpus" />
@@ -1138,23 +1108,24 @@
     <SUITE FILE_PATH="coverage/Nomon$false_positive.coverage" NAME="false_positive Coverage Results" MODIFIED="1565193558321" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard/simulations/false_positive" />
     <SUITE FILE_PATH="coverage/Nomon$dtree.coverage" NAME="dtree Coverage Results" MODIFIED="1555819102050" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$param_opt.coverage" NAME="param_opt Coverage Results" MODIFIED="1563817066392" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard/simulations/win_diff" />
-    <SUITE FILE_PATH="coverage/Nomon$data_load.coverage" NAME="data_load Coverage Results" MODIFIED="1565891294650" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
+    <SUITE FILE_PATH="coverage/Nomon$data_load.coverage" NAME="data_load Coverage Results" MODIFIED="1568388550606" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$viterbi__1_.coverage" NAME="viterbi (1) Coverage Results" MODIFIED="1566249748480" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$predictor.coverage" NAME="predictor Coverage Results" MODIFIED="1565649377893" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$run_parallel__1_.coverage" NAME="run_parallel (1) Coverage Results" MODIFIED="1565125110923" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$rotation_speed__1_.coverage" NAME="rotation_speed (1) Coverage Results" MODIFIED="1564586589018" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard/simulations/phrase_corpus" />
-    <SUITE FILE_PATH="coverage/Nomon$clock_util.coverage" NAME="clock_util Coverage Results" MODIFIED="1566367013716" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
+    <SUITE FILE_PATH="coverage/Nomon$clock_util.coverage" NAME="clock_util Coverage Results" MODIFIED="1567204402223" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$inc_var.coverage" NAME="inc_var Coverage Results" MODIFIED="1555525238400" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard/simulations/increasing_variance" />
-    <SUITE FILE_PATH="coverage/Nomon$keyboard.coverage" NAME="keyboard Coverage Results" MODIFIED="1566368554552" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
-    <SUITE FILE_PATH="coverage/Nomon$mainWindow.coverage" NAME="mainWindow Coverage Results" MODIFIED="1562788606744" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
+    <SUITE FILE_PATH="coverage/Nomon$keyboard.coverage" NAME="keyboard Coverage Results" MODIFIED="1568085465215" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$vocabtrie.coverage" NAME="vocabtrie Coverage Results" MODIFIED="1565119016119" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$sim_data_load.coverage" NAME="sim_data_load Coverage Results" MODIFIED="1565196200466" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
+    <SUITE FILE_PATH="coverage/Nomon$click_dist_prob_test.coverage" NAME="click_dist_prob_test Coverage Results" MODIFIED="1567193785233" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
+    <SUITE FILE_PATH="coverage/Nomon$mainWindow.coverage" NAME="mainWindow Coverage Results" MODIFIED="1568082184888" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$language.coverage" NAME="language Coverage Results" MODIFIED="1563742672179" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard/simulations/language_model" />
     <SUITE FILE_PATH="coverage/Nomon$widgets.coverage" NAME="widgets Coverage Results" MODIFIED="1562789100627" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
     <SUITE FILE_PATH="coverage/Nomon$rotation_speed.coverage" NAME="rotation_speed Coverage Results" MODIFIED="1565124134623" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard/simulations/rotation_speed" />
     <SUITE FILE_PATH="coverage/Nomon$phrases.coverage" NAME="phrases Coverage Results" MODIFIED="1564586814009" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
-    <SUITE FILE_PATH="coverage/Nomon$kenlm_lm.coverage" NAME="kenlm_lm Coverage Results" MODIFIED="1565033926085" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
-    <SUITE FILE_PATH="coverage/Nomon$clock_inference_engine.coverage" NAME="clock_inference_engine Coverage Results" MODIFIED="1566255331209" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
+    <SUITE FILE_PATH="coverage/Nomon$kenlm_lm.coverage" NAME="kenlm_lm Coverage Results" MODIFIED="1569699234469" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
+    <SUITE FILE_PATH="coverage/Nomon$clock_inference_engine.coverage" NAME="clock_inference_engine Coverage Results" MODIFIED="1567185909206" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/keyboard" />
   </component>
   <component name="debuggerHistoryManager">
     <expressions id="setValue">
@@ -1171,43 +1142,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/keyboard/phrases.py" />
-    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/seaborn/relational.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="178">
-          <caret line="1077" selection-start-line="1077" selection-end-line="1077" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/simulations/rotation_speed/click_distributions/999_kernel.p" />
-    <entry file="file://$PROJECT_DIR$/keyboard/vocabtrie.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="234">
-          <caret line="13" column="29" lean-forward="true" selection-start-line="13" selection-start-column="29" selection-end-line="13" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/multiprocessing/context.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="394">
-          <caret line="130" column="50" lean-forward="true" selection-start-line="130" selection-start-column="50" selection-end-line="130" selection-end-column="50" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/simulations/increasing_variance/inc_var.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="162">
-          <caret line="10" selection-start-line="10" selection-end-line="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/simulations/rotation_speed/sim_rotation_speed.sh">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="108">
-          <caret line="6" column="32" selection-start-line="6" selection-start-column="32" selection-end-line="6" selection-end-column="32" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/keyboard/simulations/rotation_speed/plots/sel_min.png" />
     <entry file="file://$PROJECT_DIR$/keyboard/simulations/rotation_speed/plots/char_min.png" />
     <entry file="file://$PROJECT_DIR$/keyboard/simulations/rotation_speed/rotation_speed.py">
@@ -1221,7 +1155,6 @@
     <entry file="file://$PROJECT_DIR$/keyboard/simulations/false_positive/false_positive.py" />
     <entry file="file://$PROJECT_DIR$/keyboard/resources/click_distributions/0_hist.p" />
     <entry file="file://$PROJECT_DIR$/keyboard/resources/click_distributions/69_hist.p" />
-    <entry file="file://$PROJECT_DIR$/keyboard/resources/click_distributions/999_kernel.p" />
     <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/matplotlib/axes/_axes.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="266">
@@ -1233,13 +1166,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="266">
           <caret line="350" selection-start-line="350" selection-end-line="350" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/simulated_user.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="185">
-          <caret line="1080" column="20" lean-forward="true" selection-start-line="1080" selection-start-column="20" selection-end-line="1080" selection-end-column="20" />
         </state>
       </provider>
     </entry>
@@ -1257,22 +1183,8 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/predictor.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="467">
-          <caret line="251" column="52" selection-start-line="251" selection-start-column="52" selection-end-line="251" selection-end-column="52" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/keyboard/resources/all_lower_nopunc.txt">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/config.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="44" column="13" lean-forward="true" selection-start-line="44" selection-start-column="13" selection-end-line="44" selection-end-column="13" />
-        </state>
-      </provider>
     </entry>
     <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/pandas/io/excel.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -1295,7 +1207,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/koester_data_load" />
     <entry file="file://$PROJECT_DIR$/keyboard/simulations/false_positive/plots/error.png" />
     <entry file="file://$PROJECT_DIR$/keyboard/simulations/false_positive/plots/selections.png" />
     <entry file="file://$PROJECT_DIR$/keyboard/simulations/false_positive/plots/press_char.png" />
@@ -1311,7 +1222,6 @@
     <entry file="file://$PROJECT_DIR$/keyboard/simulations/rotation_speed/plots/error.png">
       <provider selected="true" editor-type-id="images" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/simulations/koester/reaction_time.png" />
     <entry file="file://$PROJECT_DIR$/keyboard/run_parallel.py" />
     <entry file="file://$PROJECT_DIR$/keyboard/simulations/param_opt/param_opt.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -1328,40 +1238,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/kenlm_lm.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="207">
-          <caret line="82" selection-start-line="82" selection-end-line="82" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/data_load.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6840">
-          <caret line="389" selection-start-line="389" selection-end-line="389" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/mainWindow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="739">
-          <caret line="909" column="30" selection-start-line="909" selection-start-column="30" selection-end-line="909" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/viterbi.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="234">
-          <caret line="286" column="32" lean-forward="true" selection-start-line="286" selection-start-column="32" selection-end-line="286" selection-end-column="32" />
-          <folding>
-            <element signature="e#38#72#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_1.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="72">
@@ -1369,47 +1245,173 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/keyboard.py">
+    <entry file="file://$PROJECT_DIR$/keyboard/setup.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="354">
-          <caret line="642" column="39" lean-forward="true" selection-start-line="642" selection-start-column="39" selection-end-line="642" selection-end-column="39" />
+        <state relative-caret-position="306">
+          <caret line="17" column="27" lean-forward="true" selection-start-line="17" selection-start-column="27" selection-end-line="17" selection-end-column="27" />
           <folding>
-            <element signature="e#872#890#0" expanded="true" />
+            <element signature="e#0#14#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/kconfig.py">
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/numpy/lib/shape_base.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="263">
+          <caret line="242" selection-start-line="242" selection-end-line="242" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/resources/click_distributions/999_kernel.p">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/click_dist_prob_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="515">
+          <caret line="49" column="50" lean-forward="true" selection-start-line="49" selection-start-column="50" selection-end-line="49" selection-end-column="50" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/pandas/util/_decorators.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="263">
+          <caret line="187" selection-start-line="187" selection-end-line="187" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/simulated_user.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15408">
+          <caret line="870" column="8" selection-start-line="870" selection-start-column="8" selection-end-line="870" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/genericpath.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="360">
-          <caret line="36" column="22" lean-forward="true" selection-start-line="36" selection-start-column="22" selection-end-line="36" selection-end-column="22" />
+          <caret line="21" selection-start-line="21" selection-end-line="21" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/keyboard/clock_util.py">
+    <entry file="file://$PROJECT_DIR$/keyboard/mainWindow.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="313">
-          <caret line="97" column="29" lean-forward="true" selection-start-line="97" selection-start-column="29" selection-end-line="97" selection-end-column="29" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="15642">
+          <caret line="882" selection-start-line="882" selection-end-line="882" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/keyboard/broderclocks.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="335">
-          <caret line="145" column="41" selection-start-line="145" selection-start-column="41" selection-end-line="145" selection-end-column="41" />
+        <state relative-caret-position="2682">
+          <caret line="157" column="57" selection-start-line="157" selection-start-column="57" selection-end-line="157" selection-end-column="57" />
           <folding>
             <element signature="e#108#139#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/data_load.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="19" selection-start-line="19" selection-end-line="19" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/simulations/koester/reaction_time.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/pickle_util.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1296">
+          <caret line="73" selection-start-line="73" selection-end-line="73" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/clock_util.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1548">
+          <caret line="95" selection-start-line="95" selection-end-line="95" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/pretraininginference.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2934">
+          <caret line="173" column="10" selection-start-line="173" selection-start-column="10" selection-end-line="173" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/keyboard/clock_inference_engine.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="236">
-          <caret line="241" lean-forward="true" selection-start-line="241" selection-end-line="241" />
+        <state relative-caret-position="2592">
+          <caret line="147" column="45" selection-start-line="147" selection-start-column="45" selection-end-line="147" selection-end-column="45" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/viterbi.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4428">
+          <caret line="254" column="59" selection-start-line="254" selection-start-column="59" selection-end-line="254" selection-end-column="59" />
+          <folding>
+            <element signature="e#38#72#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/kconfig.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1872">
+          <caret line="105" column="10" selection-start-line="105" selection-start-column="10" selection-end-line="105" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/config.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2070">
+          <caret line="118" column="4" selection-start-line="118" selection-start-column="2" selection-end-line="118" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/keyboard.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="478">
+          <caret line="1133" column="22" selection-start-line="1133" selection-start-column="22" selection-end-line="1133" selection-end-column="22" />
+          <folding>
+            <element signature="e#872#890#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/koester_data_load">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="108">
+          <caret line="6" column="18" selection-start-line="6" selection-start-column="18" selection-end-line="6" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/kenlm_lm.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="310">
+          <caret line="85" column="40" selection-start-line="85" selection-start-column="40" selection-end-line="85" selection-end-column="40" />
+          <folding>
+            <element signature="e#364#378#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/keyboard/predictor.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="234">
+          <caret line="15" column="66" lean-forward="true" selection-start-line="15" selection-start-column="66" selection-end-line="15" selection-end-column="66" />
         </state>
       </provider>
     </entry>

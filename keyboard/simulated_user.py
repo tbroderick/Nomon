@@ -660,7 +660,7 @@ class SimulatedUser:
             index += 1
         self.typed_versions = ['']
 
-    def draw_words(self):
+    def draw_words(self, fast_words=None):
         if self.lm_left_context:
             lm_left_context = self.left_context
         else:

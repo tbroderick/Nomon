@@ -178,6 +178,7 @@ class PreClockUtil(ClockUtil):
 class PretrainingInference:
 
     def __init__(self, parent, pbc, past_data=None):
+        self.fast_select=False
         self.parent = parent
         self.pbc = pbc
         self.pre_clock_util = PreClockUtil(self.parent, self.pbc, self)

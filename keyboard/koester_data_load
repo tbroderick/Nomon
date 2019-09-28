@@ -8,51 +8,77 @@ import numpy as np
 import math
 
 
-df = pd.read_excel('resources/koester_data.xlsx', sheetname='Sheet1')
+DF = pd.read_excel('resources/koester_data.xlsx', sheetname='Sheet1')
 
-print("Column headings:", list(df.columns))
 
+def calc_percentile(kernel, percentile, resolution=0.001):
+    pdf = kernel(np.arange(1/resolution)*2.1)
+
+    cdf = np.cumsum(pdf*2.1)
+    return np.min(np.where(cdf >= percentile))*2.1
+
+
+def plot_data(data, color="rosybrown", label="Response Time"):
+    kernel = stats.gaussian_kde(data)
+    percentile_95 = calc_percentile(kernel, 0.95)
+
+    x = np.arange(0, 2100, 1)
+    plt.plot(x, kernel(x), lw=3, label=label, c=color)
+
+    avg_mean = np.average(data)
+
+    avg_std = np.std(data)
+
+    plt.axvline(avg_mean, color=color, linestyle="--", alpha=0.8, label="Mean ("+str(int(avg_mean))+")", linewidth=2)
+    # for i in [-1, 1]:
+    #     plt.axvline(avg_mean + i * avg_std, color=color, linestyle=":", alpha=0.6)
+
+    plt.axvline(percentile_95, color="k", linestyle=":", label="95th Percentile (" + str(int(percentile_95)) + ")")
+
+    for quantile in range(1, 4):
+        percentile_95 = calc_percentile(kernel, quantile/4)
+        if quantile == 1:
+            plt.axvline(percentile_95, linestyle=":", alpha=0.8, color=color, label="Quantiles 1-4")
+        else:
+            plt.axvline(percentile_95, linestyle=":", alpha=0.8, color=color)
 fig, ax = plt.subplots()
 fig.set_size_inches(10, 8)
 
-for phase_num in list(range(1, 3)):
-    phase_data = df[df['phase'] == phase_num][['avgTrialTime', 'sdTrialTime']]
 
-    x = np.arange(0, 3000, 1)
-    pdf_values = np.zeros(x.shape)
-    for point in phase_data.values:
-        mean, std = point
-        pdf_values += stats.norm(mean, std).pdf(x)
+df = DF[DF["phase"] == "all"]
 
-    pdf_values /= np.sum(pdf_values)
+print("Column headings:", list(df.columns))
 
+mi_data = df[df['MI'] == True]
+mi_response_data = mi_data["avgResponseTime"].values
 
-    color = ["darkslategrey", "cadetblue"][phase_num-1]
-    ax.plot(x, pdf_values, lw=3, label="Trial Time: "+str(phase_num) + " press", c=color)
+n = len(mi_response_data)
 
-    avg_mean = np.average(phase_data.values.T[0])
+mu = np.mean(mi_response_data)
+sigma = np.std(mi_response_data)
+gamma = (np.sum((mi_response_data - mu)**3)/n)/(sigma**3)
 
-    avg_std = np.sqrt(np.average(np.square(phase_data.values.T[1])))
+print(mu, sigma, gamma)
 
-    plt.axvline(avg_mean, color=color, linestyle="--", alpha=0.8)
-    for i in [-1,1]:
-        plt.axvline(avg_mean + i*avg_std, color=color, linestyle=":", alpha=0.6)
-# plt.show()
+# mu_hat = mu - sigma(gamma/2)**(1/3)
+sigma_hat = np.sqrt(sigma**2*(1 - (gamma/2)**(2/3)))
+lam_hat = 1/(sigma*(gamma/2)**1/3)
 
-response_time_data = df['avgResponseTime'].values[np.where(np.isnan(df['avgResponseTime'].values) == False)]
-kernel = stats.gaussian_kde(response_time_data)
-x = np.arange(0, 2500, 1)
-plt.plot(x, kernel(x), lw=3, label="Response Time", c="rosybrown")
+print(sigma_hat, lam_hat)
+x = np.arange(0, 3000, 1)
+ex_gauss = stats.exponnorm.pdf(x, K=1/(sigma_hat*lam_hat), loc=mu, scale=sigma_hat)
 
-avg_mean = np.average(response_time_data)
-
-avg_std = np.std(response_time_data)
-
-plt.axvline(avg_mean, color="rosybrown", linestyle="--", alpha=0.8)
-for i in [-1,1]:
-    plt.axvline(avg_mean + i*avg_std, color="rosybrown", linestyle=":", alpha=0.6)
-
-plt.legend()
-plt.xlabel("Time (ms)")
-plt.ylabel("probability")
+ax.plot(x, ex_gauss, 'k-', lw=2, label='frozen pdf')
 plt.show()
+# plot_data(mi_response_data, label="Response Time Motor-Impaired")
+#
+# nmi_data = df[df['MI'] == False]
+# nmi_response_data = nmi_data["avgResponseTime"].values
+# plot_data(nmi_response_data, color="steelblue", label="Response Time Able-Bodied")
+#
+#
+# plt.legend()
+# plt.xlabel("Time (ms)")
+# plt.ylabel("probability")
+# plt.title("Reaction Times of Motor-Impaired and Able-Bodied Participants")
+# plt.show()

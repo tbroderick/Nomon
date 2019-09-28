@@ -16,12 +16,13 @@ import viterbi
 
 
 class BroderClocks:
-    def __init__(self, parent):
+    def __init__(self, parent, fast_select=False):
         self.parent = parent
         self.word_press_index = -1
         print(type(self.parent))
         self.parent.bc_init = True
-        self.clock_inf = ClockInference(self.parent, self)
+        self.fast_select = fast_select
+        self.clock_inf = ClockInference(self.parent, self, fast_select=fast_select)
         
         self.is_undo = False
         self.is_equalize = False
@@ -115,7 +116,7 @@ class BroderClocks:
             self.save_when_quit_noconsent()
 
     def select(self):
-        print(len(self.clock_inf.cscores))
+
         ####CLOCKUTIL에서 달라진 INCREMTNT, 달라진 KDE, 달라진 SCOREFUNCTION 갖다 바꾸기
         if self.parent.is_simulation:
             time_in = self.parent.time.time()
@@ -124,8 +125,8 @@ class BroderClocks:
         # update scores of each clock
         self.clock_inf.update_scores(time_in - self.latest_time)
         # update history of key presses
-        if config.is_learning:
-            self.clock_inf.update_history(time_in - self.latest_time)
+        # if config.is_learning:
+        #     self.clock_inf.update_history(time_in - self.latest_time)
         
         #Save selected time into file
         top_score_clock = self.clock_inf.sorted_inds[0]
@@ -141,6 +142,12 @@ class BroderClocks:
             # print "click time was recorded!"
 
         # # proceed based on whether there was a winner
+        if self.fast_select:
+            print("CS", self.clock_inf.cscores)
+            winner = np.argmax(self.clock_inf.cscores)
+            self.parent.make_choice(winner)
+            return
+
         if (self.clock_inf.is_winner()):
 
             n = self.word_press_index - 0
@@ -149,12 +156,13 @@ class BroderClocks:
 
             for prob_array in self.clock_inf.press_cscores[:n]:
                 prob_array = np.exp(np.array(prob_array))
-                X_given_Y += [[np.array(S)[np.where(prob_array > 0.01)], prob_array[np.where(prob_array > 0.01)]]]
+                X_given_Y += [[np.array(S)[np.where(prob_array > 0.001)], prob_array[np.where(prob_array > 0.001)]]]
 
             T, word_dict = viterbi.gen_transition(X_given_Y, S, self.parent.wp, self.parent.left_context)
             mpc = viterbi.modified_viterbi(X_given_Y, S, T, word_dict)
 
             print(mpc)
+            self.parent.init_fast_select(mpc)
 
             self.clock_inf.press_cscores = []
             char_prior = viterbi.get_char_prior(0, self.parent.keys_li, self.parent.wp, "")[0]
@@ -188,8 +196,8 @@ class BroderClocks:
         self.init_bits()
         
     def init_round(self, is_win, is_start, clock_score_prior):
-        self.clock_inf.clock_util.init_round(self.clock_inf.clocks_li)
-        self.clock_inf.clock_util.init_round(self.clock_inf.clocks_on)
+        # self.clock_inf.clock_util.init_round(self.clock_inf.clocks_li)
+        self.clock_inf.clock_util.init_round(self.clock_inf.clocks_on, self.fast_select)
         if (is_win or is_start):  # if won, restart everything
             if (is_win):
                 # identify the undo button as the winner to highlight

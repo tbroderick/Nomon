@@ -11,7 +11,7 @@ import numpy as np
 
 # data_dir = "D:\\Users\\nickb\\Study Data\\nomon_data\\100"
 # data_dir2 = "D:\\Users\\nickb\\Study Data\\row_col_data\\100"
-data_dir = "C:\\Users\\nickb\\AppData\\Local\\Nomon\\data\\999"
+data_dir = "D:\\Users\\nickb\\Study Data\\nomon_data\\952"
 # data_dir2 = "C:\\Users\\nickb\\AppData\\Local\\RowCol\\data\\0"
 
 
@@ -406,6 +406,9 @@ du.split_data_speed()
 # du.save_hist()
 du.split_data_phrase()
 du.make_data_frame()
+
+for session in range(1, max(du.DF["session"])+1):
+    print(np.min(du.DF[du.DF["session"] == session]["start_time"].values))
 
 # du2 = DataUtil(data_dir2)
 # du2.load_data()

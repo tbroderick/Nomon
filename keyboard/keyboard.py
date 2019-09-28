@@ -70,6 +70,8 @@ class Keyboard(MainWindow):
         self.word_pred_on = 0
         # Number of word clocks to display in case word prediction == 1 (reduced)
         self.reduce_display = 5
+        # shows fast selection clocks
+        self.fast_select = False
 
         # get user data before initialization
         self.gen_data_handel()
@@ -92,7 +94,6 @@ class Keyboard(MainWindow):
             self.phrases = Phrases("resources/comm2.dev")
         else:
             self.phrases = None
-
 
         if self.layout_preference == 'alpha':
             self.target_layout = kconfig.alpha_target_layout
@@ -167,6 +168,8 @@ class Keyboard(MainWindow):
         self.bars = kconfig.bars
 
         self.bc_init = False
+
+        self.fast_bc = None
 
         self.previous_undo_text = ''
         self.previous_winner = 0
@@ -310,14 +313,15 @@ class Keyboard(MainWindow):
             self.mainWidget.clocks[clock].redraw_text = True
 
     def update_clock_radii(self):
-        for clock in self.words_on:
-            self.clock_spaces[clock, :] = np.array([self.mainWidget.clocks[clock].w, self.mainWidget.clocks[clock].h])
-            if self.word_pred_on == 1:
-                if clock in self.mainWidget.reduced_word_clock_indices:
-                    word_clock = self.mainWidget.reduced_word_clocks[
-                        self.mainWidget.reduced_word_clock_indices.index(clock)]
-                    self.clock_spaces[clock, :] = np.array(
-                        [word_clock.w, word_clock.h])
+        if not self.fast_select:
+            for clock in self.words_on:
+                self.clock_spaces[clock, :] = np.array([self.mainWidget.clocks[clock].w, self.mainWidget.clocks[clock].h])
+                if self.word_pred_on == 1:
+                    if clock in self.mainWidget.reduced_word_clock_indices:
+                        word_clock = self.mainWidget.reduced_word_clocks[
+                            self.mainWidget.reduced_word_clock_indices.index(clock)]
+                        self.clock_spaces[clock, :] = np.array(
+                            [word_clock.w, word_clock.h])
 
         self.bc.clock_inf.clock_util.calcualte_clock_params(self.clock_type, recompute=True)
         self.update_radii = False
@@ -337,6 +341,24 @@ class Keyboard(MainWindow):
     def keyPressEvent(self, e):
         if e.key() == QtCore.Qt.Key_Space:
             self.on_press()
+
+    def init_fast_select(self, mpcs):
+        self.words_off = list(set(self.words_on + self.words_off) - set(range(4)))
+        self.words_on = list(range(4))
+
+        self.fast_bc = BroderClocks(self, fast_select=True)
+        self.fast_select = True
+
+        self.word_list = [word[0] for word in mpcs]
+        self.words_li = [word[0] for word in mpcs]
+
+        self.fast_bc.clock_inf.cscores = [-float("inf")] * len(self.clock_centers)
+        self.fast_bc.clock_inf.cscores[:4] = [np.log(1 / 4) for i in range(4)]
+
+        self.fast_bc.clock_inf.clock_util.update_curhours(self.words_on, fast_select=True)
+
+        self.init_clocks()
+        self.mainWidget.update_clocks(True, self.word_list)
 
     def init_locs(self):
         # size of keyboard
@@ -572,8 +594,8 @@ class Keyboard(MainWindow):
             index += 1
         self.typed_versions = ['']
 
-
-    def draw_words(self):
+    def draw_words(self, fast_words=None):
+        # if not self.fast_select:
         if self.word_pred_on == 1:
             num_words_total = 5
         else:
@@ -587,18 +609,7 @@ class Keyboard(MainWindow):
 
         # if word prediction on but reduced
         if self.word_pred_on == 1:
-            flat_freq_list = np.array([np.exp(freq) for sublist in self.word_freq_li for freq in sublist])
-            # if len(flat_freq_list) >= self.reduce_display:
-            #     for arg in flat_freq_list.argsort()[-self.reduce_display:]:
-            #         word_to_add = self.words_li[(arg // 3)][arg % 3]
-            #         if word_to_add != '':
-            #             self.word_list.append(word_to_add)
-            # else:
-            #     temp_word_list = [word_item for sublist in self.words_li for word_item in sublist]
-            #     for word_item in temp_word_list:
-            #         if word_item != '':
-            #             self.word_list.append(word_item)
-            # self.word_list.reverse()
+            # flat_freq_list = np.array([np.exp(freq) for sublist in self.word_freq_li for freq in sublist])
             temp_word_list = [word_item for sublist in self.words_li for word_item in sublist]
             for word_item in temp_word_list:
                 if word_item != '':
@@ -644,6 +655,7 @@ class Keyboard(MainWindow):
 
             self.word_pair.append((key,))
             index += 1
+
         for key in range(self.N_alpha_keys, self.N_keys):
             for pred in range(0, kconfig.N_pred):
                 self.word_pair.append((key, pred))
@@ -653,8 +665,8 @@ class Keyboard(MainWindow):
             self.word_pair.append((key,))
             index += 1
 
-        self.mainWidget.update_clocks()
-        self.init_clocks()
+        # self.mainWidget.update_clocks(fast_select=True, fast_words=fast_words)
+        # self.init_clocks()
 
     def gen_word_prior(self, is_undo):
         self.word_score_prior = []
@@ -894,7 +906,10 @@ class Keyboard(MainWindow):
             self.mainWidget.sldLabel.setFocus()  # focus on not toggle-able widget to allow keypress event
 
         if self.bc_init:
-            self.bc.clock_inf.clock_util.increment(self.words_on)
+            if not self.fast_select:
+                self.bc.clock_inf.clock_util.increment(self.words_on)
+            else:
+                self.fast_bc.clock_inf.clock_util.increment(self.words_on)
 
     def on_press(self):
         # self.canvas.focus_set()
@@ -909,7 +924,10 @@ class Keyboard(MainWindow):
         if self.is_write_data:
             self.num_presses += 1
 
-        self.bc.select()
+        if self.fast_select:
+            self.fast_bc.select()
+        else:
+            self.bc.select()
 
         if self.sound_set:
             self.play()
@@ -958,101 +976,107 @@ class Keyboard(MainWindow):
         # initialize talk string
         talk_string = ""
 
-        # if selected a key
-        if (index - kconfig.N_pred) % (kconfig.N_pred + 1) == 0:
-            new_char = self.keys_li[self.index_to_wk[index]]
-            # special characters
-            if new_char == kconfig.space_char:
-                if len(self.context) > 1:
-                    talk_string = self.context
-                else:
-                    talk_string = "space"
-
-                new_char = ' '
-                self.old_context_li.append(self.context)
-                self.context = ""
-                self.last_add_li.append(1)
-            elif new_char == kconfig.mybad_char or new_char == kconfig.yourbad_char:
-                talk_string = new_char
-                # if added characters that turn
-                if len(self.last_add_li) > 1:
-                    last_add = self.last_add_li.pop()
-                    self.context = self.old_context_li.pop()
-                    if last_add > 0:  # if added text that turn
-                        self.typed = self.typed[0:-last_add]
-                    elif last_add == -1:  # if backspaced that turn
-                        letter = self.btyped[-1]
-                        self.btyped = self.btyped[0:-1]
-                        self.typed += letter
-                if new_char == kconfig.yourbad_char:
-                    is_equalize = True
-                new_char = ''
-                is_undo = True
-            elif new_char == kconfig.back_char:
-                talk_string = new_char
-                is_backspace = True
-                # if delete the last character that turn
-                self.old_context_li.append(self.context)
-                print(self.context)
-                lt = len(self.typed)
-                if lt > 0:  # typed anything yet?
-                    self.btyped += self.typed[-1]
-                    self.last_add_li.append(-1)
-                    self.typed = self.typed[0:-1]
-                    lt -= 1
-                    if lt == 0:
-                        self.context = ""
-                    elif len(self.context) > 0:
-                        self.context = self.context[0:-1]
-                    elif not (self.typed[-1]).isalpha():
-                        self.context = ""
-                    else:
-                        i = -1
-                        while (i >= -lt) and (self.typed[i].isalpha()):
-                            i -= 1
-                        self.context = self.typed[i + 1:lt]
-                new_char = ''
-            elif new_char == kconfig.clear_char:
-                talk_string = 'clear'
-
-                new_char = '_'
-                self.old_context_li.append(self.context)
-                self.context = ""
-                self.last_add_li.append(1)
-
-                self.clear_text = True
-
-            elif new_char.isalpha() or new_char == "'":
-                talk_string = new_char
-                self.old_context_li.append(self.context)
-                self.context += new_char
-                self.last_add_li.append(1)
-
-            if new_char in [".", ",", "?", "!"]:
-                talk_string = "Full stop"
-                self.old_context_li.append(self.context)
-                self.context = ""
-                self.typed += new_char
-                if " "+new_char in self.typed:
-                    self.last_add_li.append(2)
-                self.typed = self.typed.replace(" "+new_char, new_char+" ")
-            else:
-                self.typed += new_char
-
-        # if selected a word
+        if self.fast_select:
+            self.typed = self.words_li[index] + '_'
+            self.last_add_li.append(len(self.typed))
+            self.fast_select = False
+            self.fast_bc = None
         else:
-            key = self.index_to_wk[index] // kconfig.N_pred
-            pred = self.index_to_wk[index] % kconfig.N_pred
-            new_word = self.words_li[key][pred]
-            new_selection = new_word
-            length = len(self.context)
-            talk_string = new_word.rstrip(kconfig.space_char)  # talk string
-            if length > 0:
-                self.typed = self.typed[0:-length]
-            self.typed += new_word
-            self.last_add_li.append(len(new_word) - len(self.context))
-            self.old_context_li.append(self.context)
-            self.context = ""
+            # if selected a key
+            if (index - kconfig.N_pred) % (kconfig.N_pred + 1) == 0:
+                new_char = self.keys_li[self.index_to_wk[index]]
+                # special characters
+                if new_char == kconfig.space_char:
+                    if len(self.context) > 1:
+                        talk_string = self.context
+                    else:
+                        talk_string = "space"
+
+                    new_char = ' '
+                    self.old_context_li.append(self.context)
+                    self.context = ""
+                    self.last_add_li.append(1)
+                elif new_char == kconfig.mybad_char or new_char == kconfig.yourbad_char:
+                    talk_string = new_char
+                    # if added characters that turn
+                    if len(self.last_add_li) > 1:
+                        last_add = self.last_add_li.pop()
+                        self.context = self.old_context_li.pop()
+                        if last_add > 0:  # if added text that turn
+                            self.typed = self.typed[0:-last_add]
+                        elif last_add == -1:  # if backspaced that turn
+                            letter = self.btyped[-1]
+                            self.btyped = self.btyped[0:-1]
+                            self.typed += letter
+                    if new_char == kconfig.yourbad_char:
+                        is_equalize = True
+                    new_char = ''
+                    is_undo = True
+                elif new_char == kconfig.back_char:
+                    talk_string = new_char
+                    is_backspace = True
+                    # if delete the last character that turn
+                    self.old_context_li.append(self.context)
+                    print(self.context)
+                    lt = len(self.typed)
+                    if lt > 0:  # typed anything yet?
+                        self.btyped += self.typed[-1]
+                        self.last_add_li.append(-1)
+                        self.typed = self.typed[0:-1]
+                        lt -= 1
+                        if lt == 0:
+                            self.context = ""
+                        elif len(self.context) > 0:
+                            self.context = self.context[0:-1]
+                        elif not (self.typed[-1]).isalpha():
+                            self.context = ""
+                        else:
+                            i = -1
+                            while (i >= -lt) and (self.typed[i].isalpha()):
+                                i -= 1
+                            self.context = self.typed[i + 1:lt]
+                    new_char = ''
+                elif new_char == kconfig.clear_char:
+                    talk_string = 'clear'
+
+                    new_char = '_'
+                    self.old_context_li.append(self.context)
+                    self.context = ""
+                    self.last_add_li.append(1)
+
+                    self.clear_text = True
+
+                elif new_char.isalpha() or new_char == "'":
+                    talk_string = new_char
+                    self.old_context_li.append(self.context)
+                    self.context += new_char
+                    self.last_add_li.append(1)
+
+                if new_char in [".", ",", "?", "!"]:
+                    talk_string = "Full stop"
+                    self.old_context_li.append(self.context)
+                    self.context = ""
+                    self.typed += new_char
+                    if " "+new_char in self.typed:
+                        self.last_add_li.append(2)
+                    self.typed = self.typed.replace(" "+new_char, new_char+" ")
+                else:
+                    self.typed += new_char
+
+            # if selected a word
+            else:
+                key = self.index_to_wk[index] // kconfig.N_pred
+                pred = self.index_to_wk[index] % kconfig.N_pred
+                new_word = self.words_li[key][pred]
+                new_selection = new_word
+                length = len(self.context)
+                talk_string = new_word.rstrip(kconfig.space_char)  # talk string
+                if length > 0:
+                    self.typed = self.typed[0:-length]
+                self.typed += new_word
+                self.last_add_li.append(len(new_word) - len(self.context))
+                self.old_context_li.append(self.context)
+                self.context = ""
 
         # update the screen
         if self.context != "":
@@ -1068,17 +1092,21 @@ class Keyboard(MainWindow):
 
             self.params_handle_dict['choice'].append(choice_dict)
 
-        self.draw_words()
+        # self.draw_words()
+        self.init_words()
         self.draw_typed()
+
+        self.mainWidget.update_clocks()
+        self.init_clocks()
+
         # update the word prior
-        self.gen_word_prior(is_undo)
+        # self.gen_word_prior(is_undo)
 
         # # talk the string
         # if self.talk_set.get() == 1:
         #     self.talk_winner(talk_string)
 
-        return self.words_on, self.words_off, self.word_score_prior, is_undo, is_equalize
-
+        return self.words_on, self.words_off, is_undo, is_equalize
 
     def present_choice(self):
         self.draw_histogram()

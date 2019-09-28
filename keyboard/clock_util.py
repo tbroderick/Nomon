@@ -35,23 +35,51 @@ class HourLocs:
 # an array where the smallest integers (with 0 in front) are arranged
 # so as to be as far apart as possible within the array
 class SpacedArray:
-    def __init__(self, nels):
-        self.rev_arr = []
-        insert_pt = 0
-        level = 0
-        for index in range(0, nels):
-            self.rev_arr.insert(insert_pt, index + 1)
-            insert_pt += 2
-            if insert_pt > 2 * (2 ** level - 1):
-                insert_pt = 0
-                level += 1
-        self.rev_arr.insert(0, 0)
+    def __init__(self, nels, fast_num=0, fast_select=False):
 
-        self.arr = []
-        for index in range(0, nels + 1):
-            self.arr.append(0)
-        for index in range(0, nels + 1):
-            self.arr[self.rev_arr[index]] = index
+        if fast_num == 0:
+            self.rev_arr = []
+            insert_pt = 0
+            level = 0
+            for index in range(0, min(nels, 9)):
+                self.rev_arr.insert(insert_pt, index + 1)
+                insert_pt += 2
+                if insert_pt > 2 * (2 ** level - 1):
+                    insert_pt = 0
+                    level += 1
+            self.rev_arr.insert(0, 0)
+
+            self.arr = []
+            for index in range(0, min(nels + 1, 10)):
+                self.arr.append(0)
+            for index in range(0, min(nels + 1, 10)):
+                self.arr[self.rev_arr[index]] = index
+
+            if nels >= 10:
+                remaining_values = np.arange(10, nels+1)
+                np.random.shuffle(remaining_values)
+                insert_arrays = np.array_split(remaining_values, 9)
+                np.random.shuffle(insert_arrays)
+
+                final_arr = []
+                for index, arr in enumerate(insert_arrays):
+                    final_arr += [self.arr[index]] + arr.tolist()
+
+                self.arr = final_arr
+
+        else:
+            self.arr = list(np.arange(fast_num))
+            remaining_values = np.arange(fast_num+1, nels + 1)
+            np.random.shuffle(remaining_values)
+            insert_arrays = np.array_split(remaining_values, fast_num)
+            np.random.shuffle(insert_arrays)
+
+            final_arr = []
+            for index, arr in enumerate(insert_arrays):
+                final_arr += [self.arr[index]] + arr.tolist()
+            self.arr = final_arr
+
+        print(self.arr)
 
         # Class related to the movement / highlight of clocks
 
@@ -65,7 +93,19 @@ class ClockUtil:
         self.parent = parent
         self.bc = bc
         self.clock_inf = clock_inf
+        self.fast_select = clock_inf.fast_select
         self.radius = kconfig.clock_rad
+
+        self.time_rotate = self.parent.time_rotate
+        self.num_divs_time = int(np.ceil(parent.time_rotate / config.ideal_wait_s))
+        print("NUM DIV TIME: ", self.num_divs_time)
+
+        if self.fast_select:
+            # self.cur_hours = [0.0] * 4
+            self.spaced = SpacedArray(self.num_divs_time, fast_num=4)
+        else:
+            self.spaced = SpacedArray(self.num_divs_time - 4)
+        # else:
         if not self.bc.parent.is_simulation:
             if not self.parent.pretrain_window:
                 self.cur_hours = [0.0] * len(self.parent.clock_centers)
@@ -74,36 +114,39 @@ class ClockUtil:
         else:
             self.cur_hours = [0.0] * len(self.parent.clock_centers)
 
+
         self.clock_angles = np.zeros(len(self.cur_hours))
-        self.time_rotate = self.parent.time_rotate
-        # LOOKATHERE
-        self.num_divs_time = int(np.ceil(parent.time_rotate / config.ideal_wait_s))
-        print("NUM DIV TIME: ", self.num_divs_time)
-        self.spaced = SpacedArray(self.num_divs_time - 4)
+
         self.hl = HourLocs(self.num_divs_time)
 
         self.adt = [0, 0]
 
-    def update_curhours(self, update_clocks_list):
+    def update_curhours(self, update_clocks_list, fast_select=False):
         count = 0
         # print(update_clocks_list)
-        space_index = update_clocks_list.index(self.bc.parent.keys_li.index(" "))
-        space_sa_index = self.spaced.arr[space_index % (self.num_divs_time - 4)]
+        if not fast_select:
+            space_index = update_clocks_list.index(self.bc.parent.keys_li.index(" "))
+            space_sa_index = self.spaced.arr[space_index % (self.num_divs_time - 4)]
 
-        for sind in update_clocks_list:
-            array_index = count % (self.num_divs_time - 4)
-            sa_index = self.spaced.arr[array_index]
+            for sind in update_clocks_list:
+                array_index = count % (self.num_divs_time - 4)
+                sa_index = self.spaced.arr[array_index]
 
-            if sa_index > space_sa_index:
-                sa_index += 4
-            elif sa_index == space_sa_index:
-                if sind == self.bc.parent.keys_li.index(" "):
-                    sa_index += 2
-                else:
-                    sa_index -= 1
+                if sa_index > space_sa_index:
+                    sa_index += 4
+                elif sa_index == space_sa_index:
+                    if sind == self.bc.parent.keys_li.index(" "):
+                        sa_index += 2
+                    else:
+                        sa_index -= 1
 
-            self.cur_hours[sind] = sa_index
-            count += 1
+                self.cur_hours[sind] = sa_index
+                count += 1
+        else:
+            count = 0
+            for sind in update_clocks_list:
+                self.cur_hours[sind] = self.spaced.arr[count % len(update_clocks_list)]
+                count += 1
 
     def change_period(self, new_period):
         # set the period
@@ -151,7 +194,7 @@ class ClockUtil:
         elif clock_type == 'radar':
             # clock_params = array([[center_x = center_y, outer_radius, minute_angle1 ... minute_anglen] x num_clocks])
             inc_angle = 20
-            self.bc.parent.clock_params[:, 2] = (90 - self.clock_angles * 180. / math.np.pi)
+            self.bc.parent.clock_params[:, 2] = (90 - self.clock_angles * 180. / np.pi)
             angle_correction = np.where(self.bc.parent.clock_params[:, 2] > 0, -360, 0)
             self.bc.parent.clock_params[:, 2] += angle_correction
             self.bc.parent.clock_params[:, 2] *= 16
@@ -160,7 +203,7 @@ class ClockUtil:
 
         elif clock_type == 'pac_man':
             # clock_params = array([[center_x = center_y, outer_radius, minute_angle1] x num_clocks])
-            self.bc.parent.clock_params[:, 2] = -90 - (self.clock_angles * 180.) / math.np.pi
+            self.bc.parent.clock_params[:, 2] = -90 - (self.clock_angles * 180.) / np.pi
             angle_correction = np.where(self.bc.parent.clock_params[:, 2] > 0, -360, 0)
             self.bc.parent.clock_params[:, 2] += angle_correction
             self.bc.parent.clock_params[:, 2] *= 16
@@ -214,7 +257,6 @@ class ClockUtil:
                         clock.set_params(self.bc.parent.clock_params[clock_index, :3])
                     clock.update()
 
-
     def set_radius(self, radius):
         self.radius = radius
         self.hl = HourLocs(self.num_divs_time)
@@ -235,8 +277,13 @@ class ClockUtil:
     # start the UI over
     # DOCUMENT THIS WELL
     # whether is_win, is_start true or False, the locations , UI are all same
-    def init_round(self, clock_index_list):
-        self.update_curhours(clock_index_list)
+    def init_round(self, clock_index_list, fast_select=False):
+        if fast_select:
+            self.spaced = SpacedArray(self.num_divs_time, fast_num=len(self.parent.words_on))
+            self.update_curhours(clock_index_list, fast_select=True)
+        else:
+            self.spaced = SpacedArray(self.num_divs_time - 4)
+            self.update_curhours(clock_index_list)
 
     def highlight_clock(self, clock_index):
         if self.parent.mainWidget.clocks[clock_index] != '':
@@ -267,7 +314,7 @@ def main():
     wp = WordPredictor(lm_path, vocab_path)
 
     S_probs = viterbi.get_char_prior(3, S, wp, "")[0]
-    SA = SpacedArray(36)
+    SA = SpacedArray(23, 4)
 
     print(SA.arr)
 
