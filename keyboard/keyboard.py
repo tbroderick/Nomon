@@ -89,7 +89,7 @@ class Keyboard(MainWindow):
         user_preferences = self.up_handel.safe_load()
         if user_preferences is None:
             first_load = True
-            user_preferences = ['default', 1, False, 'alpha', 'off', 10, True]
+            user_preferences = ['default', 1, False, 'alpha', 'off', config.default_rotate_ind, True]
             self.up_handel.safe_save(user_preferences)
         else:
             first_load = False

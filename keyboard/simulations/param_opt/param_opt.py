@@ -23,6 +23,8 @@ click_dists = [PickleUtil(os.path.join("simulations/param_opt/click_distribution
 n_pred_range = np.arange(1, 4, 1).tolist()
 
 for click_dist in click_dists:
+    if isinstance(click_dist, dict):
+        click_dist = np.array(click_dist["li"])
     click_dist = click_dist/np.sum(click_dist)
     param_dict = {}
     param_dict["click_dist"] = click_dist.tolist()
