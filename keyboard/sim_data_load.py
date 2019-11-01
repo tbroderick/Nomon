@@ -210,7 +210,7 @@ class SimDataUtil:
 
     def plot_across_params(self, params=None, sub_plot=None):
 
-        ind_var_name = "Characters/Min"
+        ind_var_name = "Word Predictions Max Count"
 
         if params is None:
             params = ['Error Rate', 'Selections/Min', 'Characters/Min', 'Clicks/Selection',
@@ -231,7 +231,7 @@ class SimDataUtil:
             sns.set_style({'font.serif': 'Helvetica'})
             if ind_var_name == "Word Predictions Max Count":
                 sns.lineplot(x=ind_var_name, y=dep_var_name, hue="Words Per Character",
-                             palette=sns.cubehelix_palette(3, start=2, rot=0.2, dark=.2, light=.7, reverse=True), data=DF, ci="sd")
+                             palette=sns.cubehelix_palette(1, start=2, rot=0.2, dark=.2, light=.7, reverse=True), data=DF, ci="sd")
             elif ind_var_name == "Left Context":
 
                 sns.violinplot(x=ind_var_name, y=dep_var_name, hue="Left Context", data=DF, inner="points", figsize=(10, 8))
@@ -305,16 +305,16 @@ def order_data(dir):
 
 
 def main():
-    rc_sdu = SimDataUtil_row_col("C:\\Users\\nickb\\PycharmProjects\\RowColScanner\\simulations\\scan_delay\\supercloud_results")
-    rc_sdu.plot_across_params(params=['Error Rate'])
-    plt.show()
+    # rc_sdu = SimDataUtil_row_col("C:\\Users\\nickb\\PycharmProjects\\Nomon\\keyboard\\sim_data")
+    # rc_sdu.plot_across_params(params=['Error Rate'])
+    # plt.show()
 
     # param = 'Error Rate'
-    param = 'Clicks/Character'
-    sub_plot = rc_sdu.plot_across_params(params=[param])
+    # param = 'Clicks/Character'
+    # sub_plot = rc_sdu.plot_across_params(params=[param])
 
-    sdu = SimDataUtil("simulations/rotation_speed/supercloud_results")
-    sdu.plot_across_params(params=[param], sub_plot=sub_plot)
+    sdu = SimDataUtil("C:\\Users\\nickb\\PycharmProjects\\Nomon\\keyboard\\sim_data")
+    sdu.plot_across_params()
 
 
 if __name__ == '__main__':
