@@ -45,7 +45,7 @@ import sys
 import os
 # import string
 import kconfig
-import config
+import sim_config as config
 # from appdirs import user_data_dir
 from broderclocks import BroderClocks
 
