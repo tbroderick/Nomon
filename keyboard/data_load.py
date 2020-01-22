@@ -43,8 +43,10 @@ import numpy as np
 
 # data_dir = "D:\\Users\\nickb\\Study Data\\nomon_data\\951"
 # data_dir2 = "D:\\Users\\nickb\\Study Data\\row_col_data\\951"
-data_dir = "C:\\Users\\nickb\\AppData\\Local\\Nomon\\data\\999"
-data_dir2 = "C:\\Users\\nickb\\AppData\\Local\\RowCol\\data\\999"
+# data_dir = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\Nomon\\data\\2000s"
+# data_dir2 = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\RowCol\\data\\2000s"
+data_dir2 = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\RowCol\\data\\951"
+data_dir = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\Nomon\\data\\951"
 
 
 def flatten(l):
@@ -81,15 +83,16 @@ class DataUtil:
 
     def load_data(self):
         # size_list = []
+        self.full_click_data = []
         for data_file in self.click_data_files:
             data_handel = PickleUtil(data_file)
             click_dict = data_handel.safe_load()
             # size_list += [len(click_dict["click time list"])]
-            print(click_dict["click time list"])
+            self.full_click_data += click_dict["click time list"]
             self.rel_click_data += [click[0] for click in click_dict["click time list"]]
 
         self.rel_click_data = np.array(self.rel_click_data)
-
+        self.bin_click_data = np.array([click[1] for click in self.full_click_data])
         # size_list_2 = []
         for data_file in self.click_context_files:
             data_handel = PickleUtil(data_file)
@@ -111,6 +114,47 @@ class DataUtil:
         if len(self.abs_click_data) != len(self.rel_click_data):
             raise ValueError("Click data length does not match context data length!")
         print("Loaded " + str(len(self.abs_click_data)) + " clicks")
+
+    def plot_click_recovery(self):
+        click_locations = [click[1] for click in self.full_click_data]
+        # print(click_locations)
+        click_pairs = []
+        abs_click_pairs = []
+        index = 0
+        while index < len(click_locations):
+            cur_click = click_locations[index]
+            abs_cur_click = self.abs_click_data[index]
+            if cur_click[1] == -1:  # row scan
+                if len(click_pairs) == 0:
+                    click_pairs.append([cur_click])
+                    abs_click_pairs.append([abs_cur_click])
+                elif len(click_pairs[-1]) == 1:
+                    click_pairs = click_pairs[:-1]
+                    abs_click_pairs = abs_click_pairs[:-1]
+                else:
+                    click_pairs.append([cur_click])
+                    abs_click_pairs.append([abs_cur_click])
+            else:
+                if len(click_pairs[-1]) == 1:
+                    click_pairs[-1].append(cur_click)
+                    abs_click_pairs[-1].append(abs_cur_click)
+            index += 1
+
+        click_diffs = np.array([pair[1] - pair[0] for pair in abs_click_pairs if len(pair) == 2])
+        pair_orders = np.array([pair[1][1] for pair in click_pairs if len(pair) == 2])
+
+        recovery_times = click_diffs[np.where(pair_orders == 0)]
+        recovery_times = recovery_times[np.where(recovery_times <= 3)]
+        plt.hist(recovery_times, bins=20)
+
+        PickleUtil("recovery_time_951.p").safe_save(recovery_times)
+        # plt.show()
+
+        # plt.hist(pair_orders, bins=8)
+        plt.xlabel("time (s)")
+        plt.ylabel("count")
+        plt.title("Recovery Time")
+        plt.show()
 
     def split_data_phrase(self):
         self.phrases = []
@@ -135,8 +179,8 @@ class DataUtil:
 
                 phrase_selections += 1
 
-                if is_backspace:  # accumulate corrected errors
-                    corrected_error += 1
+                # if is_backspace:  # accumulate corrected errors
+                #     corrected_error += 1
                 if is_undo:
                     if selection_num > 0:
                         # prev_typed = self.selection_data[selection_num-1]["typed"]
@@ -146,11 +190,11 @@ class DataUtil:
                 _, completed_phrase = self.phrase_util.compare(typed, phrase)
                 if completed_phrase and not is_undo:
                     self.phrase_times[phrase] = (phrase_start, selection["time"])
-                    uncorrected_error = calc_MSD(typed, phrase)[0]
-                    total_error = (uncorrected_error + corrected_error) / len(max(typed, phrase))
+                    uncorrected_error = calc_MSD(typed, phrase)[0] / len(max(typed, phrase)) * 100
 
-                    self.phrase_stats[phrase] = {"error_unc": uncorrected_error, "error_cor": corrected_error,
-                                                 "error_tot": total_error, "selections": phrase_selections}
+                    self.phrase_stats[phrase] = {"error_unc": uncorrected_error,
+                                                 "error_cor": corrected_error / phrase_selections * 100,
+                                                 "selections": phrase_selections}
 
                     corrected_error = 0
                     phrase_selections = 0
@@ -165,11 +209,12 @@ class DataUtil:
             phrase_click_indices = np.where((self.abs_click_data >= phrase_start) & (self.abs_click_data <= phrase_end))
             phrase_abs_clicks = self.abs_click_data[phrase_click_indices]
             phrase_rel_clicks = self.rel_click_data[phrase_click_indices]
+            phrase_bin_clicks = self.bin_click_data[phrase_click_indices]
 
             if len(phrase_abs_clicks) > 0:
                 first_click_time = min(phrase_abs_clicks)
 
-                self.clicks_by_phrase[phrase] = {"abs": phrase_abs_clicks, "rel": phrase_rel_clicks}
+                self.clicks_by_phrase[phrase] = {"abs": phrase_abs_clicks, "rel": phrase_rel_clicks, "bin": phrase_bin_clicks}
                 stat_dict = self.phrase_stats[phrase]
 
                 num_clicks = len(phrase_abs_clicks)
@@ -186,6 +231,9 @@ class DataUtil:
                 words_per_min = num_words / time_int * 60
                 sel_per_min = num_sel / time_int * 60
 
+                click_dist_mean = np.mean(phrase_bin_clicks)
+                click_dist_var = np.var(phrase_bin_clicks)
+
 
                 stat_dict["clicks_char"] = clicks_per_char
                 stat_dict["clicks_word"] = clicks_per_word
@@ -194,7 +242,10 @@ class DataUtil:
                 stat_dict["words_min"] = words_per_min
                 stat_dict["sel_min"] = sel_per_min
 
-                if phrase_start - start_time_prev > 20 * 60:
+                stat_dict["click_mean"] = click_dist_mean
+                stat_dict["click_var"] = click_dist_var
+
+                if phrase_start - start_time_prev > 19 * 60:
                     session_num += 1
                 start_time_prev = phrase_start
 
@@ -241,7 +292,7 @@ class DataUtil:
             base_index = round(period_li[default_rotate_ind], 2)
 
         else:
-            raise ValueError("Base rotation speed not in data!")
+            base_index = max(self.clicks_by_speed.keys())
 
         base_clicks = self.clicks_by_speed[base_index]
         base_clicks_mean = np.mean(base_clicks)
@@ -309,7 +360,6 @@ class DataUtil:
             plot_label = "rotation_adj (" + str(len(self.corrected_clicks)) + " points)"
             plt.plot(np.arange(2.5 * res) / res, kernel(np.arange(2.5 * res) / res), linestyle="--", color="0000", linewidth=2, label=plot_label)
 
-
         # ax.bar(np.arange(self.kde_list.size), self.kde_list, fill=False, edgecolor='black', label="KDE")
         ax.legend()
         # ax.set_xlim(20,60)
@@ -319,12 +369,12 @@ class DataUtil:
     def plot_phrase_stats(self, DF2=None):
 
         ind_var_name = "session"
-        for data_label in ['error_tot', 'error_tot', 'clicks_char', 'clicks_word', 'clicks_sel', 'words_min',
-                           'chars_min', 'sel_min']:
+        for data_label in ['error_unc', 'error_unc', 'error_cor', 'clicks_char', 'chars_min']:
 
             var_name_dict = {'sel_min': "Selections/Min", 'words_min': "Words/Min", 'chars_min': "Characters/Min",
                              'clicks_char': "Clicks/Character", 'clicks_word': "Clicks/Word",
-                             'clicks_sel': "Clicks/Selection", 'error_tot': "Error Rate"}
+                             'clicks_sel': "Clicks/Selection", 'error_unc': "Uncorrected Error Rate (%)",
+                             'error_cor': "Corrections/Selections (%)"}
 
             dep_var_name = var_name_dict[data_label]
 
@@ -332,7 +382,7 @@ class DataUtil:
             pd.set_option('display.max_columns', 500)
 
             fig, ax = plt.subplots()
-            fig.set_size_inches(12, 10)
+            fig.set_size_inches(10, 8)
             sns.set(font_scale=1.4, rc={"lines.linewidth": 3})
             sns.set_style({'font.serif': 'Helvetica'})
 
@@ -353,9 +403,41 @@ class DataUtil:
 
             plt.legend(title='Key:', labels=['Row Col (SD)', '       (95% CI)', 'Nomon (SD)', '     (95% CI)'])
 
-            plt.title("Participant 951: " + dep_var_name + " vs. " + ind_var_name)
+            plt.title("Webcam Double Switch: " + dep_var_name + " vs. " + ind_var_name)
             sns.axes_style("darkgrid")
             plt.show()
+
+    def plot_click_dist_phrase(self):
+        DF = self.DF
+        fig, ax = plt.subplots()
+        fig.set_size_inches(10, 8)
+        sns.set(font_scale=1.4, rc={"lines.linewidth": 3})
+        sns.set_style({'font.serif': 'Helvetica'})
+
+        sns.lineplot(x="session", y="error_unc", color="darkslategrey", data=DF, ax=ax)
+        plt.show()
+
+        fig, ax = plt.subplots()
+        fig.set_size_inches(10, 8)
+        sns.set(font_scale=1.4, rc={"lines.linewidth": 3})
+        sns.set_style({'font.serif': 'Helvetica'})
+
+        ind_var_name = "session"
+
+        sns.lineplot(x=ind_var_name, y="click_var", color="darkslateblue", data=DF, ci="sd", ax=ax)
+        sns.lineplot(x=ind_var_name, y="click_var", color="slateblue", data=DF, ax=ax)
+
+        sns.lineplot(x=ind_var_name, y="click_mean", color="cadetblue", data=DF, ci="sd", ax=ax)
+        sns.lineplot(x=ind_var_name, y="click_mean", color="darkslategrey", data=DF, ax=ax)
+
+        ax.set(xlabel=ind_var_name, ylabel="Pressing Distribution Variance and Mean (Bins)")
+
+        plt.legend(title='Key:', labels=['Click Dist Var (SD)', '                (95% CI)',
+                                         'Click Dist Mean (SD)', '                   (95% CI)'])
+
+        plt.title("Participant 951: Pressing Distribution vs. " + ind_var_name)
+        sns.axes_style("darkgrid")
+        plt.show()
 
     def print_stat_avg(self):
 
@@ -367,7 +449,7 @@ class DataUtil:
 
         for phrase in self.phrases:
             data_dict = self.phrase_stats[phrase]
-            errors.append(data_dict["error_tot"])
+            errors.append(data_dict["error_cor"])
             clicks_char.append(data_dict["clicks_char"])
             clicks_word.append(data_dict["clicks_word"])
             words_min.append(data_dict["words_min"])
@@ -377,19 +459,20 @@ class DataUtil:
         print("Words/Min:        ", np.average(words_min), "+/-", np.std(words_min))
         print("Clicks/Character: ", np.average(clicks_char), "+/-", np.std(clicks_char))
         print("Clicks/Word:      ", np.average(clicks_word), "+/-", np.std(clicks_word))
-        print("Error Rate (%):   ", np.average(errors) * 100, "+/-", np.std(errors) * 100)
+        print("Correction Rate (%):   ", np.average(errors), "+/-", np.std(errors))
 
     def test_significance(self, DF2=None):
         var_name_dict = {'words_min': "Words/Min:        ", 'chars_min': "Characters/Min:   ",
                          'clicks_char': "Clicks/Character: ", 'clicks_word': "Clicks/Word:      ",
-                         'error_tot': "Error Rate:       "}
+                         'error_unc': "Error Rate:       ", 'sel_min': "Selections/Min",
+                         'error_cor': "Correction Rate:  "}
 
         if DF2 is None:
             df_start = self.DF[self.DF["session"] == 1]
             df_end = self.DF[self.DF["session"] == max(self.DF["session"])]
             print("\n")
             print("Difference in means from first and last session: \n")
-            for data_label in ['error_tot', 'clicks_char', 'clicks_word', 'words_min', 'chars_min']:
+            for data_label in ['error_unc', 'clicks_char', 'chars_min']:
                 sub_data_start = df_start[data_label]
                 sub_data_end = df_end[data_label]
 
@@ -406,7 +489,7 @@ class DataUtil:
             df_other = DF2[DF2["session"] == max(DF2["session"])]
             print("\n")
             print("Difference in means from Nomon and Row Col in last session: \n")
-            for data_label in ['error_tot', 'clicks_char', 'clicks_word', 'words_min', 'chars_min']:
+            for data_label in ['error_cor', 'clicks_char', 'chars_min']:
                 sub_data_self = df_self[data_label]
                 sub_data_other = df_other[data_label]
 
@@ -421,25 +504,31 @@ class DataUtil:
 
 
 
-
-# du = DataUtil(data_dir)
-# du.load_data()
+du = DataUtil(data_dir)
+du.load_data()
 # du.split_data_speed()
 # du.correct_data_speed()
-# du.plot_data()
-# du.save_hist()
-# du.split_data_phrase()
-# du.make_data_frame()
 
-du2 = DataUtil(data_dir2)
-du2.load_data()
-du2.split_data_speed()
+# # du.save_hist()
+du.split_data_phrase()
+du.make_data_frame()
+
+# du.DF = du.DF[du.DF["session"] != 7]
+du.plot_click_dist_phrase()
+#
+# du2 = DataUtil(data_dir2)
+# du2.load_data()
+# du2.split_data_speed()
 # du2.correct_data_speed()
-du2.plot_data()
-du2.save_hist()
-# # du2.split_data_phrase()
-# # du2.make_data_frame()
+# du2.plot_data()
+# du2.save_hist()
+# du2.split_data_phrase()
+# du2.make_data_frame()
+# du2.plot_click_recovery()
+
+# du2.DF["session"] = du2.DF["session"].apply(lambda x: x + 2 if x >= 6 else x)
 #
 # du.print_stat_avg()
-# du.plot_phrase_stats()
-# du.test_significance()
+# du2.print_stat_avg()
+# du.plot_phrase_stats(DF2=du2.DF)
+# du.test_significance(DF2=du2.DF)

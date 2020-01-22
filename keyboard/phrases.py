@@ -41,7 +41,7 @@ class Phrases:
         phrases_text = phrases_file.read()
         phrases_file.close()
         self.phrases = []
-        if "twitter" in phrases_file_name:
+        if "twitter" in phrases_file_name or "watch" in phrases_file_name:
             phrases = [phrase[phrase.index("\t") + 1:] for phrase in phrases_text.split("\n") if "\t" in phrase]
             for phrase in phrases:
                 if 5 <= len(phrase.split(" ")) <= 10:
@@ -145,10 +145,10 @@ class Phrases:
 
 
 def main():
-    phrases = Phrases("resources/comm2.dev")
-    # print(phrases.sample())
-    phrases.cur_phrase = "hello my name is nicholas ryan bonaker"
-    print(phrases.highlight("hello my name is n"))
+    phrases = Phrases("resources/twitter-phrases/watch-combined.txt")
+    print(phrases.sample())
+    # phrases.cur_phrase = "hello my name is nicholas ryan bonaker"
+    # print(phrases.highlight("hello my name is n"))
 
 
 if __name__ == "__main__":

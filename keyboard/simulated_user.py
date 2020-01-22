@@ -45,7 +45,7 @@ import sys
 import os
 # import string
 import kconfig
-import config
+import sim_config as config
 # from appdirs import user_data_dir
 from broderclocks import BroderClocks
 
@@ -406,8 +406,8 @@ class SimulatedUser:
             else:
                 time_delta = (ndt / 2 - self.bc.clock_inf.clock_util.cur_hours[target_clock]) / ndt * self.time_rotate
 
-            click_offset = ((np.random.choice(80, 1, p=self.click_dist)-40) / 80.0 * config.period_li[14])[0]
-            # print(click_offset)
+            click_offset = ((np.random.choice(80, 1, p=self.click_dist)-40) / 80.0 * config.period_li[5])[0]
+            # print(click_offset, config.period_li[5])
             time_delta += click_offset
             time_elapsed += time_delta
             self.time.set_time(self.time.time() + time_delta)
@@ -1183,17 +1183,17 @@ class HistPlot():
 
 
 def main():
-    click_dist = PickleUtil("simulations\\rotation_speed\\click_distributions\\999_kernel.p").safe_load()
-    click_dist = click_dist(np.arange(80))
+    click_dist = PickleUtil("simulations/param_opt/click_distributions/0_hist.p").safe_load()
+    # click_dist = click_dist(np.arange(80))
     click_dist /= np.sum(click_dist)
 
     # plt.plot(click_dist)
     # plt.show()
 
     sim = SimulatedUser()
-    params = {"N_pred": 3, "num_words": 17, "time_rotate": 18, "click_dist": click_dist}
+    params = {"N_pred": 3, "num_words": 17, "time_rotate": 17, "click_dist": click_dist}
 
-    sim.parameter_metrics(params, num_clicks=500, trials=2)
+    sim.parameter_metrics(params, num_clicks=500, trials=1)
 
 
 if __name__ == "__main__":

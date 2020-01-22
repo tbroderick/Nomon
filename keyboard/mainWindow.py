@@ -156,6 +156,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.phrase_prompts_action = QtWidgets.QAction('&Study Mode', self, checkable=True)
         self.phrase_prompts_action.triggered.connect(self.phrase_prompts_event)
 
+        self.press_lock_action = QtWidgets.QAction('&Press Lock', self, checkable=True)
+        self.press_lock_action.triggered.connect(self.press_lock_event)
+
         self.log_data_action = QtWidgets.QAction('&Data Logging', self, checkable=True)
         self.log_data_action.triggered.connect(self.log_data_event)
 
@@ -204,6 +207,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         tools_menu = menubar.addMenu('&Tools')
         # tools_menu.addAction(self.profanity_filter_action)
+        tools_menu.addAction(self.press_lock_action)
         tools_menu.addAction(self.log_data_action)
         tools_menu.addAction(self.phrase_prompts_action)
         tools_menu.addAction(self.retrain_action)
@@ -252,6 +256,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # check log data
         switch(self.log_data_action, self.is_write_data)
+        switch(self.press_lock_action, self.press_lock)
         switch(self.phrase_prompts_action, self.phrase_prompts)
 
         # check font menu
@@ -346,7 +351,7 @@ class MainWindow(QtWidgets.QMainWindow):
             phrase_status = True
 
         if self.phrases is None:
-            self.phrases = Phrases("resources/comm2.dev")
+            self.phrases = Phrases("resources/twitter-phrases/watch-combined.txt")
 
         self.phrase_prompts = phrase_status
         if phrase_status == True:
@@ -532,6 +537,23 @@ class MainWindow(QtWidgets.QMainWindow):
                 clock.setMaximumHeight(clock.maxSize)
                 # clock.setMinimumSize(clock.minSize, clock.minSize)
 
+    def press_lock_event(self):
+        message_box = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "Press Lock",
+                                            "Press Lock is feature that requires the _ key to be triggered before an"
+                                            " additional click is registered. Would you like to turn this feature on?")
+        message_box.addButton(QtWidgets.QMessageBox.Yes)
+        message_box.addButton(QtWidgets.QMessageBox.No)
+        message_box.setDefaultButton(QtWidgets.QMessageBox.Yes)
+        message_box.setWindowIcon(self.icon)
+
+        reply = message_box.exec_()
+
+        if reply == QtWidgets.QMessageBox.No:
+            self.press_lock = False
+        elif reply == QtWidgets.QMessageBox.Yes:
+            self.press_lock = True
+        self.check_filemenu()
+
     def log_data_event(self):
         message_box = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "Data Logging Consent", "We would like to save "
                                   "some data regarding your clicking time relative to Noon to help us improve Nomon. "
@@ -556,6 +578,7 @@ class MainWindow(QtWidgets.QMainWindow):
                  self.start_speed, True])
             self.is_write_data = True
         self.check_filemenu()
+
 
     def compress_data_event(self):
         self.bc.save_when_quit()

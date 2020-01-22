@@ -34,12 +34,12 @@ import multiprocessing as mp
 import time
 import numpy as np
 
-from simulations.rotation_speed.rotation_speed import simulationUtil
+from simulations.param_opt.param_opt import simulationUtil
 
 
 def submission_fun(task_id):
     sim_util = simulationUtil()
-    result = sim_util.run_job(task_id, 7, num_clicks=1500, trials=5)
+    result = sim_util.run_job(task_id, 7, num_clicks=500, trials=3)
     return result
 
 

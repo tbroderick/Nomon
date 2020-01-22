@@ -100,7 +100,8 @@ class Keyboard(MainWindow):
         self.phrase_prompts = False  # set to true for data collection mode
 
         if self.phrase_prompts:
-            self.phrases = Phrases("resources/comm2.dev")
+            self.phrases = Phrases("resources/twitter-phrases/watch-combined.txt")
+
         else:
             self.phrases = None
 
@@ -119,8 +120,8 @@ class Keyboard(MainWindow):
         self.left_context = ""
 
         self.cwd = os.getcwd()
-        lm_path = os.path.join(os.path.join(self.cwd, 'resources'), 'lm_word_medium.kenlm')
-        vocab_path = os.path.join(os.path.join(self.cwd, 'resources'), 'vocab_100k')
+        lm_path = os.path.join(os.path.join(self.cwd, 'resources'), 'mix4_opt_min_lower_100k_4gram_2.5e-9_prob8_bo4_compress255.kenlm')
+        vocab_path = os.path.join(os.path.join(self.cwd, 'resources'), 'vocab_lower_100k.txt')
 
         self.lm = LanguageModel(lm_path, vocab_path)
 
@@ -167,6 +168,8 @@ class Keyboard(MainWindow):
         # set up "talked" text
         # self.talk_file = "talk.txt"
         self.sound_set = True
+        self.press_lock = True
+        self.press_lock_status = False
 
         # check for speech
         # talk_fid = open(self.talk_file, 'wb')
@@ -190,6 +193,8 @@ class Keyboard(MainWindow):
         self.pretrain = False
 
         self.init_ui()
+        sound_file = "icons/bell.wav"
+        self.sound_player = QtMultimedia.QSound(sound_file)
 
         self.time_rotate = config.period_li[self.start_speed]
         # get language model results
@@ -345,8 +350,26 @@ class Keyboard(MainWindow):
         self.parent.after(20, self.find_events)
 
     def keyPressEvent(self, e):
+
         if e.key() == QtCore.Qt.Key_Space:
-            self.on_press()
+            if self.press_lock:
+                if not self.press_lock_status:
+                    self.on_press()
+                    self.press_lock_status = True
+            else:
+                self.on_press()
+
+        if e.key() == QtCore.Qt.Key_Control:
+            if self.press_lock:
+                if self.press_lock_status:
+                    self.press_lock_status = False
+
+        if e.key() == QtCore.Qt.Key_Return:
+            if self.phrase_prompts:
+                if len(self.typed_versions) > 0:
+                    self.update_phrases(self.typed_versions[-1], "",  next_phrase=True)
+                else:
+                    self.update_phrases("", "", next_phrase=True)
 
     def init_locs(self):
         # size of keyboard
@@ -714,12 +737,13 @@ class Keyboard(MainWindow):
         self.lm_prefix = ""
         self.draw_words()
 
-    def update_phrases(self, cur_text, input_text):
-        cur_phrase_typed, next_phrase = self.phrases.compare(cur_text)
+    def update_phrases(self, cur_text, input_text, next_phrase=False):
+        cur_phrase_typed, _ = self.phrases.compare(cur_text)
         cur_phrase_highlighted = self.phrases.highlight(cur_text)
 
         if next_phrase:
-            self.text_stat_update(self.phrases.cur_phrase, self.typed_versions[-1])
+            if len(cur_text+input_text) > 0:
+                self.text_stat_update(self.phrases.cur_phrase, self.typed_versions[-1])
 
             self.typed_versions = ['']
             self.mainWidget.text_box.setText('')
@@ -743,6 +767,7 @@ class Keyboard(MainWindow):
             "<p>" + cur_phrase_highlighted + "<\p><p>" + input_text + "</span><\p>")
 
     def draw_typed(self):
+        new_text = ''
         redraw_words = False
         # phrases
 
@@ -770,9 +795,9 @@ class Keyboard(MainWindow):
             new_text = ''
             undo_text = new_text
 
-        if new_text in  [". ",", ","? ", "! "]:
+        if new_text in [". ",", ","? ", "! "]:
             previous_text = previous_text[:-1]
-            redraw_words = True
+            redraw_words  = True
 
         index = self.previous_winner
         if self.mainWidget.clocks[index] != '':
@@ -815,7 +840,7 @@ class Keyboard(MainWindow):
                 input_text = ""
         else:
             self.typed_versions += [previous_text + new_text]
-            if new_text[-1] == " ":
+            if len(new_text) > 0 and new_text[-1] == " ":
                 new_text = new_text[:-1] + "_"
 
             input_text = "<span style='color:#000000;'>" + previous_text + "</span><span style='color:#0000dd;'>"\
@@ -928,8 +953,8 @@ class Keyboard(MainWindow):
             self.play()
 
     def play(self):
-        sound_file = "icons/bell.wav"
-        QtMultimedia.QSound.play(sound_file)
+
+        self.sound_player.play()
 
     def highlight_winner(self, index):
         if self.word_pred_on == 1:

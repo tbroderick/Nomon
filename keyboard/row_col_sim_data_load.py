@@ -142,7 +142,7 @@ class SimDataUtil_row_col:
         data_labels = {'errors', 'selections', 'characters', 'presses_word', 'presses_char'}
         param_name_dict = {'num_words': "Word Predictions Max Count", 'order': 'Keyboard Layout',
                            'words_first': "Words First", 'attribute': 'Attribute', "false_positive": "False Positive Rate",
-                           "delay": "Delay", "scan_delay": "Scanning Delay", "easy_corpus": "Corpus"}
+                           "delay": "Delay", "scan_delay": "Scanning Delay", "easy_corpus": "Corpus", "win_diff": "Win Diff"}
 
         var_name_dict = {'selections': "Selections/Min", 'characters': "Characters/Min",
                          'presses_char': "Clicks/Character",
