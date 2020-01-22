@@ -4,7 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ac89ebe2-b77b-446b-80d2-81c517c20547" name="Default" comment="--added wide motion press support for webcam switch&#10;--added new language models (dec19)" />
+    <list default="true" id="ac89ebe2-b77b-446b-80d2-81c517c20547" name="Default" comment="--added wide motion press support for webcam switch" />
     <list id="aa6254be-35a7-4291-8536-037b7fa13556" name="restart no longer needed for high contrast, profanity filter. consolidated user preference pickles, prompt for data save" comment="" />
     <ignored path="keyboard/pre study plots/" />
     <ignored path="keyboard/row_col_sim_data_load.py" />
@@ -36,8 +36,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/keyboard/keyboard.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="340">
-              <caret line="128" column="38" selection-start-line="128" selection-start-column="38" selection-end-line="128" selection-end-column="38" />
+            <state relative-caret-position="200">
+              <caret line="121" column="30" lean-forward="true" selection-start-line="121" selection-start-column="30" selection-end-line="121" selection-end-column="30" />
               <folding>
                 <element signature="e#1467#1485#0" expanded="true" />
               </folding>
@@ -236,22 +236,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope">
-        <subPane subId="Project Files">
-          <expand>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="Nomon" type="cbb8eebc:String" user="Nomon" />
-            </path>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="Nomon" type="cbb8eebc:String" user="Nomon" />
-              <item name="keyboard" type="cbb8eebc:String" user="keyboard" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -273,6 +257,22 @@
             <path>
               <item name="Nomon" type="b2602c69:ProjectViewProjectNode" />
               <item name="Scratches and Consoles" type="1a2a3e82:ScratchProjectViewPane$MyProjectNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <expand>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="Nomon" type="cbb8eebc:String" user="Nomon" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="Nomon" type="cbb8eebc:String" user="Nomon" />
+              <item name="keyboard" type="cbb8eebc:String" user="keyboard" />
             </path>
           </expand>
           <select />
@@ -405,20 +405,7 @@
       <workItem from="1579013752391" duration="21439000" />
       <workItem from="1579276756207" duration="10581000" />
       <workItem from="1579718849637" duration="275000" />
-    </task>
-    <task id="LOCAL-00026" summary="addded updated installer">
-      <created>1534965035679</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1534965035679</updated>
-    </task>
-    <task id="LOCAL-00027" summary="Fixed minor bugs in click time message box displaying twice and window stuck in grey-out after profanity change">
-      <created>1535053716526</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1535053716526</updated>
+      <workItem from="1579719172821" duration="276000" />
     </task>
     <task id="LOCAL-00028" summary="Added Working Installer">
       <created>1535055627990</created>
@@ -749,11 +736,25 @@
       <option name="project" value="LOCAL" />
       <updated>1579718909385</updated>
     </task>
-    <option name="localTasksCounter" value="75" />
+    <task id="LOCAL-00075" summary="--added wide motion press support for webcam switch">
+      <created>1579719205654</created>
+      <option name="number" value="00075" />
+      <option name="presentableId" value="LOCAL-00075" />
+      <option name="project" value="LOCAL" />
+      <updated>1579719205655</updated>
+    </task>
+    <task id="LOCAL-00076" summary="--added wide motion press support for webcam switch">
+      <created>1579719349889</created>
+      <option name="number" value="00076" />
+      <option name="presentableId" value="LOCAL-00076" />
+      <option name="project" value="LOCAL" />
+      <updated>1579719349890</updated>
+    </task>
+    <option name="localTasksCounter" value="77" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="619253000" />
+    <option name="totallyTimeSpent" value="619529000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -766,8 +767,9 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1519" height="977" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4977029" visible="true" weight="0.17522246" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4977029" visible="true" weight="0.17727584" />
       <window_info id="Structure" order="1" sideWeight="0.5022971" side_tool="true" weight="0.2532512" />
       <window_info id="Favorites" order="2" sideWeight="0.50108933" side_tool="true" weight="0.14436248" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -876,7 +878,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="--simulation interface added" />
     <MESSAGE value="removed unnecessary imports" />
     <MESSAGE value="added job array support" />
     <MESSAGE value="added simulation scripts&#10;added data visualization" />
@@ -901,7 +902,8 @@
     <MESSAGE value="--fixed bug in simulation with varying time_rotates" />
     <MESSAGE value="--updated parameter optimization simulation with camera-switch speeds and click distributions" />
     <MESSAGE value="--added wide motion press support for webcam switch&#10;--added new language models (dec19)" />
-    <option name="LAST_COMMIT_MESSAGE" value="--added wide motion press support for webcam switch&#10;--added new language models (dec19)" />
+    <MESSAGE value="--added wide motion press support for webcam switch" />
+    <option name="LAST_COMMIT_MESSAGE" value="--added wide motion press support for webcam switch" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1226,8 +1228,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/keyboard/keyboard.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="340">
-          <caret line="128" column="38" selection-start-line="128" selection-start-column="38" selection-end-line="128" selection-end-column="38" />
+        <state relative-caret-position="200">
+          <caret line="121" column="30" lean-forward="true" selection-start-line="121" selection-start-column="30" selection-end-line="121" selection-end-column="30" />
           <folding>
             <element signature="e#1467#1485#0" expanded="true" />
           </folding>
