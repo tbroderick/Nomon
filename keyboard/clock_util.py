@@ -160,11 +160,11 @@ class ClockUtil:
 
     def calcualte_clock_params(self, clock_type, recompute=False):
         if recompute:
-            self.bc.parent.clock_params[:, 0] = self.bc.parent.clock_spaces[:, 1] / 2
+            self.bc.parent.clock_params[:, 0] = self.bc.parent.clock_spaces[:, 1] / 2-1
             if clock_type == 'bar':
                 self.bc.parent.clock_params[:, 1] = self.bc.parent.clock_spaces[:, 0] - 15
             else:
-                self.bc.parent.clock_params[:, 1] = self.bc.parent.clock_spaces[:, 1] / 2 * 0.85
+                self.bc.parent.clock_params[:, 1] = self.bc.parent.clock_spaces[:, 1] / 2 * 0.875
 
         if clock_type == 'default':
             # clock_params = array([[center_x = center_y, outer_radius, minute_x, minute_y] x num_clocks])

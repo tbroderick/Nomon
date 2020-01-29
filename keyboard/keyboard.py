@@ -168,7 +168,7 @@ class Keyboard(MainWindow):
         # set up "talked" text
         # self.talk_file = "talk.txt"
         self.sound_set = True
-        self.press_lock = True
+        self.press_lock = False
         self.press_lock_status = False
 
         # check for speech
@@ -232,7 +232,6 @@ class Keyboard(MainWindow):
         self.init_clocks()
         self.update_radii = False
         self.on_timer()
-
 
     def gen_data_handel(self):
         self.cwd = os.getcwd()
@@ -323,16 +322,41 @@ class Keyboard(MainWindow):
                     word_clock.set_params(self.clock_params[clock, :], recompute=True)
         for clock in self.words_off:
             self.mainWidget.clocks[clock].redraw_text = True
+            self.mainWidget.clocks[clock].set_params(self.clock_params[clock, :], recompute=True)
+
+        self.mainWidget.update()
 
     def update_clock_radii(self):
+        if self.layout_preference == 'qwerty':
+            if self.word_pred_on == 2:
+                self.universal_clock_height = self.mainWidget.keyboard_grid.cellRect(0, 0).height() / 4.5
+            else:
+                self.universal_clock_height = self.mainWidget.keyboard_grid.cellRect(0, 0).height() / 3
+        else:
+            if self.word_pred_on == 2:
+                self.universal_clock_height = self.mainWidget.keyboard_grid.cellRect(0, 0).height() / 3.2
+            else:
+                self.universal_clock_height = self.mainWidget.keyboard_grid.cellRect(0, 0).height() / 2.2
+
+        for key_grid in self.mainWidget.grid_units:
+            key_grid.setColumnMinimumWidth(1, self.universal_clock_height)
+            if self.layout_preference != 'qwerty':
+                key_grid.setColumnMinimumWidth(3, self.universal_clock_height)
+
         for clock in self.words_on:
-            self.clock_spaces[clock, :] = np.array([self.mainWidget.clocks[clock].w, self.mainWidget.clocks[clock].h])
+            self.clock_spaces[clock, :] = np.array([self.universal_clock_height,
+                                                    self.universal_clock_height])
             if self.word_pred_on == 1:
                 if clock in self.mainWidget.reduced_word_clock_indices:
                     word_clock = self.mainWidget.reduced_word_clocks[
                         self.mainWidget.reduced_word_clock_indices.index(clock)]
                     self.clock_spaces[clock, :] = np.array(
-                        [word_clock.w, word_clock.h])
+                        [self.universal_clock_height, self.universal_clock_height])
+
+        for clock in self.words_off:
+            self.clock_spaces[clock, :] = np.array([self.universal_clock_height,
+                                                    self.universal_clock_height])
+            self.mainWidget.clocks[clock].set_params(self.clock_params[clock, :], recompute=True)
 
         self.bc.clock_inf.clock_util.calcualte_clock_params(self.clock_type, recompute=True)
         self.update_radii = False
@@ -637,13 +661,13 @@ class Keyboard(MainWindow):
             # self.word_list.reverse()
             temp_word_list = [word_item for sublist in self.words_li for word_item in sublist]
             for word_item in temp_word_list:
-                if word_item != '':
+                if word_item != '' and all(c in "abcdefghijklmnopqrstuvwxyz\' " for c in word_item):
                     self.word_list.append(word_item)
         # if word prediction completely on
         elif self.word_pred_on == 2:
             temp_word_list = [word_item for sublist in self.words_li for word_item in sublist]
             for word_item in temp_word_list:
-                if word_item != '':
+                if word_item != '' and all(c in "abcdefghijklmnopqrstuvwxyz\' " for c in word_item):
                     self.word_list.append(word_item)
 
         len_con = len(self.context)
@@ -810,6 +834,7 @@ class Keyboard(MainWindow):
         if self.clear_text:
             self.typed_versions += ['']
             input_text = ""
+            self.lm_prefix = ""
             self.mainWidget.text_box.setText('')
             self.clear_text = False
             undo_text = 'Clear'
@@ -917,6 +942,7 @@ class Keyboard(MainWindow):
         self.setStyleSheet("background-color:" + config.bg_color_highlt + ";")
         self.mainWidget.text_box.setStyleSheet("background-color:#ffffff;")
         for clock in self.mainWidget.clocks:
+            clock.background = True
             clock.redraw_text = True
 
     def end_pause(self):
@@ -925,6 +951,7 @@ class Keyboard(MainWindow):
         self.setStyleSheet("")
         self.on_timer()
         for clock in self.mainWidget.clocks:
+            clock.background = False
             clock.redraw_text = True
 
     def on_timer(self):

@@ -97,6 +97,8 @@ class SimulatedUser:
         self.working_dir=cwd
 
         if not sub_call:
+            self.cwd = os.getcwd()
+
             self.N_pred = kconfig.N_pred
             self.prob_thres = kconfig.prob_thres
             self.num_words_total = 26*self.N_pred
@@ -104,16 +106,17 @@ class SimulatedUser:
             self.win_diff_base = config.win_diff_base
             self.rotate_index = config.default_rotate_ind
             self.time_rotate = config.period_li[self.rotate_index]
-            self.phrases = Phrases("resources/comm2.dev")
+            self.phrases = Phrases(os.path.join(os.path.join(
+                os.path.join(self.cwd, 'resources'), 'twitter-phrases'), 'watch-combined.txt'))
+
             self.easy_phrase = 1
             self.false_positive_rate = 0.0
             self.num_fp = 0
 
             self.init_sim_data()
 
-            self.cwd = os.getcwd()
-            lm_path = os.path.join(os.path.join(self.cwd, 'resources'), 'lm_word_medium.kenlm')
-            vocab_path = os.path.join(os.path.join(self.cwd, 'resources'), 'vocab_100k')
+            lm_path = os.path.join(os.path.join(self.cwd, 'resources'), 'mix4_opt_min_lower_100k_4gram_2.5e-9_prob8_bo4_compress255.kenlm')
+            vocab_path = os.path.join(os.path.join(self.cwd, 'resources'), 'vocab_lower_100k.txt')
 
             self.lm = LanguageModel(lm_path, vocab_path, parent=self)
 
@@ -258,12 +261,12 @@ class SimulatedUser:
             self.rotate_index = config.default_rotate_ind
             self.time_rotate = config.period_li[self.rotate_index]
 
-        if "corpus" in parameters:
-            self.phrases = Phrases(parameters["corpus"])
-            self.easy_phrase = parameters["corpus"] == "resources/comm2.dev"
-        else:
-            self.phrases = Phrases("resources/comm2.dev")
-            self.easy_phrase = 1
+        # if "corpus" in parameters:
+        #     self.phrases = Phrases(parameters["corpus"])
+        #     self.easy_phrase = parameters["corpus"] == "resources/comm2.dev"
+        # else:
+        #     self.phrases = Phrases("resources/comm2.dev")
+        #     self.easy_phrase = 1
 
         if "false_positive" in parameters:
             self.false_positive_rate = parameters["false_positive"]

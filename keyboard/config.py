@@ -111,18 +111,20 @@ pac_man_reg_color = [QtGui.QColor(0, 0, 0), QtGui.QColor(0, 0, 255)]
 
 ### Fonts ###
 base_font = 'helvetica'
-splash_font = [QtGui.QFont(base_font, 11), QtGui.QFont(base_font, 15), QtGui.QFont(base_font, 22)]
-welcome_main_font = [QtGui.QFont(base_font, 11), QtGui.QFont(base_font, 15), QtGui.QFont(base_font, 22)]
+splash_font = [QtGui.QFont(base_font, 11), QtGui.QFont(base_font, 15), QtGui.QFont(base_font, 20)]
+welcome_main_font = [QtGui.QFont(base_font, 11), QtGui.QFont(base_font, 15), QtGui.QFont(base_font, 20)]
 welcome_sub_font = [QtGui.QFont(base_font, 9), QtGui.QFont(base_font, 12), QtGui.QFont(base_font, 18)]
-clock_font = QtGui.QFont(base_font)
-clock_font.setBold(False)
+clock_font = [QtGui.QFont(base_font, 11), QtGui.QFont(base_font, 18), QtGui.QFont(base_font, 24)]
 
-top_bar_font = [QtGui.QFont(base_font, 11), QtGui.QFont(base_font, 15), QtGui.QFont(base_font, 24)]
+for font in clock_font:
+    font.setBold(False)
+
+top_bar_font = [QtGui.QFont(base_font, 11), QtGui.QFont(base_font, 15), QtGui.QFont(base_font, 20)]
 for font in top_bar_font:
     font.setStretch(80)
     font.setBold(True)
 
-text_box_font = [QtGui.QFont(base_font, 11), QtGui.QFont(base_font, 15), QtGui.QFont(base_font, 24)]
+text_box_font = [QtGui.QFont(base_font, 11), QtGui.QFont(base_font, 18), QtGui.QFont(base_font, 24)]
 for font in text_box_font:
     font.setStretch(90)
 

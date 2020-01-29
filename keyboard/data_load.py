@@ -43,10 +43,10 @@ import numpy as np
 
 # data_dir = "D:\\Users\\nickb\\Study Data\\nomon_data\\951"
 # data_dir2 = "D:\\Users\\nickb\\Study Data\\row_col_data\\951"
-# data_dir = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\Nomon\\data\\2000s"
-# data_dir2 = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\RowCol\\data\\2000s"
-data_dir2 = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\RowCol\\data\\951"
-data_dir = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\Nomon\\data\\951"
+data_dir = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\Nomon\\data\\2000s"
+data_dir2 = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\RowCol\\data\\2000s"
+# data_dir2 = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\RowCol\\data\\951"
+# data_dir = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\Nomon\\data\\951"
 
 
 def flatten(l):
@@ -56,7 +56,7 @@ def flatten(l):
 class DataUtil:
     def __init__(self, data_directory):
         self.data_dir = data_directory
-        self.phrase_util = Phrases("resources/comm2.dev")
+        self.phrase_util = Phrases("resources/twitter-phrases/watch-combined.txt")
         self.plot_colors = ["#0000ff", "#4400ff", "#8800ff", "#cc00ff", "#ff00cc", "#ff0088", "#ff0044"]
         self.click_data_files = []
         self.click_context_files = []
@@ -506,15 +506,16 @@ class DataUtil:
 
 du = DataUtil(data_dir)
 du.load_data()
-# du.split_data_speed()
-# du.correct_data_speed()
+du.split_data_speed()
+du.correct_data_speed()
+du.plot_data()
 
 # # du.save_hist()
-du.split_data_phrase()
-du.make_data_frame()
+# du.split_data_phrase()
+# du.make_data_frame()
 
 # du.DF = du.DF[du.DF["session"] != 7]
-du.plot_click_dist_phrase()
+# du.plot_click_dist_phrase()
 #
 # du2 = DataUtil(data_dir2)
 # du2.load_data()

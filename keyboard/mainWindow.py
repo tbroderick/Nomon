@@ -314,12 +314,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.mainWidget.sldLabel.setFont(config.top_bar_font[size])
         self.mainWidget.speed_slider_label.setFont(config.top_bar_font[size])
         self.mainWidget.wpm_label.setFont(config.top_bar_font[size])
+        self.mainWidget.error_label.setFont(config.top_bar_font[size])
         self.mainWidget.cb_learn.setFont(config.top_bar_font[size])
         self.mainWidget.cb_pause.setFont(config.top_bar_font[size])
         self.mainWidget.cb_sound.setFont(config.top_bar_font[size])
         self.mainWidget.text_box.setFont(config.text_box_font[size])
 
         self.mainWidget.wpm_label.update()
+        self.mainWidget.error_label.update()
         # self.mainWidget.cb_talk.update()
         self.mainWidget.cb_learn.update()
         self.mainWidget.cb_pause.update()
@@ -486,7 +488,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.mainWidget.generate_clocks()
         self.mainWidget.layout_clocks()
 
-        QtCore.QTimer.singleShot(100, self.init_clocks)
+        self.init_clocks
+        self.mainWidget.update()
         self.in_pause = False
         self.environment_change = True
 
@@ -683,10 +686,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def resizeEvent(self, event):
         self.environment_change = True
         self.in_pause = True
-        for clock in self.mainWidget.clocks:
-            clock.redraw_text = True
-            clock.calculate_clock_size()
-        QtCore.QTimer.singleShot(100, self.init_clocks)
+        # for clock in self.mainWidget.clocks:
+        #     clock.redraw_text = True
+        #     clock.calculate_clock_size()
+        self.init_clocks
+        self.mainWidget.update()
         QtWidgets.QMainWindow.resizeEvent(self, event)
         self.window_size = (self.size().width(), self.size().height())
         self.in_pause = False
@@ -790,7 +794,7 @@ class MainKeyboardWidget(QtWidgets.QWidget):
         self.vbox = QtWidgets.QVBoxLayout()
         self.vbox.setSpacing(0)
         self.vbox.addLayout(top_hbox)
-        self.vbox.addStretch(1)
+        self.vbox.addSpacing(10)
         self.vbox.addWidget(HorizontalSeparator())
 
         self.splitter1 = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
@@ -799,9 +803,12 @@ class MainKeyboardWidget(QtWidgets.QWidget):
         self.splitter1.setSizes([1, 1])
         self.histogram.setMaximumHeight(160 * self.size_factor)
         self.text_box.setMaximumHeight(160 * self.size_factor)
+        self.histogram.setMinimumHeight(100 * self.size_factor)
+        self.text_box.setMinimumHeight(100 * self.size_factor)
 
-        self.vbox.addSpacing(5)
-        self.vbox.addWidget(self.splitter1, 4)
+        self.vbox.addSpacing(6)
+        self.vbox.addSpacing(6)
+        self.vbox.addWidget(self.splitter1, 5)
         self.layout_clocks()
         self.setLayout(self.vbox)
 
@@ -874,6 +881,59 @@ class MainKeyboardWidget(QtWidgets.QWidget):
                 clock.in_focus = True
                 clock.redraw_text = True
                 clock.update()
+        else:
+            qp = QtGui.QPainter()
+            qp.begin(self)
+            pen = qp.pen()
+            pen.setColor(QtGui.QColor(150, 150, 150))
+            qp.setPen(pen)
+
+            skip_box = 0
+            hold_skip = False
+            for row in range(self.keyboard_grid.rowCount()):
+                for col in range(self.keyboard_grid.columnCount()):
+                    cell_rect = self.keyboard_grid.cellRect(row, col)
+                    cell_x1, cell_y1, cell_x2, cell_y2 = cell_rect.getCoords()
+                    cell_x2 -= cell_x1
+                    cell_y2 -= cell_y1
+
+                    if self.parent.layout_preference == 'qwerty':
+                        if (row == 3 and col == 0):   # backspace
+                            cell_x2 = cell_x2 * 3 + 9
+                            skip_box = 2
+                            hold_skip = True
+                        if (row == 3 and col == 4):   # space
+                            cell_x2 = cell_x2 * 2 + 4
+                            skip_box = 1
+                            hold_skip = True
+                        if (row == 3 and col == 6):   # undo
+                            cell_x2 = cell_x2 * 2 + 4
+                            skip_box = 3
+                            hold_skip = True
+
+                    if skip_box == 0 or hold_skip:
+                        if self.parent.in_pause:
+                            qp.fillRect(cell_x1, cell_y1, cell_x2, cell_y2, QtGui.QColor(240, 255, 240))
+                        else:
+                            qp.fillRect(cell_x1, cell_y1, cell_x2, cell_y2, QtGui.QColor(255, 255, 255))
+                        qp.drawRect(cell_x1, cell_y1, cell_x2, cell_y2)
+                        hold_skip = False
+                    else:
+                        skip_box -= 1
+
+            if self.parent.word_pred_on == 1:
+                cell_rect = self.words_grid.geometry()
+                cell_x1, cell_y1, cell_x2, cell_y2 = cell_rect.getCoords()
+                cell_x2 -= cell_x1
+                cell_y2 -= cell_y1
+
+                if self.parent.in_pause:
+                    qp.fillRect(cell_x1, cell_y1-4, cell_x2, cell_y2+4, QtGui.QColor(240, 255, 240))
+                else:
+                    qp.fillRect(cell_x1, cell_y1-2, cell_x2, cell_y2+4, QtGui.QColor(255, 255, 255))
+                qp.drawRect(cell_x1, cell_y1-2, cell_x2, cell_y2+4)
+
+            qp.end()
 
     def change_value(self, value):  # Change clock speed
         if self.parent.phrase_prompts:
@@ -916,7 +976,7 @@ class MainKeyboardWidget(QtWidgets.QWidget):
                 elif text == " ":
                     text = "_"
                 clock = ClockWidget(text, self)
-                clock.setAttribute(QtCore.Qt.WA_OpaquePaintEvent)
+                # clock.setAttribute(QtCore.Qt.WA_OpaquePaintEvent)
                 words = self.get_words(clock.text.lower())
                 
                 word_clocks = ['' for i in range(kconfig.N_pred)]
@@ -925,13 +985,13 @@ class MainKeyboardWidget(QtWidgets.QWidget):
                     if word[:-1] in list(string.ascii_letters):
                         word = word[0]+"_"
                     clockf = ClockWidget(word, self)
-                    clockf.setAttribute(QtCore.Qt.WA_OpaquePaintEvent)
+                    # clockf.setAttribute(QtCore.Qt.WA_OpaquePaintEvent)
                     word_clocks[i] = clockf
 
                     i += 1
                 for n in range(i, 3):
-                    clockf = ClockWidget('', self, filler_clock=True)
-                    clockf.setAttribute(QtCore.Qt.WA_OpaquePaintEvent)
+                    clockf = ClockWidget(' ', self, filler_clock=True)
+                    # clockf.setAttribute(QtCore.Qt.WA_OpaquePaintEvent)
                     word_clocks[n] = clockf
                 self.clocks += word_clocks
                 self.clocks += [clock]
@@ -959,7 +1019,7 @@ class MainKeyboardWidget(QtWidgets.QWidget):
                     self.clocks[index].set_text(word)
                     index += 1
                 for i in range(len(words), 3):
-                    self.clocks[index].set_text('')
+                    self.clocks[index].set_text(' ')
                     self.clocks[index].filler_clock = True
                     self.clocks[index].update()
                     index += 1
@@ -993,6 +1053,11 @@ class MainKeyboardWidget(QtWidgets.QWidget):
         combine_break_clocks = 'BREAKUNIT' in target_layout_list
         # layout keyboard in grid
         self.keyboard_grid = QtWidgets.QGridLayout()
+        self.keyboard_grid.setHorizontalSpacing(4)
+        self.keyboard_grid.setVerticalSpacing(4)
+        self.vbox.insertLayout(3, self.keyboard_grid, 25)  # add keyboard grid to place in main layout
+
+        self.universal_clock_height = self.keyboard_grid.geometry().height() // 18
         self.punctuation_grid = QtWidgets.QGridLayout()
         self.back_clear_vbox = QtWidgets.QVBoxLayout()
 
@@ -1002,41 +1067,66 @@ class MainKeyboardWidget(QtWidgets.QWidget):
                 if sub_clocks is not None:
                     if qwerty:
                         key_grid.addWidget(VerticalSeparator(), 0, 0, 6, 1)
-                        key_grid.addWidget(VerticalSeparator(), 0, 2, 6, 1)
-                        key_grid.addWidget(HorizontalSeparator(), 0, 0, 1, 2)
-                        key_grid.addWidget(HorizontalSeparator(), 6, 0, 1, 2)
+                        key_grid.addWidget(VerticalSeparator(), 0, 3, 6, 1)
+                        key_grid.addWidget(HorizontalSeparator(), 0, 0, 1, 3)
+                        key_grid.addWidget(HorizontalSeparator(), 6, 0, 1, 3)
+
                         key_grid.addWidget(main_clock, 1, 1)
+                        key_grid.addWidget(main_clock.label, 1, 2)
+                        key_grid.setColumnMinimumWidth(1, self.universal_clock_height)
+
+                        key_grid.setColumnStretch(1, 1)
+                        key_grid.setColumnStretch(2, 4)
+
                         clock_index = 0
                         for sub_clock in sub_clocks:
                             key_grid.addWidget(sub_clock, 2 + clock_index, 1)
+                            key_grid.addWidget(sub_clock.label, 2 + clock_index, 2)
                             clock_index += 1
                         for row in range(4):
-                            key_grid.setRowStretch(row+1, 2)
+                            key_grid.setRowStretch(row+1, 1)
                     else:
                         key_grid.addWidget(VerticalSeparator(), 0, 0, 4, 1)
-                        key_grid.addWidget(VerticalSeparator(), 0, 3, 4, 1)
-                        key_grid.addWidget(HorizontalSeparator(), 0, 0, 1, 3)
-                        key_grid.addWidget(HorizontalSeparator(), 4, 0, 1, 3)
-                        key_grid.addWidget(main_clock, 1, 1, 3, 1)
+                        key_grid.addWidget(VerticalSeparator(), 0, 5, 4, 1)
+                        key_grid.addWidget(HorizontalSeparator(), 0, 0, 1, 6)
+                        key_grid.addWidget(HorizontalSeparator(), 4, 0, 1, 6)
+                        key_grid.addWidget(main_clock, 2, 1)
+                        key_grid.addWidget(main_clock.label, 2, 2)
+                        key_grid.setColumnMinimumWidth(1, self.universal_clock_height)
                         clock_index = 0
                         for sub_clock in sub_clocks:
-                            key_grid.addWidget(sub_clock, 1+clock_index, 2)
+                            key_grid.addWidget(sub_clock, 1+clock_index, 3)
+                            key_grid.addWidget(sub_clock.label, 1+clock_index, 4)
                             clock_index += 1
-                        key_grid.setColumnStretch(1, 4)
-                        key_grid.setColumnStretch(2, 5)
+                        key_grid.setColumnMinimumWidth(3, self.universal_clock_height)
+                        key_grid.setColumnStretch(1, 1)
+                        key_grid.setColumnStretch(2, 1)
+                        key_grid.setColumnStretch(3, 1)
+                        key_grid.setColumnStretch(4, 4)
+
+                        key_grid.setRowStretch(1, 1)
+                        key_grid.setRowStretch(2, 1)
+                        key_grid.setRowStretch(3, 1)
+
                 else:
                     key_grid.addWidget(VerticalSeparator(), 0, 0, 4, 1)
                     key_grid.addWidget(VerticalSeparator(), 0, 3, 4, 1)
                     key_grid.addWidget(HorizontalSeparator(), 0, 0, 1, 3)
                     key_grid.addWidget(HorizontalSeparator(), 4, 0, 1, 3)
-                    key_grid.addWidget(main_clock, 1, 1, 3, 2)
+                    key_grid.addWidget(main_clock, 1, 1, 3, 1)
+                    key_grid.addWidget(main_clock.label, 1, 2, 3, 1)
             else:
                 key_grid.addWidget(VerticalSeparator(), 0, 0, 4, 1)
-                key_grid.addWidget(VerticalSeparator(), 0, 3, 4, 1)
-                key_grid.addWidget(HorizontalSeparator(), 0, 0, 1, 3)
-                key_grid.addWidget(HorizontalSeparator(), 4, 0, 1, 3)
-                key_grid.addWidget(main_clock, 1, 1, 3, 2)
-                key_grid.setColumnStretch(1, 4)
+                key_grid.addWidget(VerticalSeparator(), 0, 4, 4, 1)
+                key_grid.addWidget(HorizontalSeparator(), 0, 0, 1, 4)
+                key_grid.addWidget(HorizontalSeparator(), 4, 0, 1, 4)
+                key_grid.addWidget(main_clock, 2, 1, 2, 1)
+                key_grid.addWidget(main_clock.label, 2, 2, 2, 1)
+                key_grid.setColumnStretch(1, 1)
+                key_grid.setColumnStretch(2, 3)
+
+                key_grid.setRowStretch(3, 4)
+                key_grid.setRowStretch(2, 4)
                 key_grid.setRowStretch(1, 4)
             return key_grid
 
@@ -1097,11 +1187,11 @@ class MainKeyboardWidget(QtWidgets.QWidget):
             for clock in break_clocks:
 
                 self.break_unit.addWidget(VerticalSeparator(), 0, 0, 4, 1)
-                self.break_unit.addWidget(VerticalSeparator(), 0, 3, 4, 1)
-                self.break_unit.addWidget(HorizontalSeparator(), 0, 0, 1, 3)
-                self.break_unit.addWidget(HorizontalSeparator(), 4, 0, 1, 3)
+                self.break_unit.addWidget(VerticalSeparator(), 0, 5, 4, 1)
+                self.break_unit.addWidget(HorizontalSeparator(), 0, 0, 1, 5)
+                self.break_unit.addWidget(HorizontalSeparator(), 4, 0, 1, 5)
                 if i > 2:
-                    col = 2
+                    col = 3
                 else:
                     col = 1
 
@@ -1110,8 +1200,14 @@ class MainKeyboardWidget(QtWidgets.QWidget):
                 else:
                     row = 1
                 self.break_unit.addWidget(clock, row, col)
+                self.break_unit.addWidget(clock.label, row, col+1)
                 self.break_unit.setRowStretch(row, 2)
                 i+=1
+
+            self.break_unit.setColumnStretch(1, 2)
+            self.break_unit.setColumnStretch(2, 3)
+            self.break_unit.setColumnStretch(3, 2)
+            self.break_unit.setColumnStretch(4, 3)
 
         # make undo unit
         self.undo_unit = QtWidgets.QGridLayout()
@@ -1121,52 +1217,72 @@ class MainKeyboardWidget(QtWidgets.QWidget):
         self.undo_label.setFont(undo_font)
 
         self.undo_unit.addWidget(VerticalSeparator(), 0, 0, 3, 1)
-        self.undo_unit.addWidget(VerticalSeparator(), 0, 2, 3, 1)
-        self.undo_unit.addWidget(HorizontalSeparator(), 0, 0, 1, 2)
-        self.undo_unit.addWidget(HorizontalSeparator(), 3, 0, 1, 2)
+        self.undo_unit.addWidget(VerticalSeparator(), 0, 3, 3, 1)
+        self.undo_unit.addWidget(HorizontalSeparator(), 0, 0, 1, 3)
+        self.undo_unit.addWidget(HorizontalSeparator(), 3, 0, 1, 3)
         if combine_back_clocks:
             self.undo_unit.addWidget(undo_clocks[2], 1, 1)
+            self.undo_unit.addWidget(undo_clocks[2].label, 1, 2)
             self.undo_unit.addWidget(self.undo_label, 2, 1)
         else:
             self.undo_unit.addWidget(undo_clocks[0], 1, 1)
+            self.undo_unit.addWidget(undo_clocks[0].label, 1, 2)
             self.undo_unit.addWidget(self.undo_label, 2, 1)
+
+        self.undo_unit.setColumnStretch(1, 1)
+        self.undo_unit.setColumnStretch(2, 4)
 
         # make back unit
         if combine_back_clocks:
 
             self.back_unit = QtWidgets.QGridLayout()
             self.back_unit.addWidget(VerticalSeparator(), 0, 0, 4, 1)
-            self.back_unit.addWidget(VerticalSeparator(), 0, 2, 4, 1)
-            self.back_unit.addWidget(HorizontalSeparator(), 0, 0, 1, 2)
-            self.back_unit.addWidget(HorizontalSeparator(), 4, 0, 1, 2)
-            vbox = QtWidgets.QVBoxLayout()
-            vbox.addWidget(undo_clocks[0], 3)
-            vbox.addStretch(1)
-            vbox.addWidget(undo_clocks[1], 3)
-            self.back_unit.addLayout(vbox, 2, 1)
+            self.back_unit.addWidget(VerticalSeparator(), 0, 3, 4, 1)
+            self.back_unit.addWidget(HorizontalSeparator(), 0, 0, 1, 3)
+            self.back_unit.addWidget(HorizontalSeparator(), 4, 0, 1, 3)
+
+            self.back_unit.addWidget(undo_clocks[0], 1, 1)
+            self.back_unit.addWidget(undo_clocks[0].label, 1, 2)
+            self.back_unit.addWidget(undo_clocks[1], 3, 1)
+            self.back_unit.addWidget(undo_clocks[1].label, 3, 2)
+
+            self.back_unit.setColumnStretch(1, 1)
+            self.back_unit.setColumnStretch(2, 4)
+
+            self.back_unit.setRowStretch(1, 1)
+            self.back_unit.setRowStretch(3, 1)
 
         # make space ' unit
         if combine_space_clocks:
             self.space_unit = QtWidgets.QGridLayout()
             self.space_unit.addWidget(VerticalSeparator(), 0, 0, 4, 1)
-            self.space_unit.addWidget(VerticalSeparator(), 0, 2, 4, 1)
-            self.space_unit.addWidget(HorizontalSeparator(), 0, 0, 1, 2)
-            self.space_unit.addWidget(HorizontalSeparator(), 4, 0, 1, 2)
-            vbox = QtWidgets.QVBoxLayout()
-            vbox.addWidget(space_clocks[0], 3)
-            vbox.addStretch(1)
-            vbox.addWidget(space_clocks[1], 3)
-            self.space_unit.addLayout(vbox, 2, 1)
+            self.space_unit.addWidget(VerticalSeparator(), 0, 3, 4, 1)
+            self.space_unit.addWidget(HorizontalSeparator(), 0, 0, 1, 3)
+            self.space_unit.addWidget(HorizontalSeparator(), 4, 0, 1, 3)
+
+            self.space_unit.addWidget(space_clocks[0], 1, 1)
+            self.space_unit.addWidget(space_clocks[0].label, 1, 2)
+            self.space_unit.addWidget(space_clocks[1], 3, 1)
+            self.space_unit.addWidget(space_clocks[1].label, 3, 2)
+
+            self.space_unit.setColumnStretch(1, 1)
+            self.space_unit.setColumnStretch(2, 4)
+
+            self.space_unit.setRowStretch(1, 1)
+            self.space_unit.setRowStretch(3, 1)
 
         self.layout_from_target(self.parent.target_layout)
-        self.vbox.insertLayout(3, self.keyboard_grid, 25)  # add keyboard grid to place in main layout
+
         self.words_grid = QtWidgets.QHBoxLayout()
         if self.parent.word_pred_on == 1:
             for clock in self.reduced_word_clocks:
-                clock.maxSize = round(50 * clock.size_factor)
-                clock.setMaximumHeight(clock.maxSize)
-                self.words_grid.addWidget(clock)
-            self.vbox.insertLayout(4, self.words_grid, 4)
+                # clock.maxSize = round(50 * clock.size_factor)
+                # clock.setMaximumHeight(clock.maxSize)
+                self.words_grid.addWidget(clock, 2)
+                self.words_grid.addWidget(clock.label, 4)
+                self.words_grid.addStretch(2)
+            self.vbox.insertLayout(6, self.words_grid, 3)
+
             self.update_clocks()
 
         self.laid_out = True
@@ -1214,6 +1330,7 @@ class MainKeyboardWidget(QtWidgets.QWidget):
 
             self.keyboard_grid.setRowStretch(row_num, 1)
             row_num += 1
+
 
     def clear_layout(self, layout):
         while layout.count():

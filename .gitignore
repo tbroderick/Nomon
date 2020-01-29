@@ -3,3 +3,4 @@ keyboard/dist
 sim_data/
 supercloud*/
 .pyc
+.idea/workspace.xml
