@@ -181,9 +181,7 @@ pause_length = 1000
 prob_thres = 0.008
 # undo prior prob
 undo_prob = 1.0 / 40
-# break prior prob
-break_prob = 1.0 / 20
 # back prior prob
 back_prob = 1.0 / 40
 # remaining, non-special probability
-rem_prob = 1.0 - undo_prob - break_prob - back_prob
+rem_prob = 1.0 - undo_prob - back_prob

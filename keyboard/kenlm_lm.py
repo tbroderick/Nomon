@@ -12,14 +12,21 @@ import kconfig
 
 # sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from predictor import WordPredictor
+from char_predictor import CharacterPredictor
+
+
+def lognormalize_factor(x):
+    a = np.logaddexp.reduce(x)
+    return a
 
 
 class LanguageModel():
-    def __init__(self, lm_filename, vocab_filename, parent=None):
-        self.lm_filename = lm_filename
+    def __init__(self, word_lm_filename, char_lm_filename, vocab_filename, char_filename, parent=None):
+        self.lm_filename = word_lm_filename
         self.vocab_filename = vocab_filename
 
-        self.word_predictor = WordPredictor(lm_filename, vocab_filename)
+        self.word_predictor = WordPredictor(word_lm_filename, vocab_filename)
+        self.char_predictor = CharacterPredictor(char_lm_filename, char_filename)
 
         # Define how many predictions you want for each character
         # By default it is set to 0 and will return all possible
@@ -82,8 +89,11 @@ class LanguageModel():
             word_preds += [key_word_preds]
             word_probs += [key_word_probs]
 
-        key_probs, total_log_prob = self.get_char_probs(word_dict, keys_li)
-        word_probs = np.array(word_probs) - total_log_prob
+        key_probs = self.get_char_probs(context, prefix, keys_li)
+        word_probs = np.array(word_probs)
+
+        key_probs = key_probs - lognormalize_factor(key_probs)
+        word_probs = word_probs - lognormalize_factor(word_probs)
 
         # nth_min_log_prob = np.partition(word_probs.flatten(), num_words_total)[num_words_total]
         #
@@ -93,26 +103,23 @@ class LanguageModel():
 
         return word_preds.tolist(), word_probs.tolist(), key_probs
 
-    def get_char_probs(self, word_dict, keys_li):
-        total_log_prob = -float("inf")
-        key_probs = []
-        for key in keys_li:
-            log_prob = -float("inf")
-            if key in word_dict:
-                for word in word_dict[key]:
-                    log_prob = np.logaddexp(log_prob, word[1])
-            if log_prob == -float("inf"):
-                log_prob = np.log(kconfig.prob_thres*0.5)
-            total_log_prob = np.logaddexp(log_prob, total_log_prob)
-            key_probs += [log_prob]
+    def get_char_probs(self, context, prefix, keys_li):
+        key_results = dict(self.char_predictor.get_characters(context+prefix))
 
-        return key_probs, total_log_prob
-
+        key_probs = np.array([key_results[key] if key in key_results else -float("inf") for key in keys_li])
+        return key_probs
 
 
 def main():
+    cwd = os.getcwd()
+    word_lm_path = os.path.join(os.path.join(cwd, 'resources'),
+                                'mix4_opt_min_lower_100k_4gram_2.5e-9_prob8_bo4_compress255.kenlm')
+    char_lm_path = os.path.join(os.path.join(cwd, 'resources'),
+                                'mix4_opt_min_lower_12gram_6e-9_prob9_bo4_compress255.kenlm')
+    vocab_path = os.path.join(os.path.join(cwd, 'resources'), 'vocab_lower_100k.txt')
+    char_path = os.path.join(os.path.join(cwd, 'resources'), 'char_set.txt')
 
-    LM = LanguageModel('../keyboard/resources/lm_word_medium.kenlm', '../keyboard/resources/vocab_100k')
+    LM = LanguageModel(word_lm_path, char_lm_path, vocab_path, char_path)
     print(LM.get_words("united states of ", "", list("abcdefghijklmnopqrstuvwxyz' ")))
 
     # # Provide the name and path of a language model and the vocabulary

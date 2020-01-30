@@ -120,10 +120,15 @@ class Keyboard(MainWindow):
         self.left_context = ""
 
         self.cwd = os.getcwd()
-        lm_path = os.path.join(os.path.join(self.cwd, 'resources'), 'mix4_opt_min_lower_100k_4gram_2.5e-9_prob8_bo4_compress255.kenlm')
-        vocab_path = os.path.join(os.path.join(self.cwd, 'resources'), 'vocab_lower_100k.txt')
 
-        self.lm = LanguageModel(lm_path, vocab_path)
+        word_lm_path = os.path.join(os.path.join(self.cwd, 'resources'),
+                                    'mix4_opt_min_lower_100k_4gram_2.5e-9_prob8_bo4_compress255.kenlm')
+        char_lm_path = os.path.join(os.path.join(self.cwd, 'resources'),
+                                    'mix4_opt_min_lower_12gram_6e-9_prob9_bo4_compress255.kenlm')
+        vocab_path = os.path.join(os.path.join(self.cwd, 'resources'), 'vocab_lower_100k.txt')
+        char_path = os.path.join(os.path.join(self.cwd, 'resources'), 'char_set.txt')
+
+        self.lm = LanguageModel(word_lm_path, char_lm_path, vocab_path, char_path)
 
         # initialize pygame and joystick
         if kconfig.target_evt is kconfig.joy_evt:
@@ -733,8 +738,8 @@ class Keyboard(MainWindow):
                     prob = prob + np.log(kconfig.rem_prob)
                     if self.keys_li[key] == kconfig.mybad_char or self.keys_li[key] == kconfig.yourbad_char:
                         prob = np.log(kconfig.undo_prob)
-                    if self.keys_li[key] in kconfig.break_chars:
-                        prob = np.log(kconfig.break_prob)
+                    # if self.keys_li[key] in kconfig.break_chars:
+                    #     prob = np.log(kconfig.break_prob)
                     if self.keys_li[key] == kconfig.back_char:
                         prob = np.log(kconfig.back_prob)
                     if self.keys_li[key] == kconfig.clear_char:
@@ -750,9 +755,9 @@ class Keyboard(MainWindow):
                         prob = kconfig.undo_prob
                         self.word_score_prior.append(np.log(prob))
                     else:
-                        self.word_score_prior.append(0)
+                        self.word_score_prior.append(-float("inf"))
                 else:
-                    self.word_score_prior.append(0)
+                    self.word_score_prior.append(-float("inf"))
 
     def reset_context(self):
         self.left_context = ""
@@ -1141,7 +1146,6 @@ class Keyboard(MainWindow):
         # # talk the string
         # if self.talk_set.get() == 1:
         #     self.talk_winner(talk_string)
-
         return self.words_on, self.words_off, self.word_score_prior, is_undo, is_equalize
 
 
