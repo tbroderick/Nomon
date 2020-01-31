@@ -102,7 +102,7 @@ class ClockWidget(QtWidgets.QWidget):
 
     def set_text(self, text):
         self.text = text
-        self.label.setText(text)
+        self.label.setText(self.text)
         self.redraw_text = True
 
     def set_angle(self, angle):
@@ -228,7 +228,11 @@ class ClockWidget(QtWidgets.QWidget):
             font_height_max = label.fontMetrics().boundingRect(label.text()).height()
 
             self.text_font.setPixelSize(min(font_height_max, self.parent.parent.universal_clock_height*0.85))
-            self.text_font.setStretch(85)
+            if self.parent.parent.layout_preference == "emoji":
+                text_stretch = 100
+            else:
+                text_stretch = 85
+            self.text_font.setStretch(text_stretch)
             self.label.setFont(self.text_font)
         #
         #     label = QtWidgets.QLabel(self.text)
@@ -582,6 +586,7 @@ class OldClockWidget(QtWidgets.QWidget):
         self.dummy_angle_offset = 0.  # used in pretraining
         self.w = 1
         self.h = 1
+        self.radius=1
         self.initUI()
 
         # try:

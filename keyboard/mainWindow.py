@@ -42,6 +42,8 @@ import os
 import zipfile
 import numpy as np
 import time
+import emoji
+from broderclocks import BroderClocks
 
 from widgets import ClockWidget, HistogramWidget, VerticalSeparator, HorizontalSeparator
 
@@ -136,6 +138,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.qwerty_layout_action = QtWidgets.QAction('&QWERTY', self, checkable=True)
         self.qwerty_layout_action.triggered.connect(lambda: self.layout_change_event('qwerty'))
 
+        self.emoji_layout_action = QtWidgets.QAction('&Emoji', self, checkable=True)
+        self.emoji_layout_action.triggered.connect(lambda: self.layout_change_event('emoji'))
+
         # Word Count Action
         self.high_word_action = QtWidgets.QAction('&High (Default)', self, checkable=True)
         self.high_word_action.triggered.connect(lambda: self.word_change_event('high'))
@@ -199,6 +204,7 @@ class MainWindow(QtWidgets.QMainWindow):
         keyboard_menu = view_menu.addMenu('&Keyboard Layout')
         keyboard_menu.addAction(self.default_layout_action)
         keyboard_menu.addAction(self.qwerty_layout_action)
+        keyboard_menu.addAction(self.emoji_layout_action)
         # word prediction
         word_menu = view_menu.addMenu('&Word Prediction Frequency')
         word_menu.addAction(self.high_word_action)
@@ -270,6 +276,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # check layout
         switch(self.default_layout_action, self.target_layout == kconfig.alpha_target_layout)
         switch(self.qwerty_layout_action, self.target_layout == kconfig.qwerty_target_layout)
+        switch(self.qwerty_layout_action, self.target_layout == kconfig.emoji_target_layout)
 
         # check word count
         switch(self.high_word_action, self.word_pred_on == 2)
@@ -352,7 +359,10 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             phrase_status = True
 
-        if self.phrases is None:
+        # if self.phrases is None:
+        if self.layout_preference == 'emoji':
+            self.phrases = Phrases("resources/emojis.txt")
+        else:
             self.phrases = Phrases("resources/twitter-phrases/watch-combined.txt")
 
         self.phrase_prompts = phrase_status
@@ -368,9 +378,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.mainWidget.cb_learn.setChecked(True)
             self.mainWidget.cb_pause.setChecked(True)
             self.default_clock_action.trigger()
-            self.high_word_action.trigger()
             self.med_font_action.trigger()
-            self.default_layout_action.trigger()
+            if self.layout_preference != 'emoji':
+                self.high_word_action.trigger()
+                self.default_layout_action.trigger()
 
             self.mainWidget.cb_learn.setEnabled(False)
             self.mainWidget.cb_pause.setEnabled(False)
@@ -382,7 +393,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ball_clock_action.setEnabled(False)
             self.pacman_clock_action.setEnabled(False)
             self.bar_clock_action.setEnabled(False)
-            self.default_layout_action.setEnabled(False)
+            # self.default_layout_action.setEnabled(False)
             self.qwerty_layout_action.setEnabled(False)
             self.high_contrast_action.setEnabled(False)
             self.low_word_action.setEnabled(False)
@@ -410,7 +421,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ball_clock_action.setEnabled(True)
             self.pacman_clock_action.setEnabled(True)
             self.bar_clock_action.setEnabled(True)
-            self.default_layout_action.setEnabled(True)
+            # self.default_layout_action.setEnabled(True)
             self.qwerty_layout_action.setEnabled(True)
             self.high_contrast_action.setEnabled(True)
             self.low_word_action.setEnabled(True)
@@ -469,29 +480,50 @@ class MainWindow(QtWidgets.QMainWindow):
             self.up_handel.safe_save([self.clock_type, self.font_scale, self.high_contrast, 'alpha',
                                       self.pf_preference, self.start_speed, self.is_write_data])
             self.target_layout = kconfig.alpha_target_layout
+            self.key_chars = kconfig.key_chars
+            self.word_pred_on = 2
 
         elif layout == 'qwerty':
             self.up_handel.safe_save([self.clock_type, self.font_scale, self.high_contrast, 'qwerty',
                                       self.pf_preference, self.start_speed, self.is_write_data])
             self.target_layout = kconfig.qwerty_target_layout
+            self.key_chars = kconfig.key_chars
+            self.word_pred_on = 2
+
+        elif layout == 'emoji':
+            self.up_handel.safe_save([self.clock_type, self.font_scale, self.high_contrast, 'emoji',
+                                      self.pf_preference, self.start_speed, self.is_write_data])
+            self.target_layout = kconfig.emoji_target_layout
+            self.key_chars = kconfig.emoji_keys
+            self.word_pred_on = 0
 
         self.layout_preference = layout
-        self.check_filemenu()
+
+        self.init_locs()
+        self.init_words()
+        self.clock_spaces = np.zeros((len(self.clock_centers), 2))
+        self.clock_params = np.zeros((len(self.clock_centers), 8))
+        self.bc = BroderClocks(self)
+        self.gen_word_prior(False)
+
 
         self.in_pause = True
         self.mainWidget.clocks = []
-
         self.mainWidget.clear_layout(self.mainWidget.keyboard_grid)
         self.mainWidget.clear_layout(self.mainWidget.words_grid)
         self.mainWidget.words_grid.deleteLater()
         self.mainWidget.keyboard_grid.deleteLater()
         self.mainWidget.generate_clocks()
         self.mainWidget.layout_clocks()
+        self.init_clocks()
 
-        self.init_clocks
+        self.clock_spaces = np.zeros((len(self.clock_centers), 2))
+        self.bc.init_follow_up(self.word_score_prior)
         self.mainWidget.update()
+
         self.in_pause = False
         self.environment_change = True
+        self.check_filemenu()
 
     def clock_text_align(self, alignment, message=True):
         if alignment == "auto":
@@ -858,6 +890,7 @@ class MainKeyboardWidget(QtWidgets.QWidget):
             self.parent.update_phrases("")
 
     def paintEvent(self, e):
+
         if (self.parent.pretrain or self.parent.pause_animation) and self.in_focus:
             qp = QtGui.QPainter()
             qp.begin(self)
@@ -882,6 +915,7 @@ class MainKeyboardWidget(QtWidgets.QWidget):
                 clock.redraw_text = True
                 clock.update()
         else:
+            self.text_box.setStyleSheet("background-color:#ffffff;")
             qp = QtGui.QPainter()
             qp.begin(self)
             pen = qp.pen()
@@ -909,6 +943,11 @@ class MainKeyboardWidget(QtWidgets.QWidget):
                         if (row == 3 and col == 6):   # undo
                             cell_x2 = cell_x2 * 2 + 4
                             skip_box = 3
+                            hold_skip = True
+                    elif self.parent.layout_preference == 'emoji':
+                        if (row == 7 and col == 0):   # backspace
+                            cell_x2 = cell_x2 * 2 + 4
+                            skip_box = 1
                             hold_skip = True
 
                     if skip_box == 0 or hold_skip:
@@ -965,7 +1004,13 @@ class MainKeyboardWidget(QtWidgets.QWidget):
     def generate_clocks(self):  # Generate the clock widgets according to blueprint from self.get_words
         self.reduced_word_clocks = [ClockWidget('INIT', self) for i in range(self.parent.reduce_display)]
         self.clocks = []
-        for row in self.layout:
+
+        if self.parent.layout_preference == 'emoji':
+            layout = kconfig.emoji_target_layout
+        else:
+            layout = self.layout
+
+        for row in layout:
             for text in row:
                 if text == kconfig.mybad_char:
                     text = "Undo"
@@ -989,7 +1034,7 @@ class MainKeyboardWidget(QtWidgets.QWidget):
                     word_clocks[i] = clockf
 
                     i += 1
-                for n in range(i, 3):
+                for n in range(i, kconfig.N_pred):
                     clockf = ClockWidget(' ', self, filler_clock=True)
                     # clockf.setAttribute(QtCore.Qt.WA_OpaquePaintEvent)
                     word_clocks[n] = clockf
@@ -1023,7 +1068,8 @@ class MainKeyboardWidget(QtWidgets.QWidget):
                     self.clocks[index].filler_clock = True
                     self.clocks[index].update()
                     index += 1
-                self.clocks[index].set_text(text)
+                if not self.parent.layout_preference == "emoji":
+                    self.clocks[index].set_text(text)
                 index += 1
 
         if self.parent.word_pred_on == 1:
@@ -1047,6 +1093,7 @@ class MainKeyboardWidget(QtWidgets.QWidget):
 
     def layout_clocks(self):  # called after self.generate_clocks, arranges clocks in grid
         qwerty = (self.parent.layout_preference == 'qwerty')
+        emoji = (self.parent.layout_preference == 'emoji')
         target_layout_list = [j for i in self.parent.target_layout for j in i]
         combine_back_clocks = 'BACKUNIT' in target_layout_list
         combine_space_clocks = 'SPACEUNIT' in target_layout_list
@@ -1130,13 +1177,13 @@ class MainKeyboardWidget(QtWidgets.QWidget):
                 key_grid.setRowStretch(1, 4)
             return key_grid
 
-        if self.parent.word_pred_on != 2:  # allow clocks to take up more space if fewer words on
-            for clock in self.clocks:
-                clock.maxSize = round(80 * clock.size_factor)
-                clock.setMaximumHeight(clock.maxSize)
-                clock.calculate_clock_size()
-                self.parent.update_clock_radii()
-                clock.update()
+        # if self.parent.word_pred_on != 2:  # allow clocks to take up more space if fewer words on
+        #     for clock in self.clocks:
+        #         clock.maxSize = round(80 * clock.size_factor)
+        #         clock.setMaximumHeight(clock.maxSize)
+        #         clock.calculate_clock_size()
+        #         self.parent.update_clock_radii()
+        #         clock.update()
 
         self.grid_units=[]
         clock_index = 0
@@ -1145,7 +1192,12 @@ class MainKeyboardWidget(QtWidgets.QWidget):
         space_clocks=[]
         word_clocks = []
         for key in self.parent.key_chars:
+            print(key)
             if key in list(string.ascii_letters):
+                main_clock = self.clocks[clock_index + kconfig.N_pred]
+                sub_clocks = [self.clocks[clock_index + i] for i in range(kconfig.N_pred)]
+                clock_index += kconfig.N_pred + 1
+            elif self.parent.layout_preference == 'emoji' and key in kconfig.emoji_keys:
                 main_clock = self.clocks[clock_index + kconfig.N_pred]
                 sub_clocks = [self.clocks[clock_index + i] for i in range(kconfig.N_pred)]
                 clock_index += kconfig.N_pred + 1
@@ -1224,7 +1276,7 @@ class MainKeyboardWidget(QtWidgets.QWidget):
             self.undo_unit.addWidget(undo_clocks[2], 1, 1)
             self.undo_unit.addWidget(undo_clocks[2].label, 1, 2)
             self.undo_unit.addWidget(self.undo_label, 2, 1)
-        else:
+        elif not emoji:
             self.undo_unit.addWidget(undo_clocks[0], 1, 1)
             self.undo_unit.addWidget(undo_clocks[0].label, 1, 2)
             self.undo_unit.addWidget(self.undo_label, 2, 1)
@@ -1300,6 +1352,10 @@ class MainKeyboardWidget(QtWidgets.QWidget):
                             self.keyboard_grid.addLayout(self.grid_units[self.parent.key_chars.index(key)], row_num,
                                                          col_num, 1, 3)
                             col_num += 2
+                        elif emoji:
+                            self.keyboard_grid.addLayout(self.grid_units[self.parent.key_chars.index(key)], row_num,
+                                                         col_num, 1, 2)
+                            col_num += 1
                         else:
                             self.keyboard_grid.addLayout(self.grid_units[self.parent.key_chars.index(key)], row_num,
                                                          col_num)

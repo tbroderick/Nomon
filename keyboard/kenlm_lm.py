@@ -89,7 +89,9 @@ class LanguageModel():
             word_preds += [key_word_preds]
             word_probs += [key_word_probs]
 
+
         key_probs = self.get_char_probs(context, prefix, keys_li)
+
         word_probs = np.array(word_probs)
 
         key_probs = key_probs - lognormalize_factor(key_probs)

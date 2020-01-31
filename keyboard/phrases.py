@@ -33,6 +33,7 @@
 import numpy as np
 import os
 import re
+import emoji
 
 
 class Phrases:
@@ -50,10 +51,14 @@ class Phrases:
                     self.phrases.append(phrase)
         else:
             for phrase in phrases_text.split("\n"):
-                if 5 <= len(phrase.split(" ")) <= 10:
-                    phrase = re.sub(r"[^a-z \']+", '', phrase.lower())
-                    phrase = re.sub(r"  ", ' ', phrase.lower())
-                    self.phrases.append(phrase)
+                if 'emoji' not in phrases_file_name:
+                    if 5 <= len(phrase.split(" ")) <= 10:
+                        phrase = re.sub(r"[^a-z \']+", '', phrase.lower())
+                        phrase = re.sub(r"  ", ' ', phrase.lower())
+                        self.phrases.append(phrase)
+                else:
+                    if phrase not in ['#','_','$','@']:
+                        self.phrases.append(emoji.emojize(phrase, use_aliases=True))
         self.num_phrases = len(self.phrases)
         # print("loaded "+str(self.num_phrases)+" phrases")
 

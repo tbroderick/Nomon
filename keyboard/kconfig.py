@@ -34,12 +34,14 @@
 
 import config
 import pickle
+import os
+import emoji
 
 ### Configuration settings for the SimulatedUser module ###
 
 ### SimulatedUser setup ###
 # characters in the keys
-space_char = ' '
+space_char = '_'
 mybad_char = '@'
 # yourbad_char = 'Yours'
 yourbad_char = 'Undo+'
@@ -68,6 +70,21 @@ qwerty_target_layout = [['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
                     ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', break_chars[3]],
                     ['z', 'x', 'c', 'v', 'b', 'n', 'm', break_chars[0], break_chars[1], break_chars[2]],
                     [ back_char, space_char, clear_char, 'UNDOUNIT']]
+
+emoji_file = open("resources/emojis.txt", "r")
+emoji_text = emoji_file.read()
+emoji_file.close()
+emoji_keys = emoji_text.split("\n")
+emoji_keys = [emoji.emojize(key, use_aliases=True) for key in emoji_keys]
+
+num_rows = 8
+num_cols = 8
+
+emoji_target_layout = []
+for i in range(len(emoji_keys)):
+    if i % num_rows == 0:
+        emoji_target_layout.append([])
+    emoji_target_layout[-1].append(emoji_keys[i])
 
 pretrain_target_layout = [  [0,  1,  2,  3,  4],
                             [5,  6,  7,  8,  9],

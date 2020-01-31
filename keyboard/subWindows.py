@@ -357,28 +357,63 @@ class PretrainScreen(QtWidgets.QWidget):
 
         self.setLayout(vbox)
 
+    def paintEvent(self, e):
+        qp = QtGui.QPainter()
+        qp.begin(self)
+        pen = qp.pen()
+        pen.setColor(QtGui.QColor(150, 150, 150))
+        qp.setPen(pen)
+
+        skip_box = 0
+        hold_skip = False
+        for row in range(self.keyboard_grid.rowCount()-1):
+            for col in range(self.keyboard_grid.columnCount()):
+                cell_rect = self.keyboard_grid.cellRect(row, col)
+                cell_x1, cell_y1, cell_x2, cell_y2 = cell_rect.getCoords()
+                cell_x2 -= cell_x1
+                cell_y2 -= cell_y1
+
+                if skip_box == 0 or hold_skip:
+                    if self.parent.in_pause:
+                        qp.fillRect(cell_x1, cell_y1, cell_x2, cell_y2, QtGui.QColor(240, 255, 240))
+                    else:
+                        qp.fillRect(cell_x1, cell_y1, cell_x2, cell_y2, QtGui.QColor(255, 255, 255))
+                    qp.drawRect(cell_x1, cell_y1, cell_x2, cell_y2)
+                    hold_skip = False
+                else:
+                    skip_box -= 1
+
     def generate_dummy_clocks(self):
         self.dummy_clocks = [ClockWidget("", self) for i in range(80)]
 
     def layout_clocks(self):
+        self.keyboard_grid = QtWidgets.QGridLayout()
+        self.universal_clock_height = self.keyboard_grid.geometry().height() // 18
 
         def make_grid_unit(main_clock, sub_clocks=None):
             key_grid = QtWidgets.QGridLayout()
-            key_grid.addWidget(VerticalSeparator(), 0, 0, 5, 1)
-            key_grid.addWidget(VerticalSeparator(), 0, 3, 5, 1)
-            key_grid.addWidget(HorizontalSeparator(), 0, 0, 1, 4)
-            key_grid.addWidget(HorizontalSeparator(), 4, 0, 1, 4)
-            key_grid.addWidget(main_clock, 1, 1, 3, 1)
+            key_grid.addWidget(VerticalSeparator(), 0, 0, 4, 1)
+            key_grid.addWidget(VerticalSeparator(), 0, 5, 4, 1)
+            key_grid.addWidget(HorizontalSeparator(), 0, 0, 1, 6)
+            key_grid.addWidget(HorizontalSeparator(), 4, 0, 1, 6)
+            key_grid.addWidget(main_clock, 2, 1)
+            key_grid.addWidget(main_clock.label, 2, 2)
+            key_grid.setColumnMinimumWidth(1, self.universal_clock_height)
             clock_index = 0
             for sub_clock in sub_clocks:
-                key_grid.addWidget(sub_clock, 1 + clock_index, 2)
-                key_grid.setRowStretch(1 + clock_index, 2)
+                key_grid.addWidget(sub_clock, 1 + clock_index, 3)
+                key_grid.addWidget(sub_clock.label, 1 + clock_index, 4)
                 clock_index += 1
-            key_grid.setColumnStretch(1, 4)
-            key_grid.setColumnStretch(2, 3)
-            return key_grid
+            key_grid.setColumnMinimumWidth(3, self.universal_clock_height)
+            key_grid.setColumnStretch(1, 1)
+            key_grid.setColumnStretch(2, 1)
+            key_grid.setColumnStretch(3, 1)
+            key_grid.setColumnStretch(4, 4)
 
-        self.keyboard_grid = QtWidgets.QGridLayout()
+            key_grid.setRowStretch(1, 1)
+            key_grid.setRowStretch(2, 1)
+            key_grid.setRowStretch(3, 1)
+            return key_grid
 
         self.grid_units = [make_grid_unit(self.dummy_clocks[4*i], self.dummy_clocks[4*i + 1:4*i + 4]) for i in
                            range(len(self.dummy_clocks) // 4)]
@@ -434,6 +469,7 @@ class Pretraining(StartWindow):
         self.pbc = None
         self.mainWidget = PretrainScreen(self)
         self.mainWidget.init_ui()
+        self.universal_clock_height = self.mainWidget.universal_clock_height
         self.radius = self.mainWidget.clock.radius
         self.time_rotate = self.sister.time_rotate
 
@@ -606,8 +642,11 @@ class Pretraining(StartWindow):
                 pass
 
         self.sister.pretrain = False
+        self.sister.mainWidget.in_focus = True
+        self.sister.pause_animation = False
         self.sister.draw_histogram(bars=None)
         self.sister.mainWidget.histogram.update()
+        self.sister.mainWidget.text_box.update()
         self.sister.mainWidget.update()
 
         self.close()

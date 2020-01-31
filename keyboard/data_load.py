@@ -43,8 +43,8 @@ import numpy as np
 
 # data_dir = "D:\\Users\\nickb\\Study Data\\nomon_data\\951"
 # data_dir2 = "D:\\Users\\nickb\\Study Data\\row_col_data\\951"
-data_dir = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\Nomon\\data\\2000s"
-data_dir2 = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\RowCol\\data\\2000s"
+data_dir = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\Nomon\\data\\3000"
+# data_dir2 = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\RowCol\\data\\2000s"
 # data_dir2 = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\RowCol\\data\\951"
 # data_dir = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\Nomon\\data\\951"
 
@@ -506,13 +506,13 @@ class DataUtil:
 
 du = DataUtil(data_dir)
 du.load_data()
-du.split_data_speed()
-du.correct_data_speed()
-du.plot_data()
+# du.split_data_speed()
+# du.correct_data_speed()
+# du.plot_data()
 
 # # du.save_hist()
-# du.split_data_phrase()
-# du.make_data_frame()
+du.split_data_phrase()
+du.make_data_frame()
 
 # du.DF = du.DF[du.DF["session"] != 7]
 # du.plot_click_dist_phrase()
@@ -529,7 +529,7 @@ du.plot_data()
 
 # du2.DF["session"] = du2.DF["session"].apply(lambda x: x + 2 if x >= 6 else x)
 #
-# du.print_stat_avg()
+du.print_stat_avg()
 # du2.print_stat_avg()
 # du.plot_phrase_stats(DF2=du2.DF)
 # du.test_significance(DF2=du2.DF)

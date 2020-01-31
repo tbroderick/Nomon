@@ -160,7 +160,7 @@ class PreClockUtil(ClockUtil):
         # self.selected_clock = 0
         count = 0
         for clock in self.pbc.parent.mainWidget.dummy_clocks:
-            clock.set_text("not me")
+            clock.set_text("no")
             clock.selected = False
             clock.highlighted = (random.random() < random.random())
             # 나중에 여기 CHECK
@@ -176,7 +176,7 @@ class PreClockUtil(ClockUtil):
                 clock.angle = v[0] + math.pi * 0.5
                 # clock.angle = 0
                 clock.selected = True
-                clock.set_text("Click Me!")
+                clock.set_text("Click!")
             clock.redraw_text = True
             count += 1
         self.latest_time = time.time()

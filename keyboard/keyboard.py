@@ -108,9 +108,14 @@ class Keyboard(MainWindow):
 
         if self.layout_preference == 'alpha':
             self.target_layout = kconfig.alpha_target_layout
+            self.key_chars = kconfig.key_chars
         elif self.layout_preference == 'qwerty':
             self.target_layout = kconfig.qwerty_target_layout
-        self.key_chars = kconfig.key_chars
+            self.key_chars = kconfig.key_chars
+        elif self.layout_preference == 'emoji':
+            self.target_layout = kconfig.emoji_target_layout
+            self.key_chars = kconfig.emoji_keys
+            self.word_pred_on = 0
 
         # set up dictionary tree
         # splash = StartWindow(screen_res, True)
@@ -246,7 +251,6 @@ class Keyboard(MainWindow):
             users = user_files[0][1]
         else:
             pathlib.Path(self.data_path).mkdir(parents=True, exist_ok=True)
-            # os.mkdir(data_path)
             user_files = None
             users = []
         input_method = 'text'
@@ -402,20 +406,27 @@ class Keyboard(MainWindow):
 
     def init_locs(self):
         # size of keyboard
-        self.N_rows = len(self.key_chars)
+        if self.layout_preference == 'emoji':
+            key_chars = self.target_layout
+        else:
+            key_chars = self.key_chars
+
+        self.N_rows = len(key_chars)
         self.N_keys_row = []
         self.N_keys = 0
         self.N_alpha_keys = 0
         for row in range(0, self.N_rows):
-            n_keys = len(self.key_chars[row])
+            n_keys = len(key_chars[row])
             for col in range(0, n_keys):
-                if not isinstance(self.key_chars[row][col], list):
-                    if self.key_chars[row][col].isalpha() and (len(self.key_chars[row][col]) == 1):
+                if not isinstance(key_chars[row][col], list):
+                    if key_chars[row][col].isalpha() and (len(key_chars[row][col]) == 1):
                         self.N_alpha_keys = self.N_alpha_keys + 1
-                    elif self.key_chars[row][col] == kconfig.space_char and (len(self.key_chars[row][col]) == 1):
+                    elif key_chars[row][col] == kconfig.space_char and (len(key_chars[row][col]) == 1):
                         self.N_alpha_keys = self.N_alpha_keys + 1
-                    elif self.key_chars[row][col] == kconfig.break_chars[1] and (
+                    elif key_chars[row][col] == kconfig.break_chars[1] and (
                             len(self.key_chars[row][col]) == 1):
+                        self.N_alpha_keys = self.N_alpha_keys + 1
+                    elif key_chars[row][col] in kconfig.emoji_keys:
                         self.N_alpha_keys = self.N_alpha_keys + 1
 
             self.N_keys_row.append(n_keys)
@@ -475,8 +486,8 @@ class Keyboard(MainWindow):
 
                 ## key character
                 # reference to index of key character
-                key_char = self.key_chars[row][col]
-                self.keys_li.append(self.key_chars[row][col])
+                key_char = key_chars[row][col]
+                self.keys_li.append(key_chars[row][col])
                 self.keys_ref.append(index)
                 self.index_to_wk.append(key)
                 # key character position
@@ -550,6 +561,8 @@ class Keyboard(MainWindow):
     def init_words(self):
         (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(self.left_context, self.context,
                                                                                  self.keys_li)
+        if self.layout_preference == "emoji":
+            self.key_freq_li = np.array([np.log(1/len(self.key_chars)) for i in range(len(self.key_chars))])
 
         self.word_id = []
         self.word_pair = []
@@ -644,6 +657,10 @@ class Keyboard(MainWindow):
         else:
             num_words_total = kconfig.num_words_total
         (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(self.left_context, self.context, self.keys_li, num_words_total=num_words_total)
+
+        if self.layout_preference == "emoji":
+            self.key_freq_li = np.array([np.log(1/len(self.key_chars)) for i in range(len(self.key_chars))])
+
         word = 0
         index = 0
         self.words_on = []
@@ -1092,7 +1109,7 @@ class Keyboard(MainWindow):
 
                 self.clear_text = True
 
-            elif new_char.isalpha() or new_char == "'":
+            elif new_char.isalpha() or new_char == "'" or new_char in kconfig.emoji_keys:
                 talk_string = new_char
                 self.old_context_li.append(self.context)
                 self.context += new_char
@@ -1178,7 +1195,7 @@ class Keyboard(MainWindow):
 
         retrain_window.retrain = True
         self.pretrain = True
-        self.mainWidget.repaint()
+        self.mainWidget.update()
 
 
 def main():
