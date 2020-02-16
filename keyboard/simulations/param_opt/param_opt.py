@@ -19,20 +19,23 @@ except IndexError:
 
 class simulationUtil():
     def __init__(self):
-        self.click_dists = [PickleUtil(os.path.join("simulations/param_opt/click_distributions", file)).safe_load()["li"] for
+        print(os.listdir("simulations/param_opt/click_distributions"))
+        self.click_dists = [PickleUtil(os.path.join("simulations/param_opt/click_distributions", file)).safe_load() for
                             file in os.listdir("simulations/param_opt/click_distributions")]
-
+        self.dp_dists = [PickleUtil(os.path.join("simulations/param_opt/dp_distributions", file)).safe_load() for
+                            file in os.listdir("simulations/param_opt/dp_distributions")]
         self.n_pred_range = [3]
 
         self.parameters_list = []
 
-    def run_job(self, my_task_id, num_tasks, num_clicks=1500, trials=20):
+    def run_job(self, my_task_id, num_tasks, num_clicks=1000, trials=10):
 
-        for click_dist in self.click_dists:
-            click_dist = click_dist / np.sum(click_dist)
+        for click_dist, dp_dist in zip(self.click_dists, self.dp_dists):
+            # click_dist = click_dist / np.sum(click_dist)
             param_dict = {}
-            param_dict["click_dist"] = click_dist.tolist()
-            param_dict["time_rotate"] = 6
+            param_dict["click_dist"] = click_dist
+            param_dict["dp_dist"] = dp_dist
+            param_dict["time_rotate"] = 4
             for n_pred in self.n_pred_range:
                 param_dict["N_pred"] = n_pred
                 for num_words in range(0, n_pred * 26, 3):

@@ -59,6 +59,13 @@ class Phrases:
                 else:
                     if phrase not in ['#','_','$','@']:
                         self.phrases.append(emoji.emojize(phrase, use_aliases=True))
+
+            if 'emoji' in phrases_file_name:
+                phrase_locs = np.random.choice(np.array(self.phrases), (100, 5)).tolist()
+                phrase_locs = [''.join(phrase) for phrase in phrase_locs]
+                self.phrases = phrase_locs
+
+
         self.num_phrases = len(self.phrases)
         # print("loaded "+str(self.num_phrases)+" phrases")
 
@@ -150,7 +157,7 @@ class Phrases:
 
 
 def main():
-    phrases = Phrases("resources/twitter-phrases/watch-combined.txt")
+    phrases = Phrases("resources/emojis.txt")
     print(phrases.sample())
     # phrases.cur_phrase = "hello my name is nicholas ryan bonaker"
     # print(phrases.highlight("hello my name is n"))

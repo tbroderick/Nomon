@@ -118,7 +118,14 @@ class SimulatedUser:
             lm_path = os.path.join(os.path.join(self.cwd, 'resources'), 'mix4_opt_min_lower_100k_4gram_2.5e-9_prob8_bo4_compress255.kenlm')
             vocab_path = os.path.join(os.path.join(self.cwd, 'resources'), 'vocab_lower_100k.txt')
 
-            self.lm = LanguageModel(lm_path, vocab_path, parent=self)
+            word_lm_path = os.path.join(os.path.join(self.cwd, 'resources'),
+                                        'mix4_opt_min_lower_100k_4gram_2.5e-9_prob8_bo4_compress255.kenlm')
+            char_lm_path = os.path.join(os.path.join(self.cwd, 'resources'),
+                                        'mix4_opt_min_lower_12gram_6e-9_prob9_bo4_compress255.kenlm')
+            vocab_path = os.path.join(os.path.join(self.cwd, 'resources'), 'vocab_lower_100k.txt')
+            char_path = os.path.join(os.path.join(self.cwd, 'resources'), 'char_set.txt')
+
+            self.lm = LanguageModel(word_lm_path, char_lm_path, vocab_path, char_path)
 
         self.time = Time(self)
         self.prev_time = 0
@@ -176,6 +183,7 @@ class SimulatedUser:
         self.previous_undo_text = ''
         self.previous_winner = 0
         # self.wpm_data = config.Stack(config.wpm_history_length)
+        self.last_press_time = 0
         self.wpm_time = 0
         self.clear_text = False
         self.pretrain = False
@@ -222,11 +230,17 @@ class SimulatedUser:
         self.init_sim_data()
         # Load parameters or use defaults
         if "click_dist" in parameters:
-            self.click_dist = parameters["click_dist"]
+            self.click_dist_xrange, self.click_dist = parameters["click_dist"]
         else:
             click_dist = np.zeros(80)
             click_dist[40] = 1
             self.click_dist = list(click_dist)
+            self.click_dist_xrange = (np.arange(0, 80)-40)/80
+
+        if "dp_dist" in parameters:
+            self.dp_kernel = parameters["dp_dist"]
+        else:
+            self.dp_kernel = None
 
         if "N_pred" in parameters:
             self.N_pred = parameters["N_pred"]
@@ -374,9 +388,9 @@ class SimulatedUser:
             if verbose:
                 print("Target: ", self.clock_to_text(target_clock), target_clock)
 
-            recovery_time = 0.9
-            self.time.set_time(self.time.time() + recovery_time)
-            self.on_timer()
+            # recovery_time = 0.9
+            # self.time.set_time(self.time.time() + recovery_time)
+            # self.on_timer()
 
             success = self.select_clock(target_clock, verbose=verbose)
             if success is not None:
@@ -392,9 +406,9 @@ class SimulatedUser:
                             else:
                                 undo_depth += 1
 
-                        recovery_time = 0.9
-                        self.time.set_time(self.time.time() + recovery_time)
-                        self.on_timer()
+                        # recovery_time = 0.9
+                        # self.time.set_time(self.time.time() + recovery_time)
+                        # self.on_timer()
 
     def select_clock(self, target_clock, verbose=False, undo_depth=0):
 
@@ -409,22 +423,27 @@ class SimulatedUser:
             else:
                 time_delta = (ndt / 2 - self.bc.clock_inf.clock_util.cur_hours[target_clock]) / ndt * self.time_rotate
 
-            click_offset = ((np.random.choice(80, 1, p=self.click_dist)-40) / 80.0 * config.period_li[5])[0]
-            # print(click_offset, config.period_li[5])
+            click_offset = np.random.choice(self.click_dist_xrange, p=self.click_dist)
+            dp_sample = self.dp_kernel.resample(1)[0][0]
+
+
             time_delta += click_offset
+
+            time_between_clicks = self.time.time()-self.last_press_time+time_delta
+            if time_between_clicks < dp_sample:
+                time_delta += self.time_rotate
+
             time_elapsed += time_delta
             self.time.set_time(self.time.time() + time_delta)
 
-            # print(self.bc.clock_inf.clock_util.cur_hours[target_clock]/ndt, time_delta)
             self.on_timer()
-            # print(self.bc.clock_inf.clock_util.cur_hours[target_clock]/ndt)
-            # print()
+
             self.on_press()
             num_press += 1
 
-            recovery_time = 0.4
-            self.time.set_time(self.time.time() + recovery_time)
-            self.on_timer()
+            # recovery_time = 0.4
+            # self.time.set_time(self.time.time() + recovery_time)
+            # self.on_timer()
             if self.winner:
                 if len(self.bc.clock_inf.win_history) > 1:
                     selected_clock = self.bc.clock_inf.win_history[1]
@@ -478,6 +497,8 @@ class SimulatedUser:
             return words_list_flattened.index(target_word), remaining_words
 
         target_letter = text[0]
+        if target_letter == " ":
+            target_letter = "_"
         return self.keys_li.index(target_letter)*(self.N_pred+1) + self.N_pred, text[1:]
 
     def clock_to_text(self, index):
@@ -822,8 +843,8 @@ class SimulatedUser:
                     prob = prob + np.log(kconfig.rem_prob)
                     if self.keys_li[key] == kconfig.mybad_char or self.keys_li[key] == kconfig.yourbad_char:
                         prob = np.log(kconfig.undo_prob)
-                    if self.keys_li[key] in kconfig.break_chars:
-                        prob = np.log(kconfig.break_prob)
+                    # if self.keys_li[key] in kconfig.break_chars:
+                    #     prob = np.log(kconfig.break_prob)
                     if self.keys_li[key] == kconfig.back_char:
                         prob = np.log(kconfig.back_prob)
                     if self.keys_li[key] == kconfig.clear_char:
@@ -932,6 +953,7 @@ class SimulatedUser:
 
     def on_press(self):
         self.num_presses += 1
+        self.last_press_time = self.time.time()
         self.bc.select()
 
     def make_choice(self, index):
@@ -1186,15 +1208,16 @@ class HistPlot():
 
 
 def main():
-    click_dist = PickleUtil("simulations/param_opt/click_distributions/0_hist.p").safe_load()
+    click_dist = PickleUtil("simulations/param_opt/click_distributions/wwm_hist.p").safe_load()
+    dp_dist = PickleUtil("simulations/param_opt/dp_distributions/wwm_dp_kernel.p").safe_load()
     # click_dist = click_dist(np.arange(80))
-    click_dist /= np.sum(click_dist)
+    # click_dist /= np.sum(click_dist)
 
     # plt.plot(click_dist)
     # plt.show()
 
     sim = SimulatedUser()
-    params = {"N_pred": 3, "num_words": 17, "time_rotate": 17, "click_dist": click_dist}
+    params = {"N_pred": 3, "num_words": 17, "time_rotate": 4, "click_dist": click_dist, "dp_dist": dp_dist}
 
     sim.parameter_metrics(params, num_clicks=500, trials=1)
 

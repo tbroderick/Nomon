@@ -39,14 +39,14 @@ from simulations.param_opt.param_opt import simulationUtil
 
 def submission_fun(task_id):
     sim_util = simulationUtil()
-    result = sim_util.run_job(task_id, 7, num_clicks=500, trials=3)
+    result = sim_util.run_job(task_id, 3, num_clicks=500, trials=1)
     return result
 
 
 def main():
 
-    pool = mp.Pool(7)
-    result = pool.map(submission_fun, range(1, 8, 1))
+    pool = mp.Pool(3)
+    result = pool.map(submission_fun, range(1, 4, 1))
 
 
 if __name__ == "__main__":

@@ -43,10 +43,10 @@ import numpy as np
 
 # data_dir = "D:\\Users\\nickb\\Study Data\\nomon_data\\951"
 # data_dir2 = "D:\\Users\\nickb\\Study Data\\row_col_data\\951"
-data_dir = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\Nomon\\data\\3000"
-# data_dir2 = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\RowCol\\data\\2000s"
-# data_dir2 = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\RowCol\\data\\951"
-# data_dir = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\Nomon\\data\\951"
+data_dir = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\Nomon\\data\\2000s"
+data_dir2 = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\RowCol\\data\\2000"
+# data_dir2 = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\RowCol\\data\\953"
+# data_dir = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\Nomon\\data\\953"
 
 
 def flatten(l):
@@ -326,10 +326,12 @@ class DataUtil:
         self.DF = DF
 
     def save_hist(self):
-        kernel = stats.gaussian_kde(self.rel_click_data)  # rel_click_data
-        # hist = kernel(np.arange(80))
+        # kernel = stats.gaussian_kde(self.rel_click_data)  # rel_click_data
+        hist = self.kde_list
+        time_rotate = self.speed_changes[-1][-1]
+        x_range = (np.arange(80)-40)/80*time_rotate
         print(os.path.join(self.data_dir, "user_histogram.p"))
-        PickleUtil(os.path.join(self.data_dir, "user_histogram.p")).safe_save(kernel)
+        PickleUtil(os.path.join(self.data_dir, "user_histogram.p")).safe_save((x_range, hist))
 
     def plot_data(self):
         fig = plt.figure()
@@ -510,7 +512,8 @@ du.load_data()
 # du.correct_data_speed()
 # du.plot_data()
 
-# # du.save_hist()
+du.save_hist()
+
 du.split_data_phrase()
 du.make_data_frame()
 

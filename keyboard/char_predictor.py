@@ -30,7 +30,7 @@ class CharacterPredictor:
         context = '<s> ' + context
         context_words = context.split()
         for w in context_words:
-            print('Context', '{0}\t{1}'.format(model.BaseScore(state_in, w, state_out), w))
+            # print('Context', '{0}\t{1}'.format(model.BaseScore(state_in, w, state_out), w))
             state_in = state_out
             state_out = kenlm.State()
 
@@ -100,8 +100,8 @@ class CharacterPredictor:
         if char_list_with_logprobs == None:
             return
         print('Character \t| Log probability')
-        for char, prob in char_list_with_logprobs:
-            print('' + char + '\t|' + str(prob))
+        # for char, prob in char_list_with_logprobs:
+        #     print('' + char + '\t|' + str(prob))
 
 
 def main():

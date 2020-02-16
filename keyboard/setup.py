@@ -41,7 +41,7 @@ PYTHON_INSTALL_DIR = os.path.dirname(os.path.dirname(os.__file__))
 
 build_exe_options = {"packages": ["broderclocks","kenlm_lm","predictor","char_predictor","vocabtrie","config","kconfig","widgets","subWindows","mainWindow",
                                   "string","time", "numpy",
-                                  "sys","Pickle","pickle_util", "random", "pathlib", "appdirs", "re",
+                                  "sys","Pickle","pickle_util", "random", "pathlib", "appdirs", "re", "emoji",
                                   "os","pretraininginference","clock_util","clock_inference_engine", "kenlm", "phrases"],
                      "include_files": ["icons", "resources"]}#"pygame",
 
@@ -54,8 +54,8 @@ elif sys.platform == "win64":
     base = "Win64GUI"
 
 setup(name="Nomon",
-      version="3.3.0",
-      description = "Python 3, PyQt5, Study Version",
+      version="3.4.0",
+      description = "Python 3, PyQt5, Study Version, Emoji Support",
       options={"build_exe": build_exe_options},
       executables=[Executable("keyboard.py", base=base,
                                 icon="nomon.ico",
