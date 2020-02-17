@@ -26,14 +26,16 @@ except IndexError:
 
 class simulationUtil():
     def __init__(self):
-        self.click_dists = [PickleUtil(os.path.join("simulations/rotation_speed/click_distributions", file)).safe_load()
-                       for file in os.listdir("simulations/rotation_speed/click_distributions")]
+        self.click_dists = [PickleUtil(os.path.join("simulations/param_opt/click_distributions", file)).safe_load() for
+                            file in os.listdir("simulations/param_opt/click_distributions")]
+        self.dp_dists = [PickleUtil(os.path.join("simulations/param_opt/dp_distributions", file)).safe_load() for
+                         file in os.listdir("simulations/param_opt/dp_distributions")]
 
         self.period_li = np.arange(0, 21, 1)
 
         self.parameters_list = []
 
-    def run_job(self, my_task_id, num_tasks, num_clicks=1500, trials=20):
+    def run_job(self, my_task_id, num_tasks, num_clicks=1500, trials=10):
 
         for period_num in self.period_li:
             param_dict = dict()
@@ -41,10 +43,9 @@ class simulationUtil():
             param_dict["N_pred"] = 3
             param_dict["num_words"] = 17
 
-            for dist in self.click_dists:
-                hist = dist(np.arange(80))
-                hist = hist / np.sum(hist)
-                param_dict["click_dist"] = hist.tolist()
+            for click_dist, dp_dist in zip(self.click_dists, self.dp_dists):
+                param_dict["click_dist"] = click_dist
+                param_dict["dp_dist"] = dp_dist
 
                 self.parameters_list += [param_dict.copy()]
 

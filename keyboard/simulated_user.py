@@ -426,11 +426,9 @@ class SimulatedUser:
             click_offset = np.random.choice(self.click_dist_xrange, p=self.click_dist)
             dp_sample = self.dp_kernel.resample(1)[0][0]
 
-
             time_delta += click_offset
 
-            time_between_clicks = self.time.time()-self.last_press_time+time_delta
-            if time_between_clicks < dp_sample:
+            while time_delta < dp_sample:
                 time_delta += self.time_rotate
 
             time_elapsed += time_delta
@@ -659,7 +657,7 @@ class SimulatedUser:
         else:
             lm_left_context = ""
         (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(lm_left_context, self.context,
-                                                                                 self.keys_li)
+                                                                                 self.keys_li, num_words_total=self.num_words_total)
 
         self.word_id = []
         self.word_pair = []
@@ -753,7 +751,8 @@ class SimulatedUser:
         else:
             lm_left_context = ""
         (self.words_li, self.word_freq_li, self.key_freq_li) = self.lm.get_words(lm_left_context, self.context,
-                                                                                 self.keys_li)
+                                                                                 self.keys_li,
+                                                                                 num_words_total=self.num_words_total)
         word = 0
         index = 0
         self.words_on = []
@@ -1217,7 +1216,7 @@ def main():
     # plt.show()
 
     sim = SimulatedUser()
-    params = {"N_pred": 3, "num_words": 17, "time_rotate": 4, "click_dist": click_dist, "dp_dist": dp_dist}
+    params = {"N_pred": 3, "num_words": 10, "time_rotate": 0, "click_dist": click_dist, "dp_dist": dp_dist}
 
     sim.parameter_metrics(params, num_clicks=500, trials=1)
 
