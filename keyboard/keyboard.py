@@ -202,6 +202,7 @@ class Keyboard(MainWindow):
         self.clear_text = False
         self.pretrain = False
 
+        self.emoji_box_highlight = [-1, -1]
         self.init_ui()
         sound_file = "icons/bell.wav"
         self.sound_player = QtMultimedia.QSound(sound_file)
@@ -811,6 +812,17 @@ class Keyboard(MainWindow):
 
         self.mainWidget.text_box.setText(
             "<p>" + cur_phrase_highlighted + "<\p><p>" + input_text + "</span><\p>")
+
+        if self.layout_preference == 'emoji':
+            if len(self.phrases.cur_phrase) > len(cur_text):
+                target_emoji = self.phrases.cur_phrase[len(cur_text)]
+                self.emoji_box_highlight = np.where(np.array(self.target_layout[:-1]) == target_emoji)
+            else:
+                self.emoji_box_highlight = [-1, -1]
+            self.mainWidget.update()
+            # next_emoji_clock = self.mainWidget.clocks[4*key_index+3]
+
+
 
     def draw_typed(self):
         new_text = ''

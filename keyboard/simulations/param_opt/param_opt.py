@@ -24,11 +24,11 @@ class simulationUtil():
                             file in os.listdir("simulations/param_opt/click_distributions")]
         self.dp_dists = [PickleUtil(os.path.join("simulations/param_opt/dp_distributions", file)).safe_load() for
                             file in os.listdir("simulations/param_opt/dp_distributions")]
-        self.n_pred_range = [3]
+        self.n_pred_range = [1, 2, 3]
 
         self.parameters_list = []
 
-    def run_job(self, my_task_id, num_tasks, num_clicks=1000, trials=10):
+    def run_job(self, my_task_id, num_tasks, num_clicks=1500, trials=30):
 
         for click_dist, dp_dist in zip(self.click_dists, self.dp_dists):
             # click_dist = click_dist / np.sum(click_dist)

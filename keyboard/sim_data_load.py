@@ -313,7 +313,7 @@ def main():
     # param = 'Clicks/Character'
     # sub_plot = rc_sdu.plot_across_params(params=[param])
 
-    sdu = SimDataUtil("C:\\Users\\Nicholas Bonaker\\PycharmProjects\\Nomon\\keyboard\\sim_data")
+    sdu = SimDataUtil("C:\\Users\\Nicholas Bonaker\\PycharmProjects\\Nomon\\keyboard\\simulations\\param_opt\\sim_data")
     sdu.plot_across_params()
 
 

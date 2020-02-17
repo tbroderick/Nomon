@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #SBATCH -o sim_param_opt.out-%j-%a
-#SBATCH -a 1-20
+#SBATCH -a 1-24
 
 # run with: sbatch jobArray.sh
 # or run with: LLsub jobArray.sh

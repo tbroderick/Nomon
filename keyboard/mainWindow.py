@@ -951,8 +951,14 @@ class MainKeyboardWidget(QtWidgets.QWidget):
                             hold_skip = True
 
                     if skip_box == 0 or hold_skip:
-                        if self.parent.in_pause:
+                        if self.parent.emoji_box_highlight is not None:
+                            if row == self.parent.emoji_box_highlight[0] and col == self.parent.emoji_box_highlight[1]:
+                                    qp.fillRect(cell_x1, cell_y1, cell_x2, cell_y2, QtGui.QColor(200, 220, 255))
+                            else:
+                                qp.fillRect(cell_x1, cell_y1, cell_x2, cell_y2, QtGui.QColor(255, 255, 255))
+                        elif self.parent.in_pause:
                             qp.fillRect(cell_x1, cell_y1, cell_x2, cell_y2, QtGui.QColor(240, 255, 240))
+
                         else:
                             qp.fillRect(cell_x1, cell_y1, cell_x2, cell_y2, QtGui.QColor(255, 255, 255))
                         qp.drawRect(cell_x1, cell_y1, cell_x2, cell_y2)
