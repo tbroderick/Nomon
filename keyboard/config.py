@@ -33,7 +33,7 @@
 
 
 import numpy as np
-from PyQt5 import QtGui
+from PySide2 import QtGui
 import pickle
 import os, sys
 #sys.path.insert(0, os.path.realpath('user_preferences'))
@@ -120,13 +120,13 @@ for font in clock_font:
     font.setBold(False)
 
 top_bar_font = [QtGui.QFont(base_font, 11), QtGui.QFont(base_font, 15), QtGui.QFont(base_font, 20)]
-for font in top_bar_font:
-    font.setStretch(80)
-    font.setBold(True)
+# for font in top_bar_font:
+#     font.setStretch(80)
+#     font.setBold(True)
 
 text_box_font = [QtGui.QFont(base_font, 11), QtGui.QFont(base_font, 18), QtGui.QFont(base_font, 24)]
-for font in text_box_font:
-    font.setStretch(90)
+# for font in text_box_font:
+#     font.setStretch(90)
 
 ### Algorithm parameters ###
 # winning score difference

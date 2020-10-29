@@ -43,8 +43,8 @@ import numpy as np
 
 # data_dir = "D:\\Users\\nickb\\Study Data\\nomon_data\\951"
 # data_dir2 = "D:\\Users\\nickb\\Study Data\\row_col_data\\951"
-data_dir = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\Nomon\\data\\2000s"
-data_dir2 = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\RowCol\\data\\2000"
+data_dir = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\Nomon\\data\\953"
+data_dir2 = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\RowCol\\data\\953"
 # data_dir2 = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\RowCol\\data\\953"
 # data_dir = "C:\\Users\\Nicholas Bonaker\\AppData\\Local\\Nomon\\data\\953"
 
@@ -487,8 +487,10 @@ class DataUtil:
                     print(var_name_dict[data_label] + ": Statistically significant     (p-value: " + str(p_val) + ")")
 
         else:
-            df_self = self.DF[self.DF["session"] == max(self.DF["session"])]
-            df_other = DF2[DF2["session"] == max(DF2["session"])]
+            # df_self = self.DF[self.DF["session"].isin([max(self.DF["session"]), max(self.DF["session"])-1])]
+            # df_other = DF2[DF2["session"].isin([max(DF2["session"]), max(DF2["session"])-1])]
+            df_self = self.DF
+            df_other = DF2
             print("\n")
             print("Difference in means from Nomon and Row Col in last session: \n")
             for data_label in ['error_cor', 'clicks_char', 'chars_min']:
@@ -497,6 +499,8 @@ class DataUtil:
 
                 t_val, p_val = stats.ttest_ind(sub_data_self.values, sub_data_other.values,
                                                equal_var=False)
+
+                # print(stats.f_oneway(sub_data_self.values, sub_data_other.values))
 
                 if p_val > 0.05:
                     print(var_name_dict[data_label] + ": Not statistically significant (p-value: " + str(p_val) + ")")
@@ -512,7 +516,7 @@ du.load_data()
 # du.correct_data_speed()
 # du.plot_data()
 
-du.save_hist()
+# du.save_hist()
 
 du.split_data_phrase()
 du.make_data_frame()
@@ -520,19 +524,21 @@ du.make_data_frame()
 # du.DF = du.DF[du.DF["session"] != 7]
 # du.plot_click_dist_phrase()
 #
-# du2 = DataUtil(data_dir2)
-# du2.load_data()
+du2 = DataUtil(data_dir2)
+du2.load_data()
 # du2.split_data_speed()
 # du2.correct_data_speed()
 # du2.plot_data()
 # du2.save_hist()
-# du2.split_data_phrase()
-# du2.make_data_frame()
+du2.split_data_phrase()
+du2.make_data_frame()
 # du2.plot_click_recovery()
 
 # du2.DF["session"] = du2.DF["session"].apply(lambda x: x + 2 if x >= 6 else x)
 #
 du.print_stat_avg()
-# du2.print_stat_avg()
+# print(len(du.DF[du.DF['session'] == 9]))
+# print(len(du.DF[du.DF['session'] == 8]))
+du2.print_stat_avg()
 # du.plot_phrase_stats(DF2=du2.DF)
-# du.test_significance(DF2=du2.DF)
+du.test_significance(DF2=du2.DF)

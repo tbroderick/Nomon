@@ -35,13 +35,13 @@ from cx_Freeze import setup, Executable
 
 import os.path
 PYTHON_INSTALL_DIR = os.path.dirname(os.path.dirname(os.__file__))
-# os.environ['TCL_LIBRARY'] = os.path.join(PYTHON_INSTALL_DIR, 'tcl', 'tcl8.6')
+# os.environ['TCL_LIBRARY'] = os.path.join(PYTHON_INSTALL_DIR, 'tcl', 'tcl8.6'
 # os.environ['TK_LIBRARY'] = os.path.join(PYTHON_INSTALL_DIR, 'tcl', 'tk8.6')
 
 
 build_exe_options = {"packages": ["broderclocks","kenlm_lm","predictor","char_predictor","vocabtrie","config","kconfig","widgets","subWindows","mainWindow",
-                                  "string","time", "numpy",
-                                  "sys","Pickle","pickle_util", "random", "pathlib", "appdirs", "re", "emoji",
+                                  "string", "time", "numpy", "win32api", "win32con", "win_output", "playsound", "gtts",
+                                  "sys","Pickle","pickle_util", "random", "pathlib", "appdirs", "re", "emoji", "socket",
                                   "os","pretraininginference","clock_util","clock_inference_engine", "kenlm", "phrases"],
                      "include_files": ["icons", "resources"]}#"pygame",
 
@@ -54,8 +54,8 @@ elif sys.platform == "win64":
     base = "Win64GUI"
 
 setup(name="Nomon",
-      version="3.4.0",
-      description = "Python 3, PyQt5, Study Version, Emoji Support",
+      version="3.6.0",
+      description = "Python 3, PySide2, Text Output, TTS",
       options={"build_exe": build_exe_options},
       executables=[Executable("keyboard.py", base=base,
                                 icon="nomon.ico",

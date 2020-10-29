@@ -30,7 +30,7 @@
 ######################################
 
 
-from PyQt5 import QtCore, QtGui, QtWidgets, QtMultimedia
+from PySide2 import QtCore, QtGui, QtWidgets, QtMultimedia
 
 from widgets import ClockWidget, OldClockWidget, VerticalSeparator, HorizontalSeparator
 from pretraininginference import PreBroderClocks
@@ -49,6 +49,8 @@ sys.path.insert(0, os.path.realpath('../KernelDensityEstimation'))
 class StartWindow(QtWidgets.QMainWindow):
     def __init__(self, screen_res, help_screen):
         super(StartWindow, self).__init__(parent=None)
+
+        self.setStyleSheet("background: white;")
         self.screen_res = screen_res
         self.help_screen = help_screen
         self.central_widget = QtWidgets.QStackedWidget()

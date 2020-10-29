@@ -158,48 +158,6 @@ class ClockUtil:
         # IS THIS JUST UPDATING CURHOURS OR ALSO CSCORES= JUST CURHOURS
         self.init_round(self.clock_inf.clocks_on)
 
-    def calcualte_clock_params(self, clock_type, recompute=False):
-        if recompute:
-            self.bc.parent.clock_params[:, 0] = self.bc.parent.clock_spaces[:, 1] / 2-1
-            if clock_type == 'bar':
-                self.bc.parent.clock_params[:, 1] = self.bc.parent.clock_spaces[:, 0] - 15
-            else:
-                self.bc.parent.clock_params[:, 1] = self.bc.parent.clock_spaces[:, 1] / 2 * 0.875
-
-        if clock_type == 'default':
-            # clock_params = array([[center_x = center_y, outer_radius, minute_x, minute_y] x num_clocks])
-            self.bc.parent.clock_params[:, 2] = self.bc.parent.clock_params[:, 0] * (
-                    1 + 0.7 * cos(self.clock_angles))
-            self.bc.parent.clock_params[:, 3] = self.bc.parent.clock_params[:, 0] * (
-                    1 + 0.7 * sin(self.clock_angles))
-
-        elif clock_type == 'ball':
-            # clock_params = array([[center_x = center_y, outer_radius, inner_radius] x num_clocks])
-            self.bc.parent.clock_params[:, 2] = self.bc.parent.clock_params[:, 1] * (
-                        1 - abs(self.clock_angles / pi + 0.5))
-
-        elif clock_type == 'radar':
-            # clock_params = array([[center_x = center_y, outer_radius, minute_angle1 ... minute_anglen] x num_clocks])
-            inc_angle = 20
-            self.bc.parent.clock_params[:, 2] = (90 - self.clock_angles * 180. / math.pi)
-            angle_correction = where(self.bc.parent.clock_params[:, 2] > 0, -360, 0)
-            self.bc.parent.clock_params[:, 2] += angle_correction
-            self.bc.parent.clock_params[:, 2] *= 16
-            for i in range(1, 4):
-                self.bc.parent.clock_params[:, 2 + i] = self.bc.parent.clock_params[:, 2] - inc_angle * i * 16
-
-        elif clock_type == 'pac_man':
-            # clock_params = array([[center_x = center_y, outer_radius, minute_angle1] x num_clocks])
-            self.bc.parent.clock_params[:, 2] = -90 - (self.clock_angles * 180.) / math.pi
-            angle_correction = where(self.bc.parent.clock_params[:, 2] > 0, -360, 0)
-            self.bc.parent.clock_params[:, 2] += angle_correction
-            self.bc.parent.clock_params[:, 2] *= 16
-
-        elif clock_type == 'bar':
-            # clock_params = array([[center_x = center_y, bar_length, bar_position] x num_clocks])
-            self.bc.parent.clock_params[:, 2] = self.bc.parent.clock_params[:, 1] * (
-                        1 - abs(self.clock_angles / pi + 0.5))
-
     def increment(self, clock_index_list):
         if self.bc.parent.is_simulation:
             time_diff = self.bc.parent.time.time() - self.bc.latest_time
@@ -219,30 +177,14 @@ class ClockUtil:
                 for clock in clock_index_list:
                     # update time indices
                     self.cur_hours[clock] = (self.cur_hours[clock] + 1) % self.num_divs_time
-                    # register in coordinates of hour hand
-                    self.clock_angles[clock] = self.hl.hour_locs[self.cur_hours[clock]][0]
-                    # self.repaint_one_clock(clock, clock_angles[clock])
 
-                self.calcualte_clock_params(self.bc.parent.clock_type)
                 for clock_index in clock_index_list:
-                    clock = self.bc.parent.mainWidget.clocks[clock_index]
+                    clock = self.bc.parent.mainWidget.clockgrid_widget.clocks[clock_index]
 
-                    if self.bc.parent.word_pred_on == 1:
-                        if clock_index in self.bc.parent.mainWidget.reduced_word_clock_indices:
-                            clock = self.bc.parent.mainWidget.reduced_word_clocks[
-                                self.bc.parent.mainWidget.reduced_word_clock_indices.index(clock_index)]
-
-                    if self.bc.parent.clock_type == 'default':
-                        clock.set_params(self.bc.parent.clock_params[clock_index, :4])
-                    elif self.bc.parent.clock_type == 'ball':
-                        clock.set_params(self.bc.parent.clock_params[clock_index, :4])
-                    elif self.bc.parent.clock_type == 'radar':
-                        clock.set_params(self.bc.parent.clock_params[clock_index, :])
-                    elif self.bc.parent.clock_type == 'pac_man':
-                        clock.set_params(self.bc.parent.clock_params[clock_index, :4])
-                    elif self.bc.parent.clock_type == 'bar':
-                        clock.set_params(self.bc.parent.clock_params[clock_index, :3])
-                    clock.update()
+                    angle = self.hl.hour_locs[self.cur_hours[clock_index]]
+                    if clock is not None:
+                        clock.angle = angle[0]
+                self.bc.parent.mainWidget.clockgrid_widget.update()
 
 
     def set_radius(self, radius):

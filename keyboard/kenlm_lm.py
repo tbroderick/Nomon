@@ -107,8 +107,10 @@ class LanguageModel():
 
     def get_char_probs(self, context, prefix, keys_li):
         key_results = dict(self.char_predictor.get_characters(context+prefix))
+        key_results[kconfig.space_char] = key_results[" "]
+        del key_results[" "]
 
-        key_probs = np.array([key_results[key] if key in key_results else -float("inf") for key in keys_li])
+        key_probs = np.array([max(key_results[key], np.log(1/30)) if key in key_results else -float("inf") for key in keys_li])
         return key_probs
 
 

@@ -1,8 +1,6 @@
 <s>
 </s>
-.period
 the
-,comma
 to
 and
 a
@@ -15,8 +13,6 @@ you
 that
 for
 this
-!exclamation-point
-?question-mark
 on
 was
 with

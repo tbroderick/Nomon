@@ -48,6 +48,7 @@ yourbad_char = 'Undo+'
 break_chars = ['.', ',', '?', '!']
 back_char = '#'
 clear_char = '$'
+speak_char = '%'
 
 # word length to display in completions
 max_chars_display = 11
@@ -55,21 +56,44 @@ num_words_total = 17
 ## alphabetic
 # always put alpha-numeric keys first (self.N_alpha_keys)
 
+main_chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+                   'u', 'v', 'w', 'x', 'y', 'z', '\'']
 key_chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-                   'u', 'v', 'w', 'x', 'y', 'z', '\'', space_char, '\'', break_chars[0], break_chars[1],
-                   break_chars[2], break_chars[3], back_char, clear_char, mybad_char]
+                   'u', 'v', 'w', 'x', 'y', 'z', '\'', '.', ',', '?', '!', '#', '$', '@', '_', speak_char]
+
 alpha_target_layout = [['a', 'b', 'c', 'd', 'e'],
                  ['f', 'g', 'h', 'i', 'j'],
                  ['k', 'l', 'm', 'n', 'o'],
                  ['p', 'q', 'r', 's', 't'],
                  ['u', 'v', 'w', 'x', 'y'],
-                 ['z', 'BREAKUNIT', "SPACEUNIT", 'BACKUNIT', 'UNDOUNIT']]
+                 ['z', "\'", 'BREAKUNIT', 'BACKUNIT', 'UNDOUNIT']]
+
+alpha_target_layout_off = [['a', 'b', 'c', 'd', 'e', "!"],
+                         ['f', 'g', 'h', 'i', 'j', "?"],
+                         ['k', 'l', 'm', 'n', 'o', "."],
+                         ['p', 'q', 'r', 's', 't', ","],
+                         ['u', 'v', 'w', 'x', 'y', '\''],
+                         ['z', mybad_char, back_char, clear_char, space_char, speak_char]]
+
+alpha_target_layout_reduced = [["word", "word", "word", "word", "word", "word"],
+                               ['a', 'b', 'c', 'd', 'e', "!"],
+                             ['f', 'g', 'h', 'i', 'j', "?"],
+                             ['k', 'l', 'm', 'n', 'o', "."],
+                             ['p', 'q', 'r', 's', 't', ","],
+                             ['u', 'v', 'w', 'x', 'y', '\''],
+                             ['z', mybad_char, back_char, clear_char, space_char, speak_char]]
 
 ## qwerty
 qwerty_target_layout = [['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
-                    ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', break_chars[3]],
-                    ['z', 'x', 'c', 'v', 'b', 'n', 'm', break_chars[0], break_chars[1], break_chars[2]],
-                    [ back_char, space_char, clear_char, 'UNDOUNIT']]
+                    ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', '\''],
+                    ['z', 'x', 'c', 'v', 'b', 'n', 'm', ",", ".", "?"],
+                    [mybad_char, back_char, clear_char, space_char, "!", speak_char]]
+
+qwerty_target_reduced = [["word", "word", "word", "word", "word"],
+                         ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+                        ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', '\''],
+                        ['z', 'x', 'c', 'v', 'b', 'n', 'm', ",", ".", "?"],
+                        [mybad_char, back_char, clear_char, space_char, "!", speak_char]]
 
 emoji_file = open("resources/emojis.txt", "r")
 emoji_text = emoji_file.read()

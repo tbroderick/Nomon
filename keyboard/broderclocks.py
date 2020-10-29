@@ -246,19 +246,10 @@ class BroderClocks:
 
         if not self.parent.is_simulation:
             for clock_index in self.clock_inf.clocks_on:
-                clock = self.parent.mainWidget.clocks[clock_index]
-                if self.parent.word_pred_on == 1:
-                    if clock_index in self.parent.mainWidget.reduced_word_clock_indices:
-                        clock = self.parent.mainWidget.reduced_word_clocks[
-                            self.parent.mainWidget.reduced_word_clock_indices.index(clock_index)]
-                if self.clock_inf.cscores[clock_index] > bound_score:
-                    clock.highlighted = True
-                else:
-                    clock.highlighted = False
-                clock.update()
-                #HIGHLIGHT에 관한 부분 추가
-                v = self.clock_inf.clock_util.hl.hour_locs[self.clock_inf.clock_util.cur_hours[clock_index] - 1]
-                angle = v[0]
-                # self.clock_inf.clock_util.repaint_one_clock(clock_index, angle)
+                clock = self.parent.mainWidget.clockgrid_widget.clocks[clock_index]
 
-       
+                if clock is not None:
+                    if self.clock_inf.cscores[clock_index] > bound_score:
+                        clock.highlighted = True
+                    else:
+                        clock.highlighted = False

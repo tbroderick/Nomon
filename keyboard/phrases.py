@@ -34,6 +34,7 @@ import numpy as np
 import os
 import re
 import emoji
+import json
 
 
 class Phrases:
@@ -157,8 +158,9 @@ class Phrases:
 
 
 def main():
-    phrases = Phrases("resources/emojis.txt")
-    print(phrases.sample())
+    phrases = Phrases("resources/twitter-phrases/watch-iv.txt")
+    print(json.dumps(phrases.phrases))
+    print(phrases.num_phrases)
     # phrases.cur_phrase = "hello my name is nicholas ryan bonaker"
     # print(phrases.highlight("hello my name is n"))
 

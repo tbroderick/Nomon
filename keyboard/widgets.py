@@ -32,10 +32,22 @@
 
 
 from __future__ import division
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 import math
 from numpy import array
+import numpy as np
 import config
+import kconfig
+
+
+def indexOf_2d(array, item):
+    for row_index in range(len(array)):
+        row = array[row_index]
+        if item in row:
+            col_index = array[row_index].index(item)
+            return [row_index, col_index]
+
+    return False
 
 
 class ClockWidget(QtWidgets.QWidget):
@@ -474,10 +486,10 @@ class HistogramWidget(QtWidgets.QWidget):
         super(HistogramWidget, self).__init__()
         self.parent = parent
         self.initUI()
-        self.bars = parent.parent.bars
+        self.bars = self.parent.bars
 
     def initUI(self):
-        self.setMinimumSize(200, 100)
+        self.setMinimumSize(200, 50)
 
     def paintEvent(self, e):
         qp = QtGui.QPainter()
@@ -508,8 +520,8 @@ class HistogramWidget(QtWidgets.QWidget):
         for bar in self.bars:
             qp.drawRect(i * bar_width, h - bar * h_scale, bar_width, h)
             i += 1
-        if not self.parent.in_focus:
-            qp.fillRect(0,0,self.geometry().width(),self.geometry().height(),QtGui.QColor(0,0,0,25))
+        # if not self.parent.in_focus:
+        #     qp.fillRect(0,0,self.geometry().width(),self.geometry().height(),QtGui.QColor(0,0,0,25))
 
 
 class VerticalSeparator(QtWidgets.QWidget):
@@ -788,3 +800,556 @@ class OldClockWidget(QtWidgets.QWidget):
         self.text_y = self.center.y() + y_offest
 
         qp.drawText(self.text_x, self.text_y, self.text)
+
+
+class KeygridWidget(QtWidgets.QWidget):
+
+    def __init__(self, parent):
+        super(KeygridWidget, self).__init__()
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
+
+        self.parent = parent
+        self.screen_res = self.parent.screen_res
+
+        self.highlight = False
+
+        self.init_ui()
+
+    # noinspection PyUnresolvedReferences
+    def init_ui(self):
+        self.x_positions = []
+        self.y_positions = []
+        self.target_layout = self.parent.parent.target_layout
+
+    def paintEvent(self, e):
+        qp = QtGui.QPainter()
+        qp.begin(self)
+        self.draw_layout(qp)
+        qp.end()
+
+    def draw_layout(self, qp):
+        self.generate_layout()
+        size = self.size()
+        w = size.width()
+        h = size.height()
+
+        qp.setPen(QtGui.QPen(QtGui.QColor(120, 120, 120), 1))
+        if self.highlight:
+            qp.setBrush(QtGui.QBrush(QtGui.QColor(210, 255, 210)))
+        else:
+            qp.setBrush(QtGui.QBrush(QtGui.QColor(238, 238, 238)))
+        qp.drawRect(0, 0, w - 1, h - 1)
+
+        for row in range(len(self.x_positions)):
+            y_start = self.y_positions[row][0]
+            y_end = self.y_positions[row][1]
+
+            for col in range(len(self.x_positions[row])):
+                x_start = self.x_positions[row][col][0]
+                x_end = self.x_positions[row][col][1]
+
+                if self.highlight:
+                    qp.setBrush(QtGui.QBrush(QtGui.QColor(245, 255, 245)))
+                else:
+                    qp.setBrush(QtGui.QBrush(QtGui.QColor(255, 255, 255)))
+
+                qp.setPen(QtGui.QPen(QtGui.QColor(0, 0, 0), 1))
+
+                qp.drawRect(x_start, y_start, x_end - x_start, y_end - y_start)
+
+    def generate_layout(self):
+        if self.parent.parent.layout_preference == "alpha":
+            if self.parent.parent.word_pred_on == 2:
+                self.target_layout = kconfig.alpha_target_layout
+            elif self.parent.parent.word_pred_on == 1:
+                self.target_layout = kconfig.alpha_target_layout_reduced
+            else:
+                self.target_layout = kconfig.alpha_target_layout_off
+        else:
+            if self.parent.parent.word_pred_on == 1:
+                self.target_layout = kconfig.qwerty_target_reduced
+            else:
+                self.target_layout = kconfig.qwerty_target_layout
+
+        size = self.size()
+        w = size.width()
+        h = size.height()
+
+        if self.parent.parent.layout_preference == "qwerty" and self.parent.parent.word_pred_on == 2:
+            y_height_bottom = h / 10 * 0.95
+            y_height = (h - y_height_bottom) / 3 * 0.95
+            y_spacing = h / (len(self.target_layout) + 1) * 0.05
+        elif self.parent.parent.word_pred_on == 1:
+            y_height = h / len(self.target_layout) * 0.93
+            y_spacing = h / (len(self.target_layout) + 3) * 0.07
+        else:
+            y_height = h / len(self.target_layout) * 0.95
+            y_spacing = h / (len(self.target_layout) + 1) * 0.05
+
+        self.x_width = (w - y_spacing * (len(self.target_layout[0]) + 1)) / len(self.target_layout[0])
+
+        self.x_positions = []
+
+        for row in range(len(self.target_layout)):
+            row_x_positions = []
+
+            layout_row = self.target_layout[row]
+
+            if self.parent.parent.layout_preference == "qwerty" and row == len(self.target_layout) - 1:
+                base_x_width = (w - y_spacing * 6) / 10
+                prev_x_spacing = 0
+
+                for col in range(len(layout_row)):
+                    char = layout_row[col]
+
+                    double_space_chars = [kconfig.mybad_char, kconfig.back_char, kconfig.clear_char,
+                                          kconfig.speak_char]
+                    if char in double_space_chars:
+                        x_width = base_x_width * 2
+                    else:
+                        x_width = base_x_width - y_spacing / 2
+
+                    x_start = col * y_spacing + prev_x_spacing + y_spacing
+                    prev_x_spacing += x_width
+
+                    x_end = x_start + x_width
+                    row_x_positions.append([x_start, x_end])
+            else:
+                x_width = (w - y_spacing * (len(layout_row) + 1)) / len(layout_row)
+
+                for col in range(len(layout_row)):
+                    x_start = col * y_spacing + col * x_width + y_spacing
+                    x_end = x_start + x_width
+                    row_x_positions.append([x_start, x_end])
+
+            self.x_positions.append(row_x_positions)
+
+        self.y_positions = []
+        for row in range(len(self.target_layout)):
+            if self.parent.parent.word_pred_on == 1 and row >= 1:
+                y_start = row * y_spacing + row * y_height + y_spacing*3
+                y_end = y_start + y_height
+                self.y_positions.append([y_start, y_end])
+            elif self.parent.parent.layout_preference == "qwerty" and row == len(self.target_layout) - 1 and \
+                    self.parent.parent.word_pred_on == 2:
+                y_start = row * y_spacing + row * y_height + y_spacing
+                y_end = y_start + y_height_bottom
+                self.y_positions.append([y_start, y_end])
+            else:
+                y_start = row * y_spacing + row * y_height + y_spacing
+                y_end = y_start + y_height
+                self.y_positions.append([y_start, y_end])
+
+    def resizeEvent(self, event):
+        QtWidgets.QWidget.resizeEvent(self, event)
+        self.parent.update_widget_positions()
+
+
+class clockGridWidget(QtWidgets.QWidget):
+
+    def __init__(self, parent, keygrid):
+        super(clockGridWidget, self).__init__()
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.parent = parent
+
+        self.keygrid = keygrid
+        self.target_layout = self.parent.target_layout
+        self.key_chars = kconfig.key_chars
+        self.main_chars = kconfig.main_chars
+        self.n_pred = 3
+
+        self.init_ui()
+
+    # noinspection PyUnresolvedReferences
+    def init_ui(self):
+        self.xpos = 0
+        self.clocks = []
+
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setStyleSheet("background:transparent;")
+
+    def generate_layout(self):
+        if self.parent.layout_preference == "alpha":
+            if self.parent.word_pred_on == 1:
+                self.target_layout = kconfig.alpha_target_layout_reduced
+                self.clock_radius = min((self.keygrid.y_positions[0][1] - self.keygrid.y_positions[0][0]) / 3,
+                                        (self.keygrid.x_positions[0][0][1] - self.keygrid.x_positions[0][0][0]) / 10)
+            elif self.parent.word_pred_on == 2:
+                self.target_layout = kconfig.alpha_target_layout
+                self.clock_radius = (self.keygrid.y_positions[0][1] - self.keygrid.y_positions[0][0]) / 7
+            else:
+                self.target_layout = kconfig.alpha_target_layout_off
+                self.clock_radius = min((self.keygrid.y_positions[0][1] - self.keygrid.y_positions[0][0]) / 3,
+                                        (self.keygrid.x_positions[0][0][1] - self.keygrid.x_positions[0][0][0]) / 10)
+        else:
+            if self.parent.word_pred_on == 1:
+                self.target_layout = kconfig.qwerty_target_reduced
+                self.clock_radius = min((self.keygrid.y_positions[0][1] - self.keygrid.y_positions[0][0]) / 3,
+                                        (self.keygrid.x_positions[0][0][1] - self.keygrid.x_positions[0][0][0]) / 10)
+            elif self.parent.word_pred_on == 2:
+                self.target_layout = kconfig.qwerty_target_layout
+                self.clock_radius = (self.keygrid.y_positions[0][1] - self.keygrid.y_positions[0][0]) / 10
+            else:
+                self.target_layout = kconfig.qwerty_target_layout
+                self.clock_radius = min((self.keygrid.y_positions[0][1] - self.keygrid.y_positions[0][0]) / 4,
+                                        (self.keygrid.x_positions[0][0][1] - self.keygrid.x_positions[0][0][0]) / 6)
+        self.clocks = []
+
+
+        for i in range(len(self.main_chars)):
+            main_char = self.main_chars[i]
+            main_char_indices = indexOf_2d(self.target_layout, main_char)
+
+            x_start = self.keygrid.x_positions[main_char_indices[0]][main_char_indices[1]][0]
+            x_end = self.keygrid.x_positions[main_char_indices[0]][main_char_indices[1]][1]
+            y_start = self.keygrid.y_positions[main_char_indices[0]][0]
+            y_end = self.keygrid.y_positions[main_char_indices[0]][1]
+
+            self.generate_word_clock_layout(x_start, y_start, x_end, y_end)
+            self.generate_main_clock_layout(x_start, y_start, x_end, y_end, main_char)
+
+        if indexOf_2d(self.target_layout, "BREAKUNIT"):
+            break_chars = kconfig.break_chars
+            break_chars = [char for char in break_chars if char in self.key_chars]
+
+            break_unit_indicies = indexOf_2d(self.target_layout, "BREAKUNIT")
+            x_start = self.keygrid.x_positions[break_unit_indicies[0]][break_unit_indicies[1]][0]
+            x_end = self.keygrid.x_positions[break_unit_indicies[0]][break_unit_indicies[1]][1]
+            y_start = self.keygrid.y_positions[break_unit_indicies[0]][0]
+            y_end = self.keygrid.y_positions[break_unit_indicies[0]][1]
+
+            for break_char_index in range(len(break_chars)):
+                break_char = break_chars[break_char_index]
+
+                break_clock_x = x_start + (x_end - x_start) / 2 * (break_char_index % 2 + 0.25)
+                if break_char_index < 2:
+                    break_clock_y = y_start + (y_end - y_start) / 4
+                else:
+                    break_clock_y = y_start + (y_end - y_start) * 3 / 4
+
+                cur_break_clock = Clock(self, break_clock_x, break_clock_y, self.clock_radius, break_char)
+
+                for i in range(self.n_pred):
+                    self.clocks.append(None)
+
+                self.clocks.append(cur_break_clock)
+        else:
+            for break_char in kconfig.break_chars:
+                break_char_indices = indexOf_2d(self.target_layout, break_char)
+
+                x_start = self.keygrid.x_positions[break_char_indices[0]][break_char_indices[1]][0]
+                x_end = self.keygrid.x_positions[break_char_indices[0]][break_char_indices[1]][1]
+                y_start = self.keygrid.y_positions[break_char_indices[0]][0]
+                y_end = self.keygrid.y_positions[break_char_indices[0]][1]
+
+                for i in range(self.n_pred):
+                    self.clocks.append(None)
+                self.generate_main_clock_layout(x_start, y_start, x_end, y_end, break_char)
+
+        if indexOf_2d(self.target_layout, "BACKUNIT"):
+            back_chars = ['#', '$']
+            back_chars = [char for char in back_chars if char in self.key_chars]
+
+            back_unit_indicies = indexOf_2d(self.target_layout, "BACKUNIT")
+            x_start = self.keygrid.x_positions[back_unit_indicies[0]][back_unit_indicies[1]][0]
+
+            y_start = self.keygrid.y_positions[back_unit_indicies[0]][0]
+            y_end = self.keygrid.y_positions[back_unit_indicies[0]][1]
+
+            for back_char_index in range(len(back_chars)):
+                back_char = back_chars[back_char_index]
+
+                back_clock_x = x_start + self.clock_radius * 1.5
+                back_clock_y = y_start + (y_end - y_start) / 4 * ((back_char_index % 2) * 2 + 1)
+
+                if back_char == '#':
+                    back_char = 'Backspace'
+                elif back_char == '$':
+                    back_char = 'Clear'
+
+                cur_back_clock = Clock(self, back_clock_x, back_clock_y, self.clock_radius, back_char)
+                for i in range(self.n_pred):
+                    self.clocks.append(None)
+
+                self.clocks.append(cur_back_clock)
+        else:
+            back_chars = ['#', '$']
+            for back_char in back_chars:
+                back_char_indices = indexOf_2d(self.target_layout, back_char)
+
+                if back_char == '#':
+                    back_char = 'Backspace'
+                elif back_char == '$':
+                    back_char = 'Clear'
+
+                x_start = self.keygrid.x_positions[back_char_indices[0]][back_char_indices[1]][0]
+                x_end = self.keygrid.x_positions[back_char_indices[0]][back_char_indices[1]][1]
+                y_start = self.keygrid.y_positions[back_char_indices[0]][0]
+                y_end = self.keygrid.y_positions[back_char_indices[0]][1]
+
+                for i in range(self.n_pred):
+                    self.clocks.append(None)
+                self.generate_main_clock_layout(x_start, y_start, x_end, y_end, back_char)
+
+        if indexOf_2d(self.target_layout, "UNDOUNIT"):
+
+            undo_unit_indicies = indexOf_2d(self.target_layout, "UNDOUNIT")
+            x_start = self.keygrid.x_positions[undo_unit_indicies[0]][undo_unit_indicies[1]][0]
+            x_end = self.keygrid.x_positions[undo_unit_indicies[0]][undo_unit_indicies[1]][1]
+            y_start = self.keygrid.y_positions[undo_unit_indicies[0]][0]
+            y_end = self.keygrid.y_positions[undo_unit_indicies[0]][1]
+
+            undo_clock_x = x_start + self.clock_radius * 1.5
+            undo_clock_y = y_start + (y_end - y_start) / 4
+
+            cur_undo_clock = Clock(self, undo_clock_x, undo_clock_y, self.clock_radius, "Undo")
+            for i in range(self.n_pred):
+                self.clocks.append(None)
+
+            self.clocks.append(cur_undo_clock)
+
+            space_clock_x = x_start + self.clock_radius * 1.5
+            space_clock_y = y_start + (y_end - y_start) / 4 * 3
+
+            cur_space_clock = Clock(self, space_clock_x, space_clock_y, self.clock_radius, "_")
+            for i in range(self.n_pred):
+                self.clocks.append(None)
+
+            self.clocks.append(cur_space_clock)
+
+            break_clock_x = x_start + (x_end - x_start) / 2 * (1.25)
+            break_clock_y = y_start + (y_end - y_start) / 4 * 3
+
+            cur_speak_clock = Clock(self, break_clock_x, break_clock_y, self.clock_radius, "speak")
+            for i in range(self.n_pred):
+                self.clocks.append(None)
+
+            self.clocks.append(cur_speak_clock)
+
+            undo_label_x = x_start + self.clock_radius * 8
+            undo_label_y = y_start + (y_end - y_start) / 4
+
+            # self.undo_label = new Label(self.face_canvas, undo_label_x, undo_label_y, self.clock_radius*2,"")
+        else:
+            special_chars = [kconfig.mybad_char, kconfig.space_char, kconfig.speak_char]
+            for special_char in special_chars:
+                special_char_indices = indexOf_2d(self.target_layout, special_char)
+
+                if special_char == kconfig.mybad_char:
+                    special_char = 'Undo'
+                elif special_char == kconfig.speak_char:
+                    special_char = 'Speak'
+
+                x_start = self.keygrid.x_positions[special_char_indices[0]][special_char_indices[1]][0]
+                x_end = self.keygrid.x_positions[special_char_indices[0]][special_char_indices[1]][1]
+                y_start = self.keygrid.y_positions[special_char_indices[0]][0]
+                y_end = self.keygrid.y_positions[special_char_indices[0]][1]
+
+                for i in range(self.n_pred):
+                    self.clocks.append(None)
+                self.generate_main_clock_layout(x_start, y_start, x_end, y_end, special_char)
+
+        if self.parent.words_li is not None:
+            self.update_word_clocks(self.parent.words_li)
+
+    def generate_main_clock_layout(self, x_start, y_start, x_end, y_end, text):
+        if self.parent.layout_preference == "qwerty" and self.parent.word_pred_on == 2:
+            main_clock_x = x_start + self.clock_radius * 1.5
+            main_clock_y = y_start + self.clock_radius * 1.15
+
+            cur_main_clock = Clock(self, main_clock_x, main_clock_y, self.clock_radius, text)
+
+            self.clocks.append(cur_main_clock)
+        else:
+            main_clock_x = x_start + self.clock_radius * 1.2
+            main_clock_y = (y_start + y_end) / 2
+
+            cur_main_clock = Clock(self, main_clock_x, main_clock_y, self.clock_radius, text)
+
+            self.clocks.append(cur_main_clock)
+
+    def generate_word_clock_layout(self, x_start, y_start, x_end, y_end):
+        if self.parent.layout_preference == "qwerty":
+            word_clock_x = x_start + self.clock_radius * 1.5
+
+            for word_clock_index in range(self.n_pred):
+                word_clock_y = y_start + (y_end - y_start) / 8 * ((word_clock_index + 1.5) * 2)
+
+                cur_word_clock = Clock(self, word_clock_x, word_clock_y, self.clock_radius, "filler")
+                self.clocks.append(cur_word_clock)
+
+        else:
+            word_clock_x = x_start + (x_end - x_start) * 0.4
+
+            for word_clock_index in range(-1, self.n_pred - 1):
+                word_clock_y = (y_start + y_end) / 2 + self.clock_radius * 2.25 * word_clock_index
+
+                cur_word_clock = Clock(self, word_clock_x, word_clock_y, self.clock_radius, "filler")
+                self.clocks.append(cur_word_clock)
+
+    def update_word_clocks(self, words):
+        reduced_word_index = 0
+
+        for clock_index in range(len(self.clocks)):
+            clock = self.clocks[clock_index]
+
+            key_index = int(clock_index / (self.n_pred + 1))
+            word_index = clock_index % (self.n_pred + 1)
+            if (word_index != 3) and (key_index < len(self.main_chars)):
+                if words[key_index][word_index] != "":
+                    if self.parent.word_pred_on == 1:
+                        self.place_reduced_word_clock(clock, reduced_word_index)
+                        reduced_word_index += 1
+
+                    word = words[key_index][word_index]
+                    clock.text = word
+                    clock.filler = False
+                else:
+                    clock.text = ""
+                    clock.filler = True
+
+        self.update()
+        self.update_mask()
+
+        # ifnself.parent.emoji_keyboard)
+        #     self.undo_label.draw_text()
+
+    def place_reduced_word_clock(self, clock, index):
+        x_start = self.keygrid.x_positions[0][index][0]
+        x_end = self.keygrid.x_positions[0][index][1]
+        y_start = self.keygrid.y_positions[0][0]
+        y_end = self.keygrid.y_positions[0][1]
+
+        clock_x = x_start + self.clock_radius * 1.2
+        clock_y = (y_start + y_end) / 2
+
+        clock.x_pos = clock_x
+        clock.y_pos = clock_y
+
+    def paintEvent(self, e):
+        qp = QtGui.QPainter()
+        qp.begin(self)
+        self.draw_layout(qp)
+        qp.end()
+
+    def draw_layout(self, qp):
+        for clock in self.clocks:
+            if clock is not None:
+                clock.draw_face(qp)
+
+    def update_mask(self):
+        maskedRegion = QtGui.QRegion(0, 0, 0, 0,
+                                     QtGui.QRegion.Ellipse)
+        for clock in self.clocks:
+            if clock is not None:
+                text_length = self.keygrid.x_width*2
+                maskedRegion += QtGui.QRegion(clock.x_pos - clock.radius * 1.2, clock.y_pos - clock.radius * 1.2,
+                                              clock.radius * 2.4, clock.radius * 2.4, QtGui.QRegion.Ellipse)
+                maskedRegion += QtGui.QRegion(clock.x_pos + clock.radius * 1.5, clock.y_pos - clock.radius,
+                                              text_length * 2 / 3, clock.radius * 3, QtGui.QRegion.Rectangle)
+        self.setMask(maskedRegion)
+
+
+class clockHandsWidget(QtWidgets.QWidget):
+
+    def __init__(self, parent):
+        super(clockHandsWidget, self).__init__()
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
+
+        self.parent = parent
+
+        self.init_ui()
+
+    # noinspection PyUnresolvedReferences
+    def init_ui(self):
+        self.xpos = 0
+        self.target_layout = kconfig.alpha_target_layout
+
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setStyleSheet("background:transparent;")
+
+    def paintEvent(self, e):
+        qp = QtGui.QPainter()
+        qp.begin(self)
+        self.draw_hands(qp)
+        qp.end()
+
+    def draw_hands(self, qp):
+        for clock in self.parent.clocks:
+            if clock is not None:
+                clock.draw_hands(qp)
+
+    def update_mask(self):
+        maskedRegion = QtGui.QRegion(0, 0, 0, 0,
+                                     QtGui.QRegion.Ellipse)
+        for clock in self.parent.clocks:
+            if clock is not None:
+                maskedRegion += QtGui.QRegion(clock.x_pos - clock.radius, clock.y_pos - clock.radius, clock.radius * 2,
+                                              clock.radius * 2, QtGui.QRegion.Ellipse)
+        self.setMask(maskedRegion)
+
+
+class Clock():
+    def __init__(self, parent, x_pos, y_pos, radius, text=""):
+        self.parent = parent
+        self.x_pos = x_pos
+        self.y_pos = y_pos
+        self.radius = radius
+        self.angle = np.random.random() * np.pi
+        self.text = text
+        self.filler = False
+        self.highlighted = True
+        self.winner = False
+
+        font = QtGui.QFont('Helvetica')
+        font.setPixelSize(self.radius * 1.8)
+        self.text_width = QtGui.QFontMetrics(font).width(self.text)
+
+    def draw_face(self, qp):
+        if not self.filler:
+            qp.setBrush(QtGui.QBrush(QtGui.QColor(255, 255, 255)))
+
+            if (self.winner):
+                qp.setPen(QtGui.QPen(QtGui.QColor(0, 255, 0), self.radius / 5))
+            elif (self.highlighted):
+                qp.setPen(QtGui.QPen(QtGui.QColor(0, 86, 255), self.radius / 5))
+            else:
+                qp.setPen(QtGui.QPen(QtGui.QColor(0, 0, 0), self.radius / 5))
+
+            qp.drawEllipse(self.x_pos - self.radius, self.y_pos - self.radius,
+                           2 * self.radius, 2 * self.radius)
+
+            qp.setPen(QtGui.QPen(QtGui.QColor(0, 0, 0), self.radius / 5))
+            font = QtGui.QFont('Helvetica')
+            if self.parent.parent.layout_preference == "qwerty":
+                font.setPixelSize(self.radius * 1.4)
+            else:
+                if self.parent.parent.word_pred_on == 2:
+                    font.setPixelSize(self.radius * 1.8)
+                else:
+                    font.setPixelSize(self.radius * 1.4)
+            qp.setFont(font)
+
+            qp.drawText(self.x_pos + self.radius * 1.5, self.y_pos + self.radius * 0.5, self.text)
+
+            self.text_width = QtGui.QFontMetrics(font).width(self.text)
+
+    def draw_hands(self, qp):
+        if not self.filler:
+            qp.setPen(QtGui.QPen(QtGui.QColor(255, 0, 0), self.radius / 10))
+            qp.drawLine(self.x_pos, self.y_pos, self.x_pos,
+                        self.y_pos - self.radius)
+
+            if (self.winner):
+                qp.setPen(QtGui.QPen(QtGui.QColor(0, 255, 0), self.radius / 5))
+            elif (self.highlighted):
+                qp.setPen(QtGui.QPen(QtGui.QColor(0, 86, 255), self.radius / 5))
+            else:
+                qp.setPen(QtGui.QPen(QtGui.QColor(0, 0, 0), self.radius / 5))
+
+            angle_corr = 0
+
+            qp.drawLine(self.x_pos - self.radius * np.cos(self.angle - angle_corr) * 0.,
+                        self.y_pos - self.radius * np.sin(self.angle - angle_corr) * 0,
+                        self.x_pos + self.radius * np.cos(self.angle - angle_corr) * 0.75,
+                        self.y_pos + self.radius * np.sin(self.angle - angle_corr) * 0.75)
