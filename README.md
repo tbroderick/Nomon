@@ -13,7 +13,21 @@ Relevant papers about Nomon include:
 This is a [video]()
  of the past version of Nomon as described in the papers above.
 
-The software is licensed under the [MIT license](https://opensource.org/licenses/MIT), so you are free to use it for whatever purpose you choose.
+Licensing 
+================
+
+Nomon Keyboard is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Nomon Keyboard is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Nomon Keyboard.  If not, see <http://www.gnu.org/licenses/>.
 
 Installing Nomon on Windows
 ================
@@ -41,8 +55,9 @@ Troubleshooting
 **IOError: [Errno13] Permission denied**
 
 Check that you are not using an old version of Nomon (version 2 or earlier). If this is the case--and you wish to install an older version--make sure you have not installed Nomon in the Program Files directory. You can resolve this issue permanently by reinstalling Nomon in a different dirctory (such as C:\Nomon), or you can run Nomon as Administrator (see instructions on how to do this in "Running Nomon").
-====================
+
 How to Use Nomon:
+====================
 [This same video](https://youtu.be/fv-WvW0JktE) also has instructions for using Nomon.
 
 
